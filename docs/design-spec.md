@@ -57,7 +57,7 @@ Reference scenes are in `v2-previews/`:
 ## What it takes to build each part
 | Element | How it's built |
 |---|---|
-| Slab, cut corner, edge, sheen | User-theme CSS: per-corner `border-radius`, a uniform `border`, 2-stop `background-gradient`. St draws **one `box-shadow` per node**, so the drop shadow sits on the outer node and the edge is the border. The slabs are 0.86-opaque glass; blur-my-shell popup blur is off (see risks). |
+| Slab, cut corner, edge, sheen | User-theme CSS: per-corner `border-radius`, a uniform `border`, 2-stop `background-gradient`. St draws **one `box-shadow` per node**, so the drop shadow sits on the outer node and the edge is the border. The slabs are 0.96-opaque glass; blur-my-shell popup blur is off (see risks). |
 | Islands top bar, mono clock | CSS: transparent `#panel`, styled `.panel-button` capsules and `.clock` font. Just Perfection handles panel size and spacing. |
 | Workspace dots | CSS: `.workspace-dot` set to 6px round, neutral. The JS already does the 3.25× active stretch and 50% fade. |
 | Dock dots (running, focused) | CSS on `.app-well-app-running-dot` and `.focused`, using ubuntu-dock's DEFAULT indicator style. |
@@ -109,6 +109,34 @@ An offline scanner goes stale on new installs and theme switches, and it still n
 - Shadow repaint cost on hover is unprofiled.
 - Symbolic-only icons fall back to neutral.
 - Test with `dbus-run-session gnome-shell --nested`.
+
+## Verified in a real shell
+`tools/shell_qa.py` renders each variant in a headless GNOME Shell 46 (see the
+README). What the renders fixed, and what `tests/test_shell_css.py` now pins:
+- **Quick Settings:** Yaru sizes toggles `12em`, 156px at our 13px body, which cut
+  "Power Mode", "Performance" and every network name. Toggles are a fixed 192px,
+  subtitles are sans (mono cut device names), and the split toggle's halves are
+  one pill: the button keeps only its left radii, the arrow only its right ones.
+  The battery item is a QuickToggle and took the 58px tile height, stretching the
+  round system buttons into tall pills; both are 40px now.
+- **Popups:** `-arrow-rise` 8px keeps them off the screen edge (at 0 Quick
+  Settings sat flush right with its corners cut), and Quick Settings has 8px more
+  so its right edge lines up with the right capsule. Slabs are 0.96 opaque: with
+  popup blur off, 0.86 showed window text through the calendar.
+- **Dock slab:** the slab is as wide as the show-apps icon plus its padding, so
+  `padding: 0 8px` (not `16px 0`) gives the same 11px gap from slab edge to icon
+  on all four sides; before it was 3px at the sides and 27px at the ends.
+- **Tracking:** St measures a label without its `letter-spacing` and then
+  ellipsizes the last letter, so the notification source and calendar weekday
+  eyebrows have no tracking.
+- **Merlot Day:** the show-apps glyph is `fg-0` (Yaru's near-white vanished on the
+  light slab); app names on the overview's dimmed wallpaper use `overview-fg`
+  (white with a soft shadow, 3:1 or better on the lightest backdrop); the lock
+  screen uses blur-my-shell's `pipeline_default` (dim 0.6) because the lock
+  screen is unthemed and its white clock was unreadable over the light dim.
+- **Aura:** the preset sets the aura accent per variant. With the pointer
+  sweeping the dock the aura costs about 0.1 to 0.3 s of shell CPU per 4 s
+  (software rendering), nothing when idle.
 
 ## Open risks for the signature
 - blur-my-shell popup blur is off (its rectangular surface is a second source of a box around popups). The box seen on the real desktop was the popup content's own drop shadow, clipped by the BoxPointer to a hard-edged rectangle, so popup content nodes carry `box-shadow: none`.

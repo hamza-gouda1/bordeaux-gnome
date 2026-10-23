@@ -142,7 +142,7 @@ def render_preset(toks):
         # Popup blur (default true) puts a rectangular blur surface behind Quick Settings,
         # notifications and menus. It follows the target's allocation with its own corner
         # radius (quick-settings-corner-radius defaults to 36, ours is r-slab) and shows
-        # as a larger dark rectangle around the popup. The slabs are already 0.86-opaque.
+        # as a larger dark rectangle around the popup. The slabs are 0.96-opaque instead.
         ("core", blur + ".popup", "blur", "false"),
         # Overview: stock paints a flat #222222 (Yaru `#overviewGroup`) with the wallpaper
         # only inside the rounded workspace box. blur-my-shell's overview component puts the
@@ -151,7 +151,14 @@ def render_preset(toks):
         ("core", blur + ".overview", "blur", "true"),
         ("core", blur + ".overview", "pipeline", gv_str("pipeline_bordeaux_overview")),
         ("core", blur + ".lockscreen", "blur", "true"),
-        ("core", blur + ".lockscreen", "pipeline", gv_str("pipeline_bordeaux_slab")),
+        # The lock screen runs without the user theme (extensions are off while locked),
+        # so its clock is Yaru's near-white: the light slab dim (0.95) left it white on
+        # pale grey. Light uses blur-my-shell's own pipeline_default (dim 0.6) instead.
+        ("core", blur + ".lockscreen", "pipeline",
+         gv_str("pipeline_bordeaux_slab" if scheme == "dark" else "pipeline_default")),
+        # Bordeaux Aura pulls each glow 15% toward the variant's accent.
+        ("core", "org.gnome.shell.extensions.bordeaux-aura", "accent",
+         gv_str(hexc(tl.parse_color(toks["accent"])).upper())),
         # Just Perfection: bar height is the island row, animation speed 4 (1 = stock, 8 = fastest).
         ("core", "org.gnome.shell.extensions.just-perfection", "panel-size", toks["panel-h"].removesuffix("px")),
         ("core", "org.gnome.shell.extensions.just-perfection", "animation", "4"),

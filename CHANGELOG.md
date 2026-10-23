@@ -4,6 +4,16 @@
 
 First public version.
 
+Headless visual QA (`tools/shell_qa.py`) and the fixes it found:
+
+- New `tools/shell_qa.py`: renders all three variants in a real `gnome-shell --headless` (private HOME, session and system bus, fake services from `tools/qa/mockbus.js`, memory-capped scope) and checks top-bar font size, dock margins and cut-off labels. Screenshots in `screenshots/` are now these renders; the old photo of a real desktop is gone.
+- Quick Settings: toggles 192px wide (em sizing cut every title and subtitle), sans subtitles, split toggles joined into one pill, system buttons round 40px instead of tall pills.
+- Popups keep 8px from the screen edge and the top bar; Quick Settings lines up with the right capsule. Slabs 0.96 opaque so windows no longer show through the calendar.
+- Dock slab: equal 11px gap on all four sides (was 3px sides, 27px ends).
+- Notification source and calendar weekday labels lost their last letter to letter-spacing; tracking removed there.
+- Merlot Day: dark show-apps glyph, light app names on the dimmed overview, darker lock-screen dim for a readable clock.
+- Preset sets the Bordeaux Aura accent per variant (it was Bordeaux's on all three).
+
 Popup box and overview wallpaper fixes:
 
 - The dim, square-cornered rectangle around every panel popup (calendar, Quick Settings) was the slab's `0 18px 40px` drop shadow: a BoxPointer clips its child's blurred shadow to a hard-edged box. `.popup-menu-content`, `.quick-settings` and `.candidate-popup-content` now carry no shadow (rendered in a headless gnome-shell before and after; any blur radius reproduced it). `tests/test_shell_css.py` guards the wrapper selectors.

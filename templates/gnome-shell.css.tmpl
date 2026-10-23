@@ -143,6 +143,19 @@ stage {
     spacing-columns: ${sp-2};
 }
 
+/* Toggle width in px: Yaru sizes them 12em, which at our 13px body is 156px and
+   cut "Power Mode", "Performance" and every network/device subtitle. */
+.quick-toggle,
+.quick-menu-toggle {
+    min-width: 192px;
+    max-width: 192px;
+}
+
+.quick-menu-toggle .quick-toggle {
+    min-width: 0;
+    max-width: 9999px;
+}
+
 /* Inactive Toggle State */
 .quick-toggle,
 .quick-menu-toggle .quick-toggle {
@@ -179,11 +192,46 @@ stage {
     box-shadow: none !important;
 }
 
-.quick-menu-toggle .quick-toggle-arrow {
-    background-color: ${tile};
-    color: ${fg-0};
+.quick-menu-toggle .quick-toggle:ltr {
+    border-radius: ${r-lg} 0 0 ${r-lg} !important;
+    border-right-width: 0;
+}
+
+.quick-menu-toggle .quick-toggle:rtl {
     border-radius: 0 ${r-lg} ${r-lg} 0 !important;
-    border-left: 1px solid ${border};
+    border-left-width: 0;
+}
+
+.quick-menu-toggle .quick-toggle:ltr:last-child,
+.quick-menu-toggle .quick-toggle:rtl:last-child {
+    border-radius: ${r-lg} !important;
+    border-width: 1px;
+}
+
+.quick-menu-toggle .quick-toggle-arrow {
+    background-color: ${tile} !important;
+    color: ${fg-0};
+    border: 1px solid ${border};
+    box-shadow: none !important;
+}
+
+.quick-menu-toggle .quick-toggle-arrow:ltr {
+    border-radius: 0 ${r-lg} ${r-lg} 0 !important;
+}
+
+.quick-menu-toggle .quick-toggle-arrow:rtl {
+    border-radius: ${r-lg} 0 0 ${r-lg} !important;
+}
+
+.quick-menu-toggle .quick-toggle-arrow:hover {
+    background-color: ${bg-3} !important;
+}
+
+.quick-menu-toggle .quick-toggle-arrow:checked,
+.quick-menu-toggle .quick-toggle-arrow:hover:checked {
+    background-color: ${accent} !important;
+    color: ${on-accent};
+    border-color: ${accent-hi};
 }
 
 .quick-toggle .quick-toggle-title {
@@ -198,7 +246,7 @@ stage {
 }
 
 .quick-toggle StBoxLayout > .quick-toggle-subtitle {
-    font-family: ${font-mono};
+    font-family: ${font-sans};
     font-weight: ${fw-regular};
     font-size: ${fs-caption};
     color: ${fg-1};
@@ -253,11 +301,12 @@ stage {
     border-radius: ${r-slab} !important;
 }
 
+/* No letter-spacing on labels the shell sizes to their text: St measures them
+   without the tracking and then ellipsizes the last letter ("Frida…", "Calenda…"). */
 .datemenu-today-button .day-label {
     font-family: ${font-mono} !important;
     font-size: ${fs-eyebrow} !important;
     font-weight: ${fw-medium} !important;
-    letter-spacing: ${ls-eyebrow};
     color: ${fg-2} !important;
 }
 
@@ -331,7 +380,6 @@ stage {
     font-family: ${font-mono} !important;
     font-size: ${fs-eyebrow} !important;
     font-weight: ${fw-medium} !important;
-    letter-spacing: ${ls-eyebrow};
     color: ${fg-2} !important;
 }
 
@@ -399,7 +447,12 @@ stage {
    The extension reserves the margin in the work area, so windows keep a real gap.
    Left and right margins MUST be equal: the icons are laid out centred in the whole
    dash box while this background shrinks by its margins, so unequal margins shift
-   the slab relative to the icons (12/8 left them 2px left of centre). */
+   the slab relative to the icons (12/8 left them 2px left of centre).
+   The slab is as wide as the show-apps icon plus its own padding, and its ends sit
+   7px of item padding away from the first and last icon: padding 0 8px gives the
+   same gap from slab edge to icon on all four sides (11px at 48px icons, checked
+   by tools/shell_qa.py). With 16px 0 the icons touched the long edges (3px) while
+   the ends had 27px. */
 #dashtodockContainer.left #dash .dash-background {
     background-color: transparent !important;
     background-gradient-direction: vertical !important;
@@ -410,9 +463,9 @@ stage {
     border-radius: ${r-dock} !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
-    margin-left: ${sp-3} !important;
-    margin-right: ${sp-3} !important;
-    padding: ${sp-4} 0 !important;
+    margin-left: ${sp-4} !important;
+    margin-right: ${sp-4} !important;
+    padding: 0 ${sp-2} !important;
 }
 
 #dashtodockContainer.left.extended #dash .dash-background {
@@ -458,6 +511,12 @@ stage {
     border: none !important;
     border-radius: ${r-xl} !important;
     box-shadow: none !important;
+}
+
+/* The show-apps glyph is symbolic and Yaru paints it near-white, which vanished on
+   the Merlot Day slab. */
+#dashtodockContainer .dash-item-container .show-apps .overview-icon {
+    color: ${fg-0} !important;
 }
 
 #dashtodockContainer .dash-separator {
@@ -568,18 +627,29 @@ stage {
     spacing: 6px;
 }
 
-/* App Name Label Styling */
+/* App Name Label Styling. These sit on the overview's dimmed wallpaper, which is
+   mid-grey on Merlot Day, so they use overview-fg (light there, with a shadow);
+   inside a folder dialog they sit on the slab and use fg-0 again. */
 .overview-icon StLabel,
 .overview-tile StLabel,
+.grid-search-result StLabel,
 #appDisplay StLabel,
 .app-folder StLabel {
     font-family: ${font-sans};
     font-size: ${fs-body};
     font-weight: ${fw-semibold};
-    color: ${fg-0};
+    color: ${overview-fg};
+    text-shadow: ${overview-text-shadow};
     text-align: center;
     min-width: 110px;
     max-width: 175px;
+}
+
+.app-folder-dialog .overview-tile StLabel,
+.app-folder-dialog .app-well-app StLabel,
+#dashtodockContainer StLabel {
+    color: ${fg-0};
+    text-shadow: none;
 }
 
 /* Hover & Active States */
@@ -846,7 +916,14 @@ stage {
 
 .popup-menu-boxpointer,
 .candidate-popup-boxpointer {
-    -arrow-rise: 0px;
+    /* Also the distance a popup keeps from the screen edge: at 0 Quick Settings sat
+       flush against the right edge with its corners cut off. */
+    -arrow-rise: ${sp-2};
+}
+
+/* Line Quick Settings' right edge up with the right capsule (sp-2 + sp-2 = sp-4). */
+.quick-settings {
+    margin-right: ${sp-2};
 }
 
 .candidate-popup-content {
@@ -1281,6 +1358,17 @@ StScrollBar StButton#hhandle:active {
     font-family: ${font-mono};
     font-weight: ${fw-medium};
     color: ${fg-0};
+    min-height: 40px;
+    min-width: 0;
+    max-width: 9999px;
+    border-radius: ${r-pill} !important;
+}
+
+.quick-settings-system-item .icon-button {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+    border-radius: ${r-pill} !important;
 }
 
 .quick-toggle-menu {

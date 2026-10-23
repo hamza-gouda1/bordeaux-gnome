@@ -1,0 +1,7 @@
+{
+  "uuid": "bordeaux-qa@harness",
+  "name": "Bordeaux QA harness",
+  "description": "Drives the headless shell started by tools/shell_qa.py through each scene and saves screenshots. Never install this into a real session.",
+  "shell-version": ["46"],
+  "version": 1
+}

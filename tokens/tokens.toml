@@ -117,8 +117,14 @@ hover = "rgba(238, 231, 228, 0.05)"
 press = "rgba(238, 231, 228, 0.09)"
 # shell overlays
 glass = "rgba(22, 17, 18, 0.74)"          # islands
-glass-strong = "rgba(22, 17, 18, 0.86)"   # slabs
+glass-strong = "rgba(22, 17, 18, 0.96)"   # slabs: near-opaque, popups have no blur
 sheen = "rgba(238, 231, 228, 0.035)"
+# overview: app names and grid results sit on the wallpaper, which the overview
+# dims to about 0.6 (measured with tools/shell_qa.py); overview-dim is the
+# lightest backdrop seen there
+overview-fg = "#EEE7E4"
+overview-dim = "#4F1826"
+overview-text-shadow = "none"
 lip = "rgba(0, 0, 0, 0.55)"
 shadow = "#000000"
 shadow-a1 = "30"
@@ -183,8 +189,14 @@ on-status = "#140C0D"
 hover = "rgba(236, 230, 228, 0.05)"
 press = "rgba(236, 230, 228, 0.09)"
 glass = "rgba(14, 12, 12, 0.74)"
-glass-strong = "rgba(14, 12, 12, 0.88)"
+glass-strong = "rgba(14, 12, 12, 0.96)"
 sheen = "rgba(236, 230, 228, 0.03)"
+# overview: app names and grid results sit on the wallpaper, which the overview
+# dims to about 0.6 (measured with tools/shell_qa.py); overview-dim is the
+# lightest backdrop seen there
+overview-fg = "#ECE6E4"
+overview-dim = "#3D141A"
+overview-text-shadow = "none"
 lip = "rgba(0, 0, 0, 0.60)"
 shadow = "#000000"
 shadow-a1 = "34"
@@ -248,8 +260,14 @@ on-status = "#FFFFFF"
 hover = "rgba(43, 26, 30, 0.045)"
 press = "rgba(43, 26, 30, 0.08)"
 glass = "rgba(250, 247, 242, 0.72)"
-glass-strong = "rgba(250, 247, 242, 0.88)"
+glass-strong = "rgba(250, 247, 242, 0.96)"
 sheen = "rgba(255, 255, 255, 0.55)"
+# overview: app names and grid results sit on the wallpaper, which the overview
+# dims to about 0.6 (measured with tools/shell_qa.py); overview-dim is the
+# lightest backdrop seen there
+overview-fg = "#FFFFFF"
+overview-dim = "#8C8880"
+overview-text-shadow = "0 1px 3px rgba(0, 0, 0, 0.45)"
 lip = "rgba(60, 30, 35, 0.16)"
 shadow = "#3C1E23"
 shadow-a1 = "10"
@@ -552,3 +570,7 @@ min = 3.0
 fg = "on-accent"
 bg = "accent"
 min = 4.5
+[[contrast.pair]]
+fg = "overview-fg"          # app names on the dimmed wallpaper (light: plus a text shadow)
+bg = "overview-dim"
+min = 3.0

@@ -9,7 +9,17 @@ light one, styled from the top bar down to the boot screen. Every text and
 background color pair passes WCAG AA contrast, and CI checks it on every
 change.
 
-![Bordeaux desktop](screenshots/bordeaux-desktop.png)
+![Bordeaux desktop](screenshots/bordeaux-desktop.jpg)
+
+| Quick Settings | Calendar and notifications | Overview |
+|---|---|---|
+| ![Bordeaux Quick Settings](screenshots/bordeaux-quick-settings.png) | ![Bordeaux calendar](screenshots/bordeaux-calendar.png) | ![Bordeaux overview](screenshots/bordeaux-overview.jpg) |
+| ![Oxblood Noir Quick Settings](screenshots/oxblood-noir-quick-settings.png) | ![Oxblood Noir calendar](screenshots/oxblood-noir-calendar.png) | ![Oxblood Noir overview](screenshots/oxblood-noir-overview.jpg) |
+| ![Merlot Day Quick Settings](screenshots/merlot-day-quick-settings.png) | ![Merlot Day calendar](screenshots/merlot-day-calendar.png) | ![Merlot Day overview](screenshots/merlot-day-overview.jpg) |
+
+All screenshots are rendered by `tools/shell_qa.py` in a headless GNOME Shell 46
+with made-up networks, devices and notifications; more in
+[`screenshots/`](screenshots/README.md).
 
 Design previews of the dark and light schemes (rendered from the design tokens):
 
@@ -131,6 +141,8 @@ the extension's [README](extensions/bordeaux-aura@hamza-gouda/README.md).
 python3 tools/check_contrast.py   # WCAG 2.1 contrast of every color pair
 bash tests/test_install.sh        # install, switch, uninstall in a throwaway home
 gjs -m tests/test_aura_colour.js  # dock aura colour maths
+python3 tests/test_shell_css.py   # shell sheet regressions found in real renders
+python3 tools/shell_qa.py --variant all --out /tmp/qa   # visual QA, see below
 ```
 
 `check_contrast.py` reads the `@define-color` values straight from each
@@ -141,6 +153,32 @@ with an in-memory settings backend, so it never touches the desktop it runs
 on. CI also runs shellcheck on every script.
 
 `tools/make_palette.py` redraws `docs/palette.svg` from the CSS.
+
+### Visual QA in a real shell
+
+`tools/shell_qa.py` renders every surface in a real GNOME Shell 46 started with
+`--headless`, one variant at a time: desktop with the dock, dock hover and
+menu, Quick Settings and each of its menus (Wi-Fi, Bluetooth, Power Mode, TUF
+Performance, power), notifications and the calendar, OSDs, the overview, search,
+app grid and folders, Alt-Tab, the workspace switcher, the run and power-off
+dialogs and the lock screen. It saves a PNG per scene and checks the top-bar
+font size (15px or more), equal dock slab margins, centred dock icons and
+labels the shell had to cut with an ellipsis.
+
+Nothing reaches your session: the shell gets its own HOME, a keyfile settings
+backend, a private session bus and a private *system* bus on which
+`tools/qa/mockbus.js` plays logind, NetworkManager, BlueZ, UPower,
+power-profiles-daemon, asusd and GDM with fake devices. The whole run sits in a
+`systemd-run --user --scope` with `MemoryMax=2000M` and no swap, under a
+timeout, and the scope is stopped afterwards. `--publish screenshots` rewrites
+the images in this repo.
+
+```bash
+python3 tools/shell_qa.py --variant Merlot-Day --scene desktop,quick-settings --out /tmp/qa
+```
+
+The lock screen is not themed: GNOME turns extensions off while locked, User
+Themes included, so it shows Yaru with the blur-my-shell lock blur.
 
 ## Layout
 

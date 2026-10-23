@@ -29,6 +29,7 @@ core org.gnome.shell.extensions.blur-my-shell.overview blur true
 core org.gnome.shell.extensions.blur-my-shell.overview pipeline 'pipeline_bordeaux_overview'
 core org.gnome.shell.extensions.blur-my-shell.lockscreen blur true
 core org.gnome.shell.extensions.blur-my-shell.lockscreen pipeline 'pipeline_bordeaux_slab'
+core org.gnome.shell.extensions.bordeaux-aura accent '#A3283A'
 core org.gnome.shell.extensions.just-perfection panel-size 52
 core org.gnome.shell.extensions.just-perfection animation 4
 core org.gnome.shell.extensions.just-perfection workspace-peek false

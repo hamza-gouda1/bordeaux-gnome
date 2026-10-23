@@ -6,6 +6,14 @@ Popup wrappers must not paint a rectangle. St clips a blurred box-shadow on a Bo
 child to a hard-edged square box, which showed as a dim rectangle around every panel
 popup, so those selectors carry no shadow and no fill of their own on the wrappers.
 The overview backdrop must not be the stock flat #222222.
+
+The rest pin down what the headless QA run (tools/shell_qa.py) found in GNOME 46:
+Quick Settings toggles sized in em came out 156px and cut every label, the split
+toggle's halves did not join, popups sat flush against the screen edge, the dock slab
+had 3px side gaps and 27px end gaps, tracked eyebrow labels lost their last letter,
+0.86-alpha slabs showed windows through them with popup blur off, the show-apps glyph
+was white on the light dock, the light lock screen was white on pale grey, and every
+variant used the Bordeaux aura accent.
 """
 import pathlib
 import re
@@ -25,6 +33,66 @@ def rules(css):
     for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
         sels = [s.strip() for s in m.group(1).split(",")]
         yield sels, m.group(2)
+
+
+def decls_for(css, selector):
+    """Merged declarations of every rule whose selector list contains `selector`."""
+    out = {}
+    for sels, body in rules(css):
+        if selector in sels:
+            for d in body.split(";"):
+                if ":" in d:
+                    k, v = d.split(":", 1)
+                    out[k.strip()] = v.replace("!important", "").strip()
+    return out
+
+
+def px(v):
+    m = re.match(r"(-?\d+(?:\.\d+)?)px$", (v or "").strip())
+    return float(m.group(1)) if m else None
+
+
+def layout_checks(name, css):
+    bad = []
+    t = decls_for(css, ".quick-menu-toggle")
+    if (px(t.get("min-width")) or 0) < 176 or t.get("min-width") != t.get("max-width"):
+        bad.append(f"{name}: Quick Settings toggles need a fixed px width >= 176 (em width cut labels)")
+    ltr = decls_for(css, ".quick-menu-toggle .quick-toggle:ltr").get("border-radius", "")
+    arrow = decls_for(css, ".quick-menu-toggle .quick-toggle-arrow:ltr").get("border-radius", "")
+    if ltr.split()[1:3] != ["0", "0"] or not arrow.startswith("0 "):
+        bad.append(f"{name}: split Quick Settings toggle halves do not join ({ltr!r} / {arrow!r})")
+    if (px(decls_for(css, ".popup-menu-boxpointer").get("-arrow-rise")) or 0) <= 0:
+        bad.append(f"{name}: -arrow-rise 0 puts popups flush against the screen edge")
+    pad = decls_for(css, "#dashtodockContainer.left #dash .dash-background").get("padding", "").split()
+    if len(pad) != 2 or pad[0] != "0" or (px(pad[1]) or 0) <= 0:
+        bad.append(f"{name}: dock slab padding must be '0 <side>' for equal gaps, is {pad}")
+    for sel in (".message .message-header .message-source-title", ".datemenu-today-button .day-label"):
+        if "letter-spacing" in decls_for(css, sel):
+            bad.append(f"{name}: {sel} has letter-spacing (St ellipsizes its last letter)")
+    if "color" not in decls_for(css, "#dashtodockContainer .dash-item-container .show-apps .overview-icon"):
+        bad.append(f"{name}: the dock show-apps glyph has no theme colour")
+    return bad
+
+
+def preset_checks():
+    sys.path.insert(0, str(ROOT / "tools"))
+    import tokenlib as tl
+
+    bad = []
+    data = tl.load()
+    for variant in ("Bordeaux", "Oxblood-Noir", "Merlot-Day"):
+        toks = tl.variant_tokens(data, variant)
+        pre = (ROOT / "presets" / f"{variant}.preset").read_text()
+        if toks:
+            a = tl.parse_color(toks["glass-strong"])
+            if a[3] < 0.94:
+                bad.append(f"{variant}: glass-strong alpha {a[3]} lets windows show through popups")
+            acc = "#{:02X}{:02X}{:02X}".format(*(round(c) for c in tl.parse_color(toks["accent"])[:3]))
+            if f"bordeaux-aura accent '{acc}'" not in pre:
+                bad.append(f"{variant}: preset does not set the aura accent to {acc}")
+            if toks["scheme"] == "light" and "lockscreen pipeline 'pipeline_bordeaux_slab'" in pre:
+                bad.append(f"{variant}: light lock screen uses the light slab dim (white clock on pale grey)")
+    return bad
 
 
 def main():
@@ -49,6 +117,8 @@ def main():
                         bad.append(f"{name}: #overviewGroup is the flat stock #222222")
         if not overview:
             bad.append(f"{name}: no #overviewGroup rule")
+        bad += layout_checks(name, sheet.read_text())
+    bad += preset_checks()
     pre = (ROOT / "presets" / "Bordeaux.preset").read_text()
     for need in ("blur-my-shell.overview blur true", "blur-my-shell.overview pipeline 'pipeline_bordeaux_overview'",
                  "blur-my-shell.popup blur false", "'pipeline_bordeaux_overview'"):
