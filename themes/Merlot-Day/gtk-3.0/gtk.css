@@ -1,0 +1,40 @@
+/* Bordeaux Design System - Merlot-Day GTK3 Overrides */
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+@define-color theme_base_color #F2EBE4;
+@define-color theme_text_color #2A1418;
+@define-color theme_bg_color #FCF8F4;
+@define-color theme_fg_color #2A1418;
+@define-color theme_selected_bg_color #7A1C34;
+@define-color theme_selected_fg_color #FCF8F4;
+
+* {
+    font-family: "Geist SemiBold", "Geist", sans-serif;
+}
+
+window, .background {
+    background-color: @theme_bg_color;
+    color: @theme_fg_color;
+}
+
+headerbar {
+    min-height: 42px;
+    font-weight: 600;
+    background-color: #EDE3DB;
+    color: #2A1418;
+    border-bottom: 1px solid rgba(42, 20, 24, 0.1);
+}
+
+button {
+    font-weight: 600;
+}
+
+button:checked, button.suggested-action {
+    background-color: #7A1C34;
+    color: #FCF8F4;
+}
+
+entry {
+    background-color: #F2EBE4;
+    color: #2A1418;
+    border: 1px solid rgba(42, 20, 24, 0.1);
+}

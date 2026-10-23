@@ -1,0 +1,85 @@
+/* Bordeaux Design System - Bordeaux GTK4 / Libadwaita */
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+@define-color accent_color #9B1F40;
+@define-color accent_bg_color #9B1F40;
+@define-color accent_fg_color #FFFFFF;
+@define-color destructive_color #c01c28;
+@define-color destructive_bg_color #c01c28;
+@define-color destructive_fg_color #ffffff;
+@define-color success_color #26a269;
+@define-color success_bg_color #26a269;
+@define-color success_fg_color #ffffff;
+@define-color warning_color #e5a50a;
+@define-color warning_bg_color #e5a50a;
+@define-color warning_fg_color rgba(0, 0, 0, 0.8);
+@define-color error_color #c01c28;
+@define-color error_bg_color #c01c28;
+@define-color error_fg_color #ffffff;
+
+@define-color window_bg_color #1C0C11;
+@define-color window_fg_color #F4E9E2;
+@define-color view_bg_color #100709;
+@define-color view_fg_color #F4E9E2;
+@define-color headerbar_bg_color #281017;
+@define-color headerbar_fg_color #F4E9E2;
+@define-color headerbar_border_color rgba(216, 185, 138, 0.16);
+@define-color headerbar_backdrop_color #1C0C11;
+@define-color sidebar_bg_color #16090D;
+@define-color sidebar_fg_color #F4E9E2;
+@define-color sidebar_border_color rgba(216, 185, 138, 0.16);
+@define-color sidebar_backdrop_color #16090D;
+
+@define-color card_bg_color rgba(255, 255, 255, 0.04);
+@define-color card_fg_color #F4E9E2;
+@define-color card_border_color rgba(216, 185, 138, 0.16);
+@define-color popover_bg_color #1C0C11;
+@define-color popover_fg_color #F4E9E2;
+@define-color dialog_bg_color #1C0C11;
+@define-color dialog_fg_color #F4E9E2;
+
+/* Custom Bordeaux Refinements */
+* {
+    font-family: "Geist SemiBold", "Geist", sans-serif;
+}
+
+window, .background {
+    background-color: @window_bg_color;
+    color: @window_fg_color;
+}
+
+headerbar {
+    min-height: 42px;
+    font-weight: 600;
+    background-color: @headerbar_bg_color;
+    color: @headerbar_fg_color;
+    border-bottom: 1px solid @headerbar_border_color;
+    box-shadow: none;
+}
+
+button {
+    font-weight: 600;
+}
+
+.card, card {
+    background-color: @card_bg_color;
+    color: @card_fg_color;
+    border: 1px solid @card_border_color;
+    border-radius: 16px;
+}
+
+button.suggested-action, .suggested-action button {
+    background-color: @accent_bg_color;
+    color: @accent_fg_color;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+button.suggested-action:hover {
+    filter: brightness(1.12);
+}
+
+entry, textview {
+    background-color: @view_bg_color;
+    color: @view_fg_color;
+    border-color: @card_border_color;
+}

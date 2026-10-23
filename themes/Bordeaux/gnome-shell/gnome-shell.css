@@ -1,0 +1,591 @@
+/* ==============================================================================
+ * Bordeaux Design System - Master GNOME Shell Stylesheet (Bordeaux Night)
+ * Tested on GNOME 46 (Wayland), Ubuntu 24.04, 1920x1200.
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * Precision Workstation Typography (Geist / Inter) & Strict Proportional Balance
+ * ============================================================================== */
+
+/* Stage Root & Base Typography */
+stage {
+    font-family: "Geist SemiBold", sans-serif;
+    font-size: 11pt;
+    font-weight: 600;
+}
+
+/* ==============================================================================
+ * 1. TOP BAR (#panel) - Proportioned at 38px Height & Soft Faded Glass
+ * ============================================================================== */
+#panel {
+    background-color: transparent !important;
+    background-gradient-direction: vertical !important;
+    background-gradient-start: rgba(36, 14, 22, 0.65) !important;
+    background-gradient-end: rgba(24, 9, 14, 0.40) !important;
+    border-bottom: 1px solid rgba(216, 185, 138, 0.20) !important;
+    box-shadow: none !important;
+    color: #F4E9E2;
+    font-family: "Geist SemiBold", sans-serif;
+    font-size: 11pt !important;
+    font-weight: 600 !important;
+    height: 38px !important;
+    transition-duration: 200ms;
+}
+
+#panel .panel-button {
+    color: #F4E9E2;
+    font-family: "Geist SemiBold", sans-serif;
+    font-size: 11pt !important;
+    font-weight: 600 !important;
+    padding: 0 10px;
+    margin: 2px 3px;
+    border-radius: 9999px !important;
+    transition-duration: 150ms;
+}
+
+#panel .panel-button .system-status-icon {
+    icon-size: 18px;
+    padding: 0 3px;
+    margin: 0 1px;
+}
+
+#panel .panel-button:hover {
+    background-color: rgba(155, 31, 64, 0.35);
+    color: #D8B98A;
+    border-radius: 9999px !important;
+}
+
+#panel .panel-button:active,
+#panel .panel-button:overview,
+#panel .panel-button:focus,
+#panel .panel-button:checked {
+    background-color: #9B1F40;
+    color: #FFFFFF;
+    border-radius: 9999px !important;
+    box-shadow: 0 0 8px rgba(155, 31, 64, 0.45);
+}
+
+/* Clock Display Specifics */
+#panel .clock-display {
+    font-family: "Geist", sans-serif;
+    font-weight: 600;
+    font-size: 10.5pt;
+    color: #F4E9E2;
+    border-radius: 9999px !important;
+}
+
+#panel .clock-display:hover {
+    color: #D8B98A;
+}
+
+/* ==============================================================================
+ * 2. QUICK SETTINGS & POPOVERS - Burgundy Surface & Active Toggles
+ * ============================================================================== */
+.popup-menu-content,
+.quick-settings {
+    background-color: rgba(24, 10, 14, 0.96);
+    color: #F4E9E2;
+    border: 1px solid rgba(216, 185, 138, 0.26);
+    border-radius: 24px !important;
+    padding: 14px;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.70);
+    font-size: 10pt;
+}
+
+.quick-settings-grid {
+    spacing-rows: 10px;
+    spacing-columns: 10px;
+}
+
+/* Inactive Toggle State */
+.quick-toggle,
+.quick-menu-toggle .quick-toggle {
+    background-color: rgba(46, 20, 28, 0.88);
+    color: #F4E9E2;
+    border-radius: 16px !important;
+    border: 1px solid rgba(216, 185, 138, 0.16);
+    min-height: 40px;
+    transition-duration: 150ms;
+}
+
+.quick-toggle:hover,
+.quick-menu-toggle .quick-toggle:hover {
+    background-color: rgba(74, 28, 42, 0.95);
+    border-color: rgba(216, 185, 138, 0.30);
+    color: #FFFFFF;
+}
+
+/* Active / Checked Toggle State (Pure Burgundy #9B1F40, NO Blue!) */
+.quick-toggle:checked,
+.quick-toggle:focus:checked,
+.quick-toggle:hover:checked,
+.quick-toggle:active:checked,
+.quick-menu-toggle .quick-toggle:checked,
+.quick-menu-toggle .quick-toggle-arrow:checked {
+    background-color: #9B1F40 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #D8B98A !important;
+    box-shadow: 0 4px 14px rgba(155, 31, 64, 0.45) !important;
+}
+
+.quick-menu-toggle .quick-toggle-arrow {
+    background-color: rgba(46, 20, 28, 0.88);
+    color: #F4E9E2;
+    border-radius: 0 16px 16px 0 !important;
+    border-left: 1px solid rgba(216, 185, 138, 0.16);
+}
+
+.quick-toggle .quick-toggle-title {
+    font-family: "Geist", sans-serif;
+    font-weight: 600;
+    font-size: 10pt;
+    color: #FFFFFF;
+}
+
+.quick-toggle StBoxLayout > .quick-toggle-subtitle {
+    font-family: "Geist", sans-serif;
+    font-weight: 400;
+    font-size: 8.5pt;
+    color: rgba(244, 233, 226, 0.78);
+}
+
+.quick-toggle-menu .header .icon.active {
+    background-color: #9B1F40 !important;
+    color: #FFFFFF !important;
+}
+
+/* Sliders (Volume, Brightness) */
+.slider {
+    -barlevel-height: 8px;
+    -barlevel-background-color: rgba(216, 185, 138, 0.22);
+    -barlevel-border-width: 0;
+    -barlevel-active-background-color: #9B1F40;
+    -barlevel-overdrive-color: #D8B98A;
+    -slider-handle-radius: 8px;
+    -slider-handle-border-width: 1px;
+    -slider-handle-border-color: rgba(216, 185, 138, 0.40);
+}
+
+/* Popover Menu Items */
+.popup-menu-item {
+    color: #F4E9E2;
+    font-family: "Geist SemiBold", sans-serif;
+    border-radius: 12px !important;
+    padding: 6px 12px;
+    font-size: 10pt;
+    font-weight: 600;
+}
+
+.popup-menu-item:hover,
+.popup-menu-item:selected,
+.popup-menu-item:focus {
+    background-color: #9B1F40;
+    color: #FFFFFF;
+}
+
+/* Date & Notification Popover (#calendarArea, .message-list, .calendar) */
+#calendarArea {
+    padding: 8px;
+}
+
+.datemenu-popover {
+    border-radius: 24px !important;
+}
+
+.datemenu-today-button .day-label {
+    font-family: "Geist SemiBold", sans-serif !important;
+    font-size: 11pt !important;
+    font-weight: 600 !important;
+    color: #D8B98A !important;
+}
+
+.datemenu-today-button .date-label {
+    font-family: "Geist SemiBold", sans-serif !important;
+    font-size: 12.5pt !important;
+    font-weight: 600 !important;
+    color: #F4E9E2 !important;
+}
+
+/* Calendar month & days */
+.calendar .calendar-month-header .calendar-month-label {
+    font-family: "Geist SemiBold", sans-serif !important;
+    font-size: 11pt !important;
+    font-weight: 600 !important;
+    color: #F4E9E2 !important;
+}
+
+.calendar .calendar-day-heading {
+    font-family: "Geist SemiBold", sans-serif !important;
+    font-size: 9.5pt !important;
+    font-weight: 600 !important;
+    color: #D8B98A !important;
+}
+
+.calendar .calendar-day {
+    font-family: "Geist", sans-serif !important;
+    font-size: 10.5pt !important;
+    font-weight: 600 !important;
+    border-radius: 9999px !important;
+}
+
+.calendar .calendar-day.calendar-today {
+    background-color: #9B1F40 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #D8B98A !important;
+    border-radius: 9999px !important;
+}
+
+/* Message List & Notifications */
+.message-list {
+    border: none !important;
+}
+
+.message-list-section,
+.message-list-sections {
+    spacing: 10px;
+}
+
+.message {
+    background-color: rgba(36, 14, 22, 0.70) !important;
+    border: 1px solid rgba(216, 185, 138, 0.22) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+    padding: 6px !important;
+    margin: 4px 0 !important;
+}
+
+.message:hover {
+    background-color: rgba(46, 18, 28, 0.85) !important;
+    border-color: rgba(216, 185, 138, 0.35) !important;
+}
+
+.message .message-header {
+    color: #D8B98A !important;
+    padding: 2px 6px !important;
+}
+
+.message .message-header .message-source-title {
+    font-family: "Geist SemiBold", sans-serif !important;
+    font-size: 11pt !important;
+    font-weight: 600 !important;
+    color: #D8B98A !important;
+}
+
+.message .message-header .event-time {
+    font-family: "Geist", sans-serif !important;
+    font-size: 9.5pt !important;
+    font-weight: 500 !important;
+    color: rgba(244, 233, 226, 0.65) !important;
+}
+
+.message .message-box .message-content .message-title {
+    font-family: "Geist SemiBold", sans-serif !important;
+    font-size: 11.5pt !important;
+    font-weight: 600 !important;
+    color: #FFFFFF !important;
+}
+
+.message .message-box .message-content .message-body,
+.message .message-box .message-content StLabel {
+    font-family: "Geist", sans-serif !important;
+    font-size: 10.5pt !important;
+    font-weight: 500 !important;
+    color: #F4E9E2 !important;
+}
+
+.message-list-controls {
+    color: #F4E9E2 !important;
+    font-family: "Geist SemiBold", sans-serif !important;
+    font-size: 10.5pt !important;
+    font-weight: 600 !important;
+}
+
+.message-list-controls .button {
+    background-color: rgba(46, 20, 28, 0.88) !important;
+    color: #F4E9E2 !important;
+    border: 1px solid rgba(216, 185, 138, 0.22) !important;
+    border-radius: 9999px !important;
+    padding: 4px 14px !important;
+    font-family: "Geist SemiBold", sans-serif !important;
+    font-size: 10pt !important;
+    font-weight: 600 !important;
+}
+
+.message-list-controls .button:hover {
+    background-color: #9B1F40 !important;
+    color: #FFFFFF !important;
+    border-color: #D8B98A !important;
+}
+
+/* ==============================================================================
+ * 3. DASH-TO-DOCK (Left Dock - 46px Floating Capsule Proportions)
+ * ============================================================================== */
+#dashtodockContainer {
+    background-color: transparent;
+}
+
+#dashtodockContainer #dash {
+    padding: 0;
+    margin: 0;
+}
+
+#dashtodockContainer.left #dash .dash-background {
+    background-color: transparent !important;
+    background-gradient-direction: horizontal !important;
+    background-gradient-start: rgba(36, 14, 22, 0.65) !important;
+    background-gradient-end: rgba(24, 9, 14, 0.42) !important;
+    border: 1px solid rgba(216, 185, 138, 0.22) !important;
+    box-shadow: none !important;
+    border-radius: 28px !important;
+    margin: 0 !important;
+    padding: 12px 4px !important;
+}
+
+#dashtodockContainer.left.extended #dash .dash-background {
+    border-radius: 18px !important;
+}
+
+#dashtodockContainer .dash-item-container {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#dashtodockContainer .dash-item-container > StButton,
+#dashtodockContainer .dash-item-container .app-well-app,
+#dashtodockContainer .dash-item-container .show-apps,
+#dashtodockContainer .dash-item-container .overview-tile {
+    padding: 3px !important;
+    margin: 2px 2px !important;
+    min-width: 0 !important;
+    max-width: 9999px !important;
+    border-radius: 14px !important;
+    border: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+#dashtodockContainer .dash-item-container .overview-icon,
+#dashtodockContainer .app-well-app .overview-icon,
+#dashtodockContainer .show-apps .overview-icon,
+#dashtodockContainer .overview-tile .overview-icon {
+    padding: 2px !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    max-width: 9999px !important;
+    border-radius: 14px !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+#dashtodockContainer .dash-item-container .app-well-app:hover .overview-icon,
+#dashtodockContainer .dash-item-container .show-apps:hover .overview-icon,
+#dashtodockContainer .dash-item-container .overview-tile:hover {
+    background-color: rgba(155, 31, 64, 0.28) !important;
+    border: 1px solid rgba(216, 185, 138, 0.25) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+}
+
+#dashtodockContainer .dash-separator {
+    background-color: rgba(216, 185, 138, 0.18);
+    height: 1px;
+    margin: 4px 6px;
+}
+
+#dashtodockContainer .running-dot,
+#dashtodockContainer .app-grid-running-dot {
+    background-color: #9B1F40 !important;
+    width: 4px !important;
+    height: 4px !important;
+    margin: 0 2px !important;
+}
+
+/* App Notification Counter & Badges (Floating Jewel Capsule — No Ugly Green Bar!) */
+#dashtodockContainer .notification-badge,
+#dashtodockContainer.left .notification-badge,
+#dashtodockContainer.bottom .notification-badge,
+#dashtodockContainer.top .notification-badge,
+#dashtodockContainer.right .notification-badge {
+    background-color: #9B1F40 !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(216, 185, 138, 0.65) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.65) !important;
+    border-radius: 9999px !important;
+    font-family: "Geist SemiBold", sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 8pt !important;
+    min-width: 16px !important;
+    max-width: 24px !important;
+    min-height: 16px !important;
+    max-height: 18px !important;
+    padding: 0 4px !important;
+    margin: 1px 2px !important;
+    text-align: center !important;
+}
+
+#dashtodockContainer .number-overlay {
+    color: #FFFFFF !important;
+    background-color: rgba(36, 14, 22, 0.90) !important;
+    border: 1px solid rgba(216, 185, 138, 0.40) !important;
+    border-radius: 9999px !important;
+    font-family: "Geist SemiBold", sans-serif !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+}
+
+/* ==============================================================================
+ * 4. APP GRID & FOLDER ICONS - Anti-Truncation & Balanced Typography
+ * ============================================================================== */
+.icon-grid {
+    row-spacing: 16px;
+    column-spacing: 20px;
+    max-row-spacing: 36px;
+    max-column-spacing: 44px;
+    page-padding-top: 24px;
+    page-padding-bottom: 24px;
+    page-padding-left: 28px;
+    page-padding-right: 28px;
+}
+
+/* App Grid & Overview Containers — Complete Elimination of Dim Murky Box Aura */
+.overview-tile,
+.grid-search-result,
+#appDisplay .overview-tile,
+#appDisplay .app-well-app,
+.app-folder-dialog .overview-tile,
+.app-folder-dialog .app-well-app {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 10.5pt;
+    font-weight: 600;
+    border-radius: 20px !important;
+    padding: 8px 10px;
+    min-width: 120px;
+    max-width: 175px;
+    text-align: center;
+    transition-duration: 150ms;
+}
+
+.overview-tile .overview-icon,
+.grid-search-result .overview-icon,
+.app-well-app .overview-icon,
+.show-apps .overview-icon,
+#appDisplay .overview-icon,
+.app-folder-dialog .app-well-app .overview-icon,
+.app-folder .overview-icon {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.overview-tile .overview-icon.overview-icon-with-label > StBoxLayout,
+.grid-search-result .overview-icon.overview-icon-with-label > StBoxLayout {
+    spacing: 6px;
+}
+
+/* App Name Label Styling — High Legibility & Zero Truncation */
+.overview-icon StLabel,
+.overview-tile StLabel,
+#appDisplay StLabel,
+.app-folder StLabel {
+    font-family: "Geist SemiBold", sans-serif;
+    font-size: 11pt;
+    font-weight: 600;
+    color: #F4E9E2;
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+    min-width: 110px;
+    max-width: 175px;
+}
+
+/* Refined Luminous Hover & Active States (No Dark Murky Boxes!) */
+#appDisplay .overview-tile:hover,
+#appDisplay .app-well-app:hover,
+.app-folder-dialog .overview-tile:hover,
+.app-folder-dialog .app-well-app:hover,
+.overview-tile:hover,
+.grid-search-result:hover {
+    background-color: rgba(216, 185, 138, 0.14) !important;
+    border: 1px solid rgba(216, 185, 138, 0.28) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 16px rgba(155, 31, 64, 0.22) !important;
+}
+
+#appDisplay .overview-tile:active,
+#appDisplay .app-well-app:active,
+.overview-tile:active {
+    background-color: rgba(155, 31, 64, 0.35) !important;
+    border: 1px solid rgba(216, 185, 138, 0.40) !important;
+    border-radius: 20px !important;
+}
+
+/* Translucent Frosted Glass Folders */
+.app-folder {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(216, 185, 138, 0.26) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.30) !important;
+    border-radius: 24px !important;
+    min-width: 120px;
+    max-width: 175px;
+}
+
+.app-folder:hover {
+    background-color: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(216, 185, 138, 0.45) !important;
+    box-shadow: 0 8px 28px rgba(155, 31, 64, 0.35) !important;
+}
+
+/* App Folder Dialog */
+.app-folder-dialog {
+    background-color: rgba(32, 12, 18, 0.88) !important;
+    border: 1px solid rgba(216, 185, 138, 0.28) !important;
+    border-radius: 28px !important;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65) !important;
+}
+
+.app-folder-dialog .folder-name-container .folder-name-entry {
+    font-family: "Geist SemiBold", sans-serif;
+    font-size: 14pt;
+    font-weight: 600;
+    color: #F4E9E2;
+    background-color: rgba(46, 20, 28, 0.75);
+    border: 1px solid rgba(216, 185, 138, 0.24);
+    border-radius: 12px;
+}
+
+/* Search Entry */
+.search-entry {
+    background-color: rgba(24, 9, 14, 0.44) !important;
+    color: #F4E9E2;
+    font-family: "Geist SemiBold", sans-serif;
+    border: 1px solid rgba(244, 233, 226, 0.18) !important;
+    border-radius: 9999px !important;
+    padding: 8px 18px;
+    font-size: 11pt;
+    font-weight: 600;
+    box-shadow: none !important;
+}
+
+.search-entry:focus {
+    border-color: #D8B98A;
+    box-shadow: 0 0 14px rgba(155, 31, 64, 0.55);
+}
+
+/* Modal Dialogs */
+.modal-dialog {
+    background-color: #1C0C11;
+    color: #F4E9E2;
+    border: 1px solid rgba(216, 185, 138, 0.24);
+    border-radius: 18px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
+}
+
+.workspace-switcher {
+    background-color: rgba(18, 7, 10, 0.75);
+    border: 1px solid rgba(216, 185, 138, 0.16);
+    border-radius: 999px;
+    padding: 4px;
+}
+
+.ws-active {
+    background-color: #D8B98A;
+}

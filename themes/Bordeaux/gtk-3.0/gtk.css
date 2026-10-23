@@ -1,0 +1,40 @@
+/* Bordeaux Design System - Bordeaux GTK3 Overrides */
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+@define-color theme_base_color #100709;
+@define-color theme_text_color #F4E9E2;
+@define-color theme_bg_color #1C0C11;
+@define-color theme_fg_color #F4E9E2;
+@define-color theme_selected_bg_color #9B1F40;
+@define-color theme_selected_fg_color #FFFFFF;
+
+* {
+    font-family: "Geist SemiBold", "Geist", sans-serif;
+}
+
+window, .background {
+    background-color: @theme_bg_color;
+    color: @theme_fg_color;
+}
+
+headerbar {
+    min-height: 42px;
+    font-weight: 600;
+    background-color: #281017;
+    color: #F4E9E2;
+    border-bottom: 1px solid rgba(216, 185, 138, 0.16);
+}
+
+button {
+    font-weight: 600;
+}
+
+button:checked, button.suggested-action {
+    background-color: #9B1F40;
+    color: #FFFFFF;
+}
+
+entry {
+    background-color: #100709;
+    color: #F4E9E2;
+    border: 1px solid rgba(216, 185, 138, 0.16);
+}

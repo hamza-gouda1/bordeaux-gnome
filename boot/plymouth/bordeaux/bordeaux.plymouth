@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Bordeaux
+Description=Bordeaux luxury dark burgundy boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/bordeaux
+ScriptFile=/usr/share/plymouth/themes/bordeaux/bordeaux.script

@@ -1,0 +1,21 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck -S warning install.sh uninstall.sh install-boot.sh tests/*.sh
+      - name: WCAG contrast
+        run: python3 tools/check_contrast.py
+      - name: Install, switch and uninstall in a throwaway home
+        run: bash tests/test_install.sh

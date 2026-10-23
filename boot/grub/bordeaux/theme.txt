@@ -1,0 +1,29 @@
+# Bordeaux GRUB Theme
+title-text: ""
+desktop-image: "background.png"
+desktop-color: "#100709"
+
++ boot_menu {
+  left = 28%
+  top = 32%
+  width = 44%
+  height = 42%
+  item_font = "Unifont Regular 16"
+  item_color = "#F4E9E2"
+  selected_item_color = "#FFFFFF"
+  item_height = 36
+  item_padding = 6
+  item_spacing = 10
+  selected_item_pixmap_style = "select_*.png"
+}
+
++ progress_bar {
+  id = "__timeout__"
+  left = 28%
+  top = 78%
+  width = 44%
+  height = 6
+  show_text = false
+  bar_style = "progress_bar_*.png"
+  highlight_style = "progress_highlight_*.png"
+}
