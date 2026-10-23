@@ -19,10 +19,13 @@ fs-eyebrow = "10.5px"
 fs-caption = "11px"
 fs-body = "13px"
 fs-body-lg = "14px"
+fs-panel = "15px"           # top bar buttons, status text
+fs-clock = "15px"           # top bar clock (mono)
 fs-title = "15px"
 fs-heading = "20px"
 fs-display = "30px"
 ls-eyebrow = "1.5px"        # .14em of 10.5px; St has no em tracking guarantee
+ls-clock = "0.5px"
 ls-display = "-0.75px"      # -.025em of 30px
 
 [shared.radius]
@@ -32,9 +35,10 @@ r-md = "12px"               # cards, lists
 r-lg = "16px"               # tiles, cells
 r-xl = "22px"
 r-window = "14px"
-r-island = "15px"
+r-island = "18px"          # half of island-h: a pill
 r-pill = "9999px"
 r-cut = "6px"               # the cut corner
+r-dock = "30px"            # the dock slab: near-pill
 r-slab = "6px 22px 22px 22px"   # cut top-left, then clockwise
 
 [shared.space]              # 4-pt scale
@@ -48,9 +52,10 @@ sp-7 = "48px"
 row-min = "56px"
 row-sidebar = "38px"
 header-h = "46px"
-island-h = "30px"
+island-h = "36px"
 island-mt = "8px"
-panel-h = "46px"            # island-h + 2 * island-mt
+panel-h = "52px"            # island-h + 2 * island-mt
+icon-panel = "18px"
 
 [shared.elevation]          # single layer only: St draws one box-shadow
 e1-geom = "0 1px 2px"
@@ -98,6 +103,7 @@ accent-text = "#E09AAE"
 gold = "#C9AE86"
 gold-text = "#D4BC95"
 gold-line = "rgba(201, 174, 134, 0.30)"
+gold-edge = "rgba(201, 174, 134, 0.60)"
 gold-faint = "rgba(201, 174, 134, 0.16)"
 focus = "#C9AE86"
 ring-glow = "rgba(201, 174, 134, 0.14)"
@@ -164,6 +170,7 @@ accent-text = "#EC9AA6"
 gold = "#C6A06E"
 gold-text = "#D6B787"
 gold-line = "rgba(198, 160, 110, 0.32)"
+gold-edge = "rgba(198, 160, 110, 0.60)"
 gold-faint = "rgba(198, 160, 110, 0.16)"
 focus = "#C6A06E"
 ring-glow = "rgba(198, 160, 110, 0.14)"
@@ -228,6 +235,7 @@ accent-text = "#7A1C34"
 gold = "#A8844C"            # spec #B08D57 darkened: 3:1 on glass
 gold-text = "#6F5218"
 gold-line = "rgba(168, 132, 76, 0.55)"
+gold-edge = "rgba(168, 132, 76, 0.85)"
 gold-faint = "rgba(168, 132, 76, 0.30)"
 focus = "#8C6B33"
 ring-glow = "rgba(140, 107, 51, 0.16)"

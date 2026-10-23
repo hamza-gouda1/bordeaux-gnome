@@ -23,9 +23,9 @@ stage {
     box-shadow: none !important;
     color: #EEE7E4;
     font-family: "Geist", sans-serif;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600 !important;
-    height: 46px !important;
+    height: 52px !important;
     transition-duration: 200ms;
 }
 
@@ -35,42 +35,42 @@ stage {
 #panelRight {
     background-color: rgba(22, 17, 18, 0.74);
     border: 1px solid #332A2C;
-    border-top-color: rgba(201, 174, 134, 0.16);
-    border-radius: 15px;
+    border-top-color: rgba(201, 174, 134, 0.60);
+    border-radius: 18px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     margin: 8px 0;
-    padding: 0 4px;
+    padding: 0 8px;
 }
 
 #panelLeft {
-    margin-left: 12px;
+    margin-left: 16px;
 }
 
 #panelRight {
-    margin-right: 12px;
+    margin-right: 16px;
 }
 
 #panel .panel-button {
     color: #EEE7E4;
     font-family: "Geist", sans-serif;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600 !important;
-    padding: 0 8px;
+    padding: 0 12px;
     margin: 0 1px;
-    border-radius: 12px !important;
+    border-radius: 9999px !important;
     transition-duration: 150ms;
 }
 
 #panel .panel-button .system-status-icon {
-    icon-size: 16px;
-    padding: 0 3px;
+    icon-size: 18px;
+    padding: 0 4px;
     margin: 0 1px;
 }
 
 #panel .panel-button:hover {
     background-color: rgba(238, 231, 228, 0.05);
     color: #EEE7E4;
-    border-radius: 12px !important;
+    border-radius: 9999px !important;
     box-shadow: none;
 }
 
@@ -80,7 +80,7 @@ stage {
 #panel .panel-button:checked {
     background-color: #8E2A44;
     color: #FFF3F1;
-    border-radius: 12px !important;
+    border-radius: 9999px !important;
     box-shadow: none;
 }
 
@@ -88,10 +88,10 @@ stage {
 #panel .clock-display {
     font-family: "Geist Mono", monospace;
     font-weight: 500;
-    font-size: 10.5px;
-    letter-spacing: 1.5px;
+    font-size: 15px;
+    letter-spacing: 0.5px;
     color: #C3B8B5;
-    border-radius: 12px !important;
+    border-radius: 9999px !important;
 }
 
 /* The label itself: Yaru styles `.panel-button.clock-display .clock`, so name the
@@ -99,8 +99,8 @@ stage {
 #panel .panel-button.clock-display .clock {
     font-family: "Geist Mono", monospace;
     font-weight: 500;
-    font-size: 10.5px;
-    letter-spacing: 1.5px;
+    font-size: 15px;
+    letter-spacing: 0.5px;
     font-feature-settings: "tnum";
     color: #C3B8B5;
 }
@@ -115,8 +115,8 @@ stage {
 #panel:overview .panel-button#panelActivities .workspace-dot {
     background-color: #C9AE86;
     border-radius: 1px;
-    min-width: 5px;
-    min-height: 2px;
+    min-width: 6px;
+    min-height: 3px;
 }
 
 /* ==============================================================================
@@ -218,7 +218,9 @@ stage {
     -barlevel-background-color: #2F2829;
     -barlevel-border-width: 0;
     -barlevel-active-background-color: #8E2A44;
-    -barlevel-overdrive-color: #C9AE86;
+    -barlevel-overdrive-color: #A8354F;
+    -barlevel-active-border-color: transparent;
+    color: #EEE7E4;
     -slider-handle-radius: 8px;
     -slider-handle-border-width: 1px;
     -slider-handle-border-color: rgba(201, 174, 134, 0.30);
@@ -239,6 +241,7 @@ stage {
 .popup-menu-item:focus {
     background-color: #8E2A44;
     color: #FFF3F1;
+    border-left: 2px solid #C9AE86;
 }
 
 /* Date & Notification Popover (#calendarArea, .message-list, .calendar) */
@@ -291,7 +294,7 @@ stage {
 .calendar .calendar-day.calendar-today {
     background-color: #8E2A44 !important;
     color: #FFF3F1 !important;
-    border: 1px solid rgba(201, 174, 134, 0.30) !important;
+    border: 1px solid #C9AE86 !important;
     border-radius: 9999px !important;
 }
 
@@ -401,19 +404,19 @@ stage {
     background-gradient-start: rgba(31, 26, 26, 0.865) !important;
     background-gradient-end: rgba(22, 17, 18, 0.74) !important;
     border: 1px solid #332A2C !important;
-    border-top-color: rgba(201, 174, 134, 0.30) !important;
+    border-top-color: rgba(201, 174, 134, 0.60) !important;
     border-bottom-color: rgba(0, 0, 0, 0.55) !important;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42) !important;
-    border-radius: 6px 22px 22px 22px !important;
+    border-radius: 30px !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
     margin-left: 12px !important;
     margin-right: 8px !important;
-    padding: 12px 0 !important;
+    padding: 16px 0 !important;
 }
 
 #dashtodockContainer.left.extended #dash .dash-background {
-    border-radius: 16px !important;
+    border-radius: 30px !important;
 }
 
 #dashtodockContainer .dash-item-container {
@@ -429,7 +432,7 @@ stage {
     margin: 2px 2px !important;
     min-width: 0 !important;
     max-width: 9999px !important;
-    border-radius: 12px !important;
+    border-radius: 22px !important;
     border: none !important;
     background-color: transparent !important;
     box-shadow: none !important;
@@ -443,7 +446,7 @@ stage {
     margin: 0 !important;
     min-width: 0 !important;
     max-width: 9999px !important;
-    border-radius: 12px !important;
+    border-radius: 22px !important;
     border: none !important;
     box-shadow: none !important;
 }
@@ -453,7 +456,7 @@ stage {
 #dashtodockContainer .dash-item-container .overview-tile:hover {
     background-color: rgba(238, 231, 228, 0.05) !important;
     border: none !important;
-    border-radius: 12px !important;
+    border-radius: 22px !important;
     box-shadow: none !important;
 }
 
@@ -683,7 +686,7 @@ stage {
 /* ---- Dock: running + active ticks (ubuntu-dock reads the dot's background) ---- */
 #dashtodockContainer .app-well-app.focused .overview-icon {
     background-color: #231D1E !important;
-    border-radius: 12px !important;
+    border-radius: 22px !important;
 }
 
 #dashtodockContainer .dash-item-container .app-well-app:focus .overview-icon {
@@ -1518,4 +1521,322 @@ StScrollBar StButton#hhandle:active {
     color: #FFF3F1;
     background-color: #8E2A44;
     font-family: "Geist Mono", monospace;
+}
+
+/* ==============================================================================
+ * 7. ACCENT-BLUE LEAKS - every stock rule that hardcodes GNOME blue (#3584e4),
+ * with the stock selector list copied verbatim so specificity ties and our later
+ * position wins. Focus rings are `!important` in the stock sheet, so ours are too.
+ * Blue becomes: burgundy for state, gold for focus rings, current item and links.
+ * (Generated once from gnome-shell-dark.css of GNOME 46; edit by hand.)
+ * ============================================================================== */
+.icon-button:focus,
+.login-dialog-button.cancel-button:focus,
+.login-dialog-button.switch-user-button:focus,
+.login-dialog-button.login-dialog-auth-menu-button:focus,
+.login-dialog-button.login-dialog-session-list-button:focus,
+.login-dialog-button.web-login-intro-button:focus,
+.screenshot-ui-show-pointer-button:focus,
+.message .message-header .message-expand-button:focus,
+.message .message-header .message-close-button:focus,
+.calendar .calendar-month-header .pager-button:focus,
+.button:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.calendar .calendar-day-heading:focus,
+.calendar .calendar-day:focus,
+.calendar .calendar-month-header .calendar-month-label:focus,
+.icon-button.flat:focus,
+.flat.login-dialog-button.cancel-button:focus,
+.flat.login-dialog-button.switch-user-button:focus,
+.flat.login-dialog-button.login-dialog-auth-menu-button:focus,
+.flat.login-dialog-button.login-dialog-session-list-button:focus,
+.flat.login-dialog-button.web-login-intro-button:focus,
+.flat.screenshot-ui-show-pointer-button:focus,
+.message .message-header .flat.message-expand-button:focus,
+.message .message-header .flat.message-close-button:focus,
+.calendar .calendar-month-header .pager-button:focus,
+.button.flat:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.keyboard-brightness-level .button:checked,
+.quick-menu-toggle .quick-toggle-arrow:checked,
+.quick-toggle:checked,
+.calendar .calendar-day.calendar-today,
+.icon-button.default,
+.default.login-dialog-button.cancel-button,
+.default.login-dialog-button.switch-user-button,
+.default.login-dialog-button.login-dialog-auth-menu-button,
+.default.login-dialog-button.login-dialog-session-list-button,
+.default.login-dialog-button.web-login-intro-button,
+.default.screenshot-ui-show-pointer-button,
+.message .message-header .default.message-expand-button,
+.message .message-header .default.message-close-button,
+.calendar .calendar-month-header .default.pager-button,
+.button.default {
+    background-color: #8E2A44;
+    color: #FFF3F1;
+}
+.keyboard-brightness-level .button:focus:checked,
+.quick-menu-toggle .quick-toggle-arrow:focus:checked,
+.quick-toggle:focus:checked,
+.calendar .calendar-day.calendar-today:focus,
+.icon-button.default:focus,
+.default.login-dialog-button.cancel-button:focus,
+.default.login-dialog-button.switch-user-button:focus,
+.default.login-dialog-button.login-dialog-auth-menu-button:focus,
+.default.login-dialog-button.login-dialog-session-list-button:focus,
+.default.login-dialog-button.web-login-intro-button:focus,
+.default.screenshot-ui-show-pointer-button:focus,
+.message .message-header .default.message-expand-button:focus,
+.message .message-header .default.message-close-button:focus,
+.calendar .calendar-month-header .default.pager-button:focus,
+.button.default:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+    background-color: #8E2A44;
+    color: #FFF3F1;
+}
+.keyboard-brightness-level .button:focus:hover:checked,
+.quick-menu-toggle .quick-toggle-arrow:focus:hover:checked,
+.quick-toggle:focus:hover:checked,
+.calendar .calendar-day.calendar-today:focus:hover,
+.icon-button.default:focus:hover,
+.default.login-dialog-button.cancel-button:focus:hover,
+.default.login-dialog-button.switch-user-button:focus:hover,
+.default.login-dialog-button.login-dialog-auth-menu-button:focus:hover,
+.default.login-dialog-button.login-dialog-session-list-button:focus:hover,
+.default.login-dialog-button.web-login-intro-button:focus:hover,
+.default.screenshot-ui-show-pointer-button:focus:hover,
+.message .message-header .default.message-expand-button:focus:hover,
+.message .message-header .default.message-close-button:focus:hover,
+.calendar .calendar-month-header .default.pager-button:focus:hover,
+.button.default:focus:hover {
+    background-color: #A8354F;
+}
+.lg-extension:focus,
+.quick-toggle-menu:focus,
+.message:focus,
+.events-button:focus,
+.world-clocks-button:focus,
+.weather-button:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.calendar:focus,
+.datemenu-today-button:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.unlock-dialog .login-dialog-prompt-entry,
+.login-dialog-prompt-entry,
+.login-dialog .login-dialog-prompt-entry,
+.app-folder-dialog .folder-name-container .folder-name-entry,
+.search-entry,
+.lg-dialog StEntry,
+StEntry {
+    selection-background-color: #8E2A44;
+}
+StEntry:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.modal-dialog .modal-dialog-linked-button:focus,
+.notification-button:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.lg-dialog StEntry:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+#LookingGlassDialog .notebook-tab:focus,
+#LookingGlassDialog > #Toolbar .lg-toolbar-button:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.screenshot-ui-show-pointer-button:focus,
+.screenshot-ui-type-button:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.login-dialog-prompt-entry:focus,
+.app-folder-dialog .folder-name-container .folder-name-entry:focus,
+.search-entry:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.login-dialog-button.cancel-button:focus,
+.login-dialog-button.switch-user-button:focus,
+.login-dialog-button.login-dialog-auth-menu-button:focus,
+.login-dialog-button.login-dialog-session-list-button:focus,
+.login-dialog-button.web-login-intro-button:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.unlock-dialog .button:focus,
+.unlock-dialog .icon-button:focus,
+.unlock-dialog .calendar .calendar-month-header .pager-button:focus,
+.calendar .calendar-month-header .unlock-dialog .pager-button:focus,
+.unlock-dialog .message .message-header .message-expand-button:focus,
+.message .message-header .unlock-dialog .message-expand-button:focus,
+.unlock-dialog .message .message-header .message-close-button:focus,
+.message .message-header .unlock-dialog .message-close-button:focus,
+.unlock-dialog .screenshot-ui-show-pointer-button:focus,
+.unlock-dialog .login-dialog-button.cancel-button:focus,
+.unlock-dialog .login-dialog-button.switch-user-button:focus,
+.unlock-dialog .login-dialog-button.login-dialog-auth-menu-button:focus,
+.unlock-dialog .login-dialog-button.login-dialog-session-list-button:focus,
+.unlock-dialog .login-dialog-button.web-login-intro-button:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.unlock-dialog .login-dialog-prompt-entry:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.shell-link {
+    color: #D4BC95;
+}
+.message-list-controls .dnd-button:focus {
+    border-color: rgba(201, 174, 134, 0.30);
+}
+.url-highlighter {
+    link-color: #D4BC95;
+}
+.candidate-box:selected {
+    background-color: #8E2A44;
+    color: #FFF3F1;
+}
+.audio-selection-device:active {
+    background-color: #8E2A44;
+    color: #FFF3F1;
+}
+.osd-monitor-label {
+    background-color: #8E2A44;
+    color: #FFF3F1;
+}
+.switcher-list .item-box:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.switcher-list .item-box:drop {
+    background-color: rgba(142, 42, 68, 0.2);
+    box-shadow: inset 0 0 0 2px #A8354F;
+}
+.cycler-highlight {
+    border: 5px solid #C9AE86;
+}
+.screenshot-ui-window-selector-window:checked .screenshot-ui-window-selector-window-border {
+    border-color: #C9AE86;
+    background-color: rgba(142, 42, 68, 0.2);
+}
+.screenshot-ui-window-selector-window:checked .screenshot-ui-window-selector-check {
+    background-color: #8E2A44;
+}
+.quick-menu-toggle .quick-toggle-arrow:checked {
+    border-color: #C9AE86;
+}
+.quick-slider .slider-bin:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.quick-toggle-menu .header .icon.active {
+    background-color: #8E2A44;
+    color: #FFF3F1;
+}
+.list-search-result:focus,
+.search-provider-icon:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.list-search-result:drop,
+.search-provider-icon:drop {
+    background-color: rgba(142, 42, 68, 0.2);
+    box-shadow: inset 0 0 0 2px #A8354F;
+}
+#dash .dash-item-container .show-apps:focus .overview-icon,
+#dash .dash-item-container .overview-tile:focus .overview-icon,
+#dash .dash-item-container .grid-search-result:focus .overview-icon {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.overview-tile:focus,
+.grid-search-result:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.overview-tile:drop,
+.grid-search-result:drop {
+    background-color: rgba(142, 42, 68, 0.2);
+    box-shadow: inset 0 0 0 2px #A8354F;
+}
+.app-folder:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.app-folder:drop {
+    background-color: rgba(142, 42, 68, 0.2);
+    box-shadow: inset 0 0 0 2px #A8354F;
+}
+.app-folder-dialog .overview-tile:focus,
+.app-folder-dialog .grid-search-result:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.app-folder-dialog .overview-tile:drop,
+.app-folder-dialog .grid-search-result:drop {
+    background-color: rgba(142, 42, 68, 0.2);
+    box-shadow: inset 0 0 0 2px #A8354F;
+}
+.workspace-thumbnail-indicator {
+    border: 3px solid #C9AE86;
+}
+.pie-timer {
+    -pie-border-color: #C9AE86;
+}
+.magnifier-zoom-region {
+    border: 2px solid #C9AE86;
+}
+.select-area-rubberband {
+    background-color: rgba(142, 42, 68, 0.3);
+    border: 1px solid #C9AE86;
+}
+.tile-preview {
+    background-color: rgba(142, 42, 68, 0.5);
+    border: 1px solid #C9AE86;
+}
+.keyboard-key:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.keyboard-key.default-key:latched {
+    background-color: #8E2A44;
+    color: #FFF3F1;
+}
+.keyboard-subkeys .keyboard-key:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.emoji-panel .keyboard-key:latched {
+    background-color: #8E2A44;
+    color: #FFF3F1;
+}
+.word-suggestions StButton:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.lg-dialog .shell-link {
+    color: #D4BC95;
+}
+.login-dialog-not-listed-button:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.login-dialog-auth-list-item:focus,
+.login-dialog-auth-list-item:selected {
+    background-color: #8E2A44;
+    color: #FFF3F1;
+}
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:selected,
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:focus {
+    box-shadow: inset 0 0 0 2px #C9AE86 !important;
+}
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:logged-in .user-icon {
+    border-color: #C9AE86;
+}
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:logged-in .user-icon StIcon {
+    background-color: rgba(142, 42, 68, 0.3);
+}
+#unlockDialogNotifications StButton#vhandle:active,
+#unlockDialogNotifications StButton#hhandle:active {
+    background-color: rgba(142, 42, 68, 0.5);
+}
+
+/* ==============================================================================
+ * 8. OVERVIEW WORKSPACE - stock draws the wallpaper in a 30px rounded box with a
+ * dark drop shadow (the large rectangle behind the thumbnails, and the same box
+ * for the neighbouring workspace peeking in at the screen edge).
+ * ============================================================================== */
+.workspace-background {
+    border-radius: 16px;
+    box-shadow: none;
 }

@@ -117,6 +117,10 @@ def render_preset(toks):
         ("core", blur + ".dash-to-dock", "static-blur", "true"),
         ("core", blur + ".dash-to-dock", "pipeline", gv_str("pipeline_bordeaux_slab")),
         ("core", blur + ".dash-to-dock", "style-dash-to-dock", "0"),
+        # blur-my-shell's popup component re-skins menus with its own copy of the stock
+        # sheet, `!important` and GNOME blue included (Quick Settings tiles, calendar
+        # today). Turning its background override off leaves the theme in charge.
+        ("core", blur + ".popup", "override-background", "false"),
         ("core", blur + ".overview", "blur", "true"),
         ("core", blur + ".overview", "pipeline", gv_str("pipeline_bordeaux_island")),
         ("core", blur + ".lockscreen", "blur", "true"),
@@ -124,6 +128,8 @@ def render_preset(toks):
         # Just Perfection: bar height is the island row, animations a touch faster.
         ("core", "org.gnome.shell.extensions.just-perfection", "panel-size", toks["panel-h"].removesuffix("px")),
         ("core", "org.gnome.shell.extensions.just-perfection", "animation", "3"),
+        # No half-visible neighbouring workspace at the right edge of the overview.
+        ("core", "org.gnome.shell.extensions.just-perfection", "workspace-peek", "false"),
         ("icons", ui, "icon-theme", gv_str(ICON_THEME[scheme])),
         ("cursor", ui, "cursor-theme", gv_str(CURSOR_THEME[scheme])),
     ]
