@@ -12,7 +12,7 @@
     font-family: "Geist", sans-serif;
 }
 
-window, .background {
+window, window.background {
     background-color: @theme_bg_color;
     color: @theme_fg_color;
 }

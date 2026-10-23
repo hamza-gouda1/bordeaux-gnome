@@ -43,7 +43,7 @@
     font-family: "Geist", sans-serif;
 }
 
-window, .background {
+window, window.background {
     background-color: @window_bg_color;
     color: @window_fg_color;
 }
