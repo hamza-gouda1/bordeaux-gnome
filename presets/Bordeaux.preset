@@ -10,8 +10,9 @@ core org.gnome.shell.extensions.dash-to-dock dock-fixed false
 core org.gnome.shell.extensions.dash-to-dock autohide true
 core org.gnome.shell.extensions.dash-to-dock intellihide true
 core org.gnome.shell.extensions.dash-to-dock intellihide-mode 'ALL_WINDOWS'
-core org.gnome.shell.extensions.dash-to-dock require-pressure-to-show false
-core org.gnome.shell.extensions.dash-to-dock show-delay 0.1
+core org.gnome.shell.extensions.dash-to-dock require-pressure-to-show true
+core org.gnome.shell.extensions.dash-to-dock pressure-threshold 30.0
+core org.gnome.shell.extensions.dash-to-dock show-delay 0.25
 core org.gnome.shell.extensions.dash-to-dock hide-delay 0.2
 core org.gnome.shell.extensions.dash-to-dock animation-time 0.15
 core org.gnome.shell.extensions.dash-to-dock transparency-mode 'DEFAULT'

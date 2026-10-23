@@ -7,7 +7,7 @@ First public version.
 Dock and performance pass:
 
 - Dock: `dock-fixed` false, `autohide` and `intellihide` true (mode ALL_WINDOWS),
-  no pressure needed, 0.1 s show / 0.2 s hide delay, 0.15 s animation, so it hides only
+  pressure barrier (`require-pressure-to-show` true, threshold 30, because dwell mode did not reliably reveal the hidden dock), 0.25 s show window / 0.2 s hide delay, 0.15 s animation, so it hides only
   when a window overlaps it and apps get the full width.
 - Dock icons: `dash-max-icon-size` 44 to 48.
 - Blur my Shell: dock and overview blur off, it re-blurs every frame while windows animate (lock screen blur kept).

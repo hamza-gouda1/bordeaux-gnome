@@ -104,8 +104,14 @@ def render_preset(toks):
         ("core", dock, "autohide", "true"),
         ("core", dock, "intellihide", "true"),
         ("core", dock, "intellihide-mode", gv_str("ALL_WINDOWS")),
-        ("core", dock, "require-pressure-to-show", "false"),
-        ("core", dock, "show-delay", "0.1"),
+        # Pressure barrier, not dwell: dwell (require-pressure false) only fires when the
+        # pointer rests at exactly x == monitor.x for show-delay without the focused
+        # window's user_time changing, and only once per entry (docking.js _checkDockDwell).
+        # The barrier spans the whole work-area edge and also catches a quick flick.
+        # show-delay is the pressure time window, so it must not be tiny.
+        ("core", dock, "require-pressure-to-show", "true"),
+        ("core", dock, "pressure-threshold", "30.0"),
+        ("core", dock, "show-delay", "0.25"),
         ("core", dock, "hide-delay", "0.2"),
         ("core", dock, "animation-time", "0.15"),
         # DEFAULT transparency and no custom colour: anything else makes ubuntu-dock
