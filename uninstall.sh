@@ -105,6 +105,18 @@ say "Removing installed files"
 for dir in "$ROOT"/themes/*/; do
     run rm -rf "${DATA:?}/themes/$(basename "$dir")"
 done
+# Put back any older ~/.themes copies that install.sh moved aside.
+if [ -d "$STATE/backup/legacy-themes" ]; then
+    for dir in "$STATE"/backup/legacy-themes/*/; do
+        [ -d "$dir" ] || continue
+        name=$(basename "$dir")
+        case $name in *.[0-9]*) continue ;; esac
+        if [ ! -e "$HOME/.themes/$name" ]; then
+            run mkdir -p "$HOME/.themes"
+            run cp -r "$dir" "$HOME/.themes/$name"
+        fi
+    done
+fi
 # The sounds dir came from an older version that shipped a sound theme.
 run rm -rf "${DATA:?}/backgrounds/bordeaux-gnome" "${DATA:?}/sounds/bordeaux-velvet"
 run rm -rf "$STATE"

@@ -7,11 +7,11 @@ core org.gnome.shell.extensions.dash-to-dock dock-position 'LEFT'
 core org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 44
 core org.gnome.shell.extensions.dash-to-dock extend-height false
 core org.gnome.shell.extensions.dash-to-dock dock-fixed true
-core org.gnome.shell.extensions.dash-to-dock transparency-mode 'FIXED'
-core org.gnome.shell.extensions.dash-to-dock background-opacity 0.86
-core org.gnome.shell.extensions.dash-to-dock custom-background-color true
-core org.gnome.shell.extensions.dash-to-dock background-color '#161112'
-core org.gnome.shell.extensions.dash-to-dock running-indicator-style 'DEFAULT'
+core org.gnome.shell.extensions.dash-to-dock transparency-mode 'DEFAULT'
+core org.gnome.shell.extensions.dash-to-dock custom-background-color false
+core org.gnome.shell.extensions.dash-to-dock apply-custom-theme false
+core org.gnome.shell.extensions.dash-to-dock running-indicator-style 'DASHES'
+core org.gnome.desktop.interface clock-show-weekday true
 core org.gnome.shell.extensions.blur-my-shell pipelines merge:{'pipeline_bordeaux_slab': {'name': <'Bordeaux slab'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_slab'>, 'params': <{'unscaled_radius': <28>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_island': {'name': <'Bordeaux island'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_island'>, 'params': <{'unscaled_radius': <22>, 'brightness': <0.75>}>}>]>}}
 core org.gnome.shell.extensions.blur-my-shell.panel blur false
 core org.gnome.shell.extensions.blur-my-shell.dash-to-dock blur true

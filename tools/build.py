@@ -80,7 +80,6 @@ def gv_str(s):
 def render_preset(toks):
     """Lines of `group schema key gvariant`; group is core, icons or cursor."""
     scheme = toks["scheme"]
-    glass = tl.parse_color(toks["glass-strong"])
     blur = "org.gnome.shell.extensions.blur-my-shell"
     dock = "org.gnome.shell.extensions.dash-to-dock"
     ui = "org.gnome.desktop.interface"
@@ -100,11 +99,16 @@ def render_preset(toks):
         ("core", dock, "dash-max-icon-size", "44"),
         ("core", dock, "extend-height", "false"),
         ("core", dock, "dock-fixed", "true"),
-        ("core", dock, "transparency-mode", gv_str("FIXED")),
-        ("core", dock, "background-opacity", tl.fmt_alpha(glass[3])),
-        ("core", dock, "custom-background-color", "true"),
-        ("core", dock, "background-color", gv_str(hexc(glass))),
-        ("core", dock, "running-indicator-style", gv_str("DEFAULT")),
+        # DEFAULT transparency and no custom colour: anything else makes ubuntu-dock
+        # set an inline `border-color`/`background-color` on the slab, which beats the
+        # theme's gold top edge. The glass comes from the theme CSS instead.
+        ("core", dock, "transparency-mode", gv_str("DEFAULT")),
+        ("core", dock, "custom-background-color", "false"),
+        ("core", dock, "apply-custom-theme", "false"),
+        # DASHES draws the active/running tick on the dock's inner edge; DEFAULT puts
+        # a dot under the icon, which CSS cannot move.
+        ("core", dock, "running-indicator-style", gv_str("DASHES")),
+        ("core", ui, "clock-show-weekday", "true"),
         # blur-my-shell (pipeline schema): our two pipelines are merged into the
         # user's existing ones; no panel blur, it would flatten the three capsules.
         ("core", blur, "pipelines", "merge:" + pipelines),
@@ -131,8 +135,10 @@ def render_preset(toks):
 def render_terminal(toks, uuid):
     pal = ", ".join(gv_str(hexc(tl.parse_color(toks[f"a{i}"]))) for i in range(16))
     cols = lambda name: gv_str(hexc(tl.parse_color(toks[name])))  # noqa: E731
+    variant = toks["variant"]
+    name = variant if variant.startswith("Bordeaux") else f"Bordeaux {variant}"
     kv = [
-        ("visible-name", gv_str(f"Bordeaux {toks['variant']}")),
+        ("visible-name", gv_str(name)),
         ("use-theme-colors", "false"),
         ("use-theme-transparency", "false"),
         ("use-transparent-background", "false"),

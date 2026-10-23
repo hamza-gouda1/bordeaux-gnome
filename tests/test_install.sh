@@ -16,11 +16,18 @@ echo "/* my own css */" > "$XDG_CONFIG_HOME/gtk-4.0/gtk.css"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
+# An older copy in ~/.themes would shadow the new theme (User Themes looks there first).
+mkdir -p "$HOME/.themes/Bordeaux/gnome-shell"
+echo "/* legacy */" > "$HOME/.themes/Bordeaux/gnome-shell/gnome-shell.css"
+
 # A dry run changes nothing.
 "$ROOT/install.sh" --dry-run --variant merlot-day >/dev/null 2>&1
 [ ! -e "$XDG_DATA_HOME/themes" ] || fail "dry run created files"
+[ -f "$HOME/.themes/Bordeaux/gnome-shell/gnome-shell.css" ] || fail "dry run moved the legacy theme"
 
 "$ROOT/install.sh" --variant merlot-day >/dev/null 2>&1
+[ ! -e "$HOME/.themes/Bordeaux" ] || fail "legacy ~/.themes copy still shadows the theme"
+grep -q legacy "$XDG_STATE_HOME/bordeaux-gnome/backup/legacy-themes/Bordeaux/gnome-shell/gnome-shell.css" || fail "legacy theme not backed up"
 for t in Bordeaux Oxblood-Noir Merlot-Day; do
     [ -f "$XDG_DATA_HOME/themes/$t/gnome-shell/gnome-shell.css" ] || fail "$t shell theme missing"
 done
@@ -36,6 +43,7 @@ grep -q "my own css" "$XDG_STATE_HOME/bordeaux-gnome/backup/gtk-4.0.css" || fail
 grep -q "my own css" "$XDG_CONFIG_HOME/gtk-4.0/gtk.css" || fail "gtk4 css not restored"
 [ ! -e "$XDG_CONFIG_HOME/gtk-3.0/gtk.css" ] || fail "gtk3 css left behind"
 [ ! -e "$XDG_DATA_HOME/themes/Bordeaux" ] || fail "theme left behind"
+grep -q legacy "$HOME/.themes/Bordeaux/gnome-shell/gnome-shell.css" || fail "legacy theme not restored"
 [ ! -e "$XDG_STATE_HOME/bordeaux-gnome" ] || fail "state left behind"
 
 # ---- preset + Terminal profile ----
@@ -76,6 +84,8 @@ PB=$XDG_STATE_HOME/bordeaux-gnome/backup/preset.txt
 [ "$(gsettings get org.gnome.desktop.interface font-name)" = "'Geist 11'" ] || fail "font not set"
 [ "$(gsettings get $DOCK dock-position)" = "'LEFT'" ] || fail "dock position not set"
 [ "$(gsettings get $DOCK extend-height)" = "false" ] || fail "dock extend-height not set"
+[ "$(gsettings get $DOCK running-indicator-style)" = "'DASHES'" ] || fail "running indicator style not set"
+[ "$(gsettings get $DOCK custom-background-color)" = "false" ] || fail "dock custom background not cleared"
 [ "$(gsettings get org.gnome.desktop.interface icon-theme)" = "'Papirus-Dark'" ] || fail "installed icon theme not set"
 if [ -d /usr/share/icons/DMZ-Black ]; then want="'DMZ-Black'"; else want="'Yaru'"; fi
 [ "$(gsettings get org.gnome.desktop.interface cursor-theme)" = "$want" ] || fail "cursor theme only applies when installed"
@@ -84,7 +94,7 @@ if [ "$HAVE_BLUR" = 1 ]; then
     blurget $BLUR pipelines | grep -q pipeline_bordeaux_island || fail "pipelines not merged"
     grep -qF "$BLUR.dash-to-dock pipeline D" "$PB" || fail "backup lacks blur-my-shell default marker"
 fi
-[ "$(gsettings get $PROF visible-name)" = "'Bordeaux Bordeaux'" ] || fail "terminal profile missing"
+[ "$(gsettings get $PROF visible-name)" = "'Bordeaux'" ] || fail "terminal profile missing or misnamed"
 gsettings get org.gnome.Terminal.ProfilesList list | grep -q 9b0d3a10-0b0e-4d11-9a01-000000000001 || fail "profile not listed"
 [ "$(gsettings get org.gnome.Terminal.ProfilesList default)" = "'aaaaaaaa-0000-4000-8000-000000000000'" ] || fail "terminal default changed without flag"
 grep -q "org.gnome.desktop.interface font-name U 'My Font 10'" "$PB" || fail "backup lacks old font"
@@ -144,6 +154,14 @@ out=$("$ROOT/install-boot.sh" --dry-run --only grub --variant noir)
 grep -q "wallpapers/grub/Oxblood-Noir.png" <<<"$out" || fail "grub image not chosen"
 out=$("$ROOT/install-boot.sh" --dry-run --only grub --variant merlot-day)
 grep -q "no GRUB image" <<<"$out" || fail "merlot-day not skipped gracefully"
+
+# The Geist check must not misfire under pipefail when fc-list prints a lot.
+mkdir -p "$T/bin"
+printf '#!/bin/sh\nfor i in $(seq 1 3000); do echo "Geist,Geist Medium"; done\n' > "$T/bin/fc-list"
+chmod +x "$T/bin/fc-list"
+out=$(PATH="$T/bin:$PATH" "$ROOT/install.sh" --no-preset 2>&1)
+grep -q "Geist font is not installed" <<<"$out" && fail "installed Geist reported missing"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
 
 # Bad input is refused.
 if "$ROOT/install.sh" --variant nope >/dev/null 2>&1; then fail "accepted a bad variant"; fi

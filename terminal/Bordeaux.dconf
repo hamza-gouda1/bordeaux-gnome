@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # dconf dump of /org/gnome/terminal/legacy/profiles:/
 [:9b0d3a10-0b0e-4d11-9a01-000000000001]
-visible-name='Bordeaux Bordeaux'
+visible-name='Bordeaux'
 use-theme-colors=false
 use-theme-transparency=false
 use-transparent-background=false

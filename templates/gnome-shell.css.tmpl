@@ -69,6 +69,7 @@ stage {
     background-color: ${hover};
     color: ${fg-0};
     border-radius: ${r-md} !important;
+    box-shadow: none;
 }
 
 #panel .panel-button:active,
@@ -91,7 +92,19 @@ stage {
     border-radius: ${r-md} !important;
 }
 
-#panel .clock-display:hover {
+/* The label itself: Yaru styles `.panel-button.clock-display .clock`, so name the
+   leaf too. Geist Mono is fixed-width; "tnum" keeps it so if the font falls back. */
+#panel .panel-button.clock-display .clock {
+    font-family: ${font-mono};
+    font-weight: ${fw-medium};
+    font-size: ${fs-eyebrow};
+    letter-spacing: ${ls-eyebrow};
+    font-feature-settings: "tnum";
+    color: ${fg-1};
+}
+
+#panel .clock-display:hover,
+#panel .panel-button.clock-display:hover .clock {
     color: ${fg-0};
 }
 
@@ -376,6 +389,10 @@ stage {
     margin: 0;
 }
 
+/* Yaru and the extension both style `#dashtodockContainer.left[.fixed][.shrink] #dash
+   .dash-background` with more specificity than this rule, and they set margin 4px.
+   !important on every property is what makes the float margin and the glass stick.
+   The extension reserves the margin in the work area, so windows keep a real gap. */
 #dashtodockContainer.left #dash .dash-background {
     background-color: transparent !important;
     background-gradient-direction: vertical !important;
@@ -386,7 +403,10 @@ stage {
     border-bottom-color: ${lip} !important;
     box-shadow: ${elev-4} !important;
     border-radius: ${r-slab} !important;
-    margin: ${sp-2} !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-left: ${sp-3} !important;
+    margin-right: ${sp-2} !important;
     padding: ${sp-3} 0 !important;
 }
 
@@ -436,22 +456,27 @@ stage {
 }
 
 #dashtodockContainer .dash-separator {
-    background-color: ${gold-line};
-    height: 1px;
-    margin: ${sp-1} 6px;
+    background-color: ${gold-line} !important;
+    height: 1px !important;
+    margin: ${sp-1} 6px !important;
 }
 
-/* Running app: small fg-2 dot. The focused app keeps a gold tick. */
-#dashtodockContainer .app-well-app-running-dot,
-#dashtodockContainer .app-grid-running-dot {
+/* Running app. Yaru colours `#dash .dash-item-container .app-grid-running-dot`
+   orange (#d34615, higher specificity), so !important is required here.
+   With running-indicator-style DASHES (set by the preset) ubuntu-dock draws the
+   indicator on the dock's inner edge from this dot's background-color: fg-2 for
+   running apps, gold for the focused one. With style DEFAULT it is this 4px dot. */
+#dashtodockContainer .app-grid-running-dot,
+#dashtodockContainer .app-well-app-running-dot {
     background-color: ${fg-2} !important;
     width: 4px !important;
     height: 4px !important;
     margin: 0 2px !important;
+    border-width: 0 !important;
 }
 
-#dashtodockContainer .app-well-app.focused .app-well-app-running-dot,
-#dashtodockContainer .app-well-app.focused .app-grid-running-dot {
+#dashtodockContainer .app-well-app.focused .app-grid-running-dot,
+#dashtodockContainer .app-well-app.focused .app-well-app-running-dot {
     background-color: ${gold} !important;
 }
 

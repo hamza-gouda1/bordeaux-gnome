@@ -264,6 +264,23 @@ for dir in "$ROOT"/themes/*/; do
     run cp -r "$dir" "$DATA/themes/$name"
 done
 
+# The User Themes extension searches ~/.themes BEFORE ~/.local/share/themes, so an
+# older copy there silently wins and the shell keeps running the old stylesheet.
+# Move such copies into the backup (uninstall.sh puts them back).
+LEGACY=$STATE/backup/legacy-themes
+for dir in "$ROOT"/themes/*/; do
+    name=$(basename "$dir")
+    old=$HOME/.themes/$name
+    [ -e "$old/gnome-shell" ] || continue
+    say "Moving the older $old out of the way (it would override the new theme); saved in $LEGACY"
+    run mkdir -p "$LEGACY"
+    if [ -e "$LEGACY/$name" ]; then
+        run mv "$old" "$LEGACY/$name.$(date +%Y%m%d%H%M%S)"
+    else
+        run mv "$old" "$LEGACY/$name"
+    fi
+done
+
 say "Applying $THEME colors to GTK 3 and GTK 4 apps"
 for v in 3 4; do
     run mkdir -p "$CONF/gtk-$v.0"
@@ -306,8 +323,13 @@ if [ "$DRY" = 0 ]; then
     printf '%s\n' "$VARIANT" > "$STATE/variant"
 fi
 
-if command -v fc-list >/dev/null 2>&1 && ! fc-list | grep -qi 'Geist'; then
-    warn "the Geist font is not installed; the theme falls back to your system font. Get it from https://vercel.com/font"
+# Capture first: `fc-list | grep -q` under pipefail fails with SIGPIPE as soon as grep
+# exits on its first match, which made an installed Geist look missing.
+if command -v fc-list >/dev/null 2>&1; then
+    families=$(fc-list : family 2>/dev/null || true)
+    if ! grep -qE '^Geist(,|$)' <<<"$families"; then
+        warn "the Geist font is not installed; the theme falls back to your system font. Get it from https://vercel.com/font"
+    fi
 fi
 
 say "Done. Restart open apps to see the GTK colors. Undo everything with ./uninstall.sh"
