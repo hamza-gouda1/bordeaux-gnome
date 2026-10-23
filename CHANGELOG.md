@@ -4,6 +4,11 @@
 
 First public version.
 
+Popup box and overview wallpaper fixes:
+
+- The dim, square-cornered rectangle around every panel popup (calendar, Quick Settings) was the slab's `0 18px 40px` drop shadow: a BoxPointer clips its child's blurred shadow to a hard-edged box. `.popup-menu-content`, `.quick-settings` and `.candidate-popup-content` now carry no shadow (rendered in a headless gnome-shell before and after; any blur radius reproduced it). `tests/test_shell_css.py` guards the wrapper selectors.
+- Overview: stock Yaru paints `#overviewGroup` flat `#222222`, so the wallpaper only showed inside the rounded workspace box. The preset turns blur-my-shell's overview component back on with a new `pipeline_bordeaux_overview` (radius 0, brightness 0.8 dark / 0.92 light): a dimmed full-screen wallpaper, no blur passes. `#overviewGroup` falls back to `bg-0`.
+
 Gold strip removal:
 
 - Every asymmetric gold border (top edge on the dock, top-bar capsules, Quick Settings, menus, notifications, app folders, OSD, Alt-Tab, dialogs, tooltips, lock screen widgets) is now a uniform 1px `border` hairline; the dark `lip` bottom edge is gone too, so rounded corners no longer taper.

@@ -16,6 +16,8 @@ echo "/* my own css */" > "$XDG_CONFIG_HOME/gtk-4.0/gtk.css"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
+python3 "$ROOT/tests/test_shell_css.py" || fail "generated shell css regression"
+
 # An older copy in ~/.themes would shadow the new theme (User Themes looks there first).
 mkdir -p "$HOME/.themes/Bordeaux/gnome-shell"
 echo "/* legacy */" > "$HOME/.themes/Bordeaux/gnome-shell/gnome-shell.css"
@@ -100,7 +102,9 @@ if [ "$HAVE_BLUR" = 1 ]; then
     [ "$(blurget $BLUR.lockscreen pipeline)" = "'pipeline_bordeaux_slab'" ] || fail "blur-my-shell key not set via extension schema dir"
     blurget $BLUR pipelines | grep -q pipeline_bordeaux_island || fail "pipelines not merged"
     [ "$(blurget $BLUR.dash-to-dock blur)" = "false" ] || fail "dock blur not turned off"
-    [ "$(blurget $BLUR.overview blur)" = "false" ] || fail "overview blur not turned off"
+    [ "$(blurget $BLUR.overview blur)" = "true" ] || fail "overview wallpaper (blur component) not turned on"
+    [ "$(blurget $BLUR.overview pipeline)" = "'pipeline_bordeaux_overview'" ] || fail "overview pipeline not set"
+    blurget $BLUR pipelines | grep -q pipeline_bordeaux_overview || fail "overview pipeline not merged"
     [ "$(blurget $BLUR.popup blur)" = "false" ] || fail "popup blur not turned off"
     grep -qF "$BLUR.lockscreen pipeline D" "$PB" || fail "backup lacks blur-my-shell default marker"
 fi

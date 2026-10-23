@@ -111,7 +111,8 @@ An offline scanner goes stale on new installs and theme switches, and it still n
 - Test with `dbus-run-session gnome-shell --nested`.
 
 ## Open risks for the signature
-- blur-my-shell popup blur is off: its surface is a rectangle sized from the target actor with its own corner radius (`quick-settings-corner-radius` default 36), which showed as a larger dark rectangle around Quick Settings.
+- blur-my-shell popup blur is off (its rectangular surface is a second source of a box around popups). The box seen on the real desktop was the popup content's own drop shadow, clipped by the BoxPointer to a hard-edged rectangle, so popup content nodes carry `box-shadow: none`.
+- The overview wallpaper is blur-my-shell's overview component with a radius-0 pipeline (dim only). If Super feels laggy again, set `blur-my-shell.overview blur false`; the backdrop then falls back to flat `bg-0`.
 - St per-side border colours on rounded corners taper to nothing at the corners, which is why borders are uniform.
 - Just Perfection or a Shell update may reset panel spacing.
 - Synthetic small caps in Geist (it has no `smcp` feature) can look light. If so, drop to plain mono at .12em tracking.

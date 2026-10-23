@@ -130,7 +130,11 @@ stage {
     border: 1px solid ${border};
     border-radius: ${r-slab} !important;
     padding: ${sp-3};
-    box-shadow: ${elev-4};
+    /* No box-shadow here: a BoxPointer clips its child's shadow to a rectangle, so any
+       blurred shadow on the popup content paints as a hard-edged, square-cornered dark
+       box around every panel popup (calendar, Quick Settings, menus). The 1px hairline
+       and the slab gradient carry the depth instead. */
+    box-shadow: none;
     font-size: ${fs-body};
 }
 
@@ -851,7 +855,7 @@ stage {
     background-gradient-end: ${glass-strong};
     border: 1px solid ${border};
     border-radius: ${r-slab};
-    box-shadow: ${elev-3};
+    box-shadow: none; /* boxpointer child, see .popup-menu-content */
 }
 
 .candidate-index {
@@ -1807,4 +1811,11 @@ StEntry:focus {
 .workspace-background {
     border-radius: ${r-lg};
     box-shadow: none;
+}
+
+/* The overview backdrop: stock is a flat #222222 (Yaru) that shows wherever the
+   wallpaper is not. The preset has blur-my-shell draw the dimmed wallpaper over it;
+   this is the fallback colour when that component is off. */
+#overviewGroup {
+    background-color: ${bg-0};
 }

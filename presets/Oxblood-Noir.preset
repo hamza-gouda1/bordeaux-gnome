@@ -20,12 +20,13 @@ core org.gnome.shell.extensions.dash-to-dock custom-background-color false
 core org.gnome.shell.extensions.dash-to-dock apply-custom-theme false
 core org.gnome.shell.extensions.dash-to-dock running-indicator-style 'DEFAULT'
 core org.gnome.desktop.interface clock-show-weekday true
-core org.gnome.shell.extensions.blur-my-shell pipelines merge:{'pipeline_bordeaux_slab': {'name': <'Bordeaux slab'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_slab'>, 'params': <{'unscaled_radius': <28>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_island': {'name': <'Bordeaux island'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_island'>, 'params': <{'unscaled_radius': <22>, 'brightness': <0.75>}>}>]>}}
+core org.gnome.shell.extensions.blur-my-shell pipelines merge:{'pipeline_bordeaux_slab': {'name': <'Bordeaux slab'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_slab'>, 'params': <{'unscaled_radius': <28>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_island': {'name': <'Bordeaux island'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_island'>, 'params': <{'unscaled_radius': <22>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_overview': {'name': <'Bordeaux overview'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_overview'>, 'params': <{'unscaled_radius': <0>, 'brightness': <0.8>}>}>]>}}
 core org.gnome.shell.extensions.blur-my-shell.panel blur false
 core org.gnome.shell.extensions.blur-my-shell.dash-to-dock blur false
 core org.gnome.shell.extensions.blur-my-shell.popup override-background false
 core org.gnome.shell.extensions.blur-my-shell.popup blur false
-core org.gnome.shell.extensions.blur-my-shell.overview blur false
+core org.gnome.shell.extensions.blur-my-shell.overview blur true
+core org.gnome.shell.extensions.blur-my-shell.overview pipeline 'pipeline_bordeaux_overview'
 core org.gnome.shell.extensions.blur-my-shell.lockscreen blur true
 core org.gnome.shell.extensions.blur-my-shell.lockscreen pipeline 'pipeline_bordeaux_slab'
 core org.gnome.shell.extensions.just-perfection panel-size 52
