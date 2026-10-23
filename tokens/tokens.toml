@@ -466,3 +466,81 @@ min = 4.5
 fg = "on-status"
 bg = "warning"
 min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "matte"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-1"
+bg = "matte"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-2"
+bg = "matte"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "tile"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-2"
+bg = "tile"
+min = 4.5
+[[contrast.pair]]
+fg = "accent-text"
+bg = "tile"
+min = 4.5
+[[contrast.pair]]
+fg = "accent-text"
+bg = "matte"
+min = 4.5
+[[contrast.pair]]
+fg = "accent-text"
+bg = "glass-strong"
+over = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-1"
+bg = "glass-strong"
+over = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-2"
+bg = "glass-strong"
+over = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "warning"
+bg = "glass-strong"
+over = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "danger"
+bg = "glass-strong"
+over = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "gold-text"
+bg = "tile"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-1"
+bg = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "focus"
+bg = "glass-strong"
+over = "bg-0"
+min = 3.0
+[[contrast.pair]]
+fg = "focus"
+bg = "matte"
+min = 3.0
+[[contrast.pair]]
+fg = "on-accent"
+bg = "accent"
+min = 4.5

@@ -13,16 +13,24 @@ USER_THEME_EXT=user-theme@gnome-shell-extensions.gcampax.github.com
 VARIANT=bordeaux
 DRY=0
 WALLPAPER=0
-SOUNDS=0
+PRESET=1
+ICONS=0
+CURSOR=0
+TERM_DEFAULT=0
 
 usage() {
     cat <<EOF
-usage: $(basename "$0") [--variant NAME] [--wallpaper] [--sounds] [--dry-run]
+usage: $(basename "$0") [--variant NAME] [--wallpaper] [--dry-run]
+       [--no-preset] [--icons] [--cursor] [--terminal-default]
 
   -v, --variant NAME   bordeaux (default), oxblood-noir, merlot-day
-      --wallpaper      also set the variant's wallpaper (from pending-review/)
-      --sounds         also install the Bordeaux Velvet sound theme
+      --wallpaper      also set the variant's wallpaper (wallpapers/<Variant>.jpg)
   -n, --dry-run        print what would change, change nothing
+      --no-preset      skip the desktop preset (fonts, Ubuntu Dock, Blur my Shell,
+                       Just Perfection) and the GNOME Terminal profile
+      --icons          also set the recommended icon theme, if installed
+      --cursor         also set the recommended cursor theme, if installed
+      --terminal-default  make the Bordeaux Terminal profile the default one
 EOF
 }
 
@@ -30,8 +38,12 @@ while [ $# -gt 0 ]; do
     case $1 in
         -v|--variant) VARIANT=${2:?missing variant name}; shift 2 ;;
         --wallpaper) WALLPAPER=1; shift ;;
-        --sounds) SOUNDS=1; shift ;;
         -n|--dry-run) DRY=1; shift ;;
+        --no-preset) PRESET=0; shift ;;
+        --with-preset) PRESET=1; shift ;;
+        --icons) ICONS=1; shift ;;
+        --cursor) CURSOR=1; shift ;;
+        --terminal-default) TERM_DEFAULT=1; shift ;;
         -h|--help) usage; exit 0 ;;
         *) usage >&2; exit 2 ;;
     esac
@@ -54,6 +66,37 @@ run() {
     fi
 }
 has_key() { gsettings writable "$1" "$2" >/dev/null 2>&1; }
+
+# GNOME extensions ship their schemas inside the extension, not in the system
+# schema dir. Find the dir that defines a schema (user dir first).
+schema_dir() {
+    local base=${1%%:*} d
+    gsettings list-schemas 2>/dev/null | grep -qxF "$base" && return 0
+    gsettings list-relocatable-schemas 2>/dev/null | grep -qxF "$base" && return 0
+    for d in "$DATA"/gnome-shell/extensions/*/schemas /usr/share/gnome-shell/extensions/*/schemas; do
+        if grep -qsF "id=\"$base\"" "$d"/*.gschema.xml 2>/dev/null; then
+            printf '%s\n' "$d"; return 0
+        fi
+    done
+}
+# gs SUBCOMMAND SCHEMA ARGS...: gsettings with the extension's schema dir when needed.
+gs() {
+    local d
+    d=$(schema_dir "$2")
+    if [ -n "$d" ]; then
+        GSETTINGS_SCHEMA_DIR="$d${GSETTINGS_SCHEMA_DIR:+:$GSETTINGS_SCHEMA_DIR}" gsettings "$@"
+    else
+        gsettings "$@"
+    fi
+}
+gs_run() {
+    if [ "$DRY" = 1 ]; then
+        printf '  would run: gsettings'; printf ' %q' "$@"; printf '\n'
+    else
+        gs "$@"
+    fi
+}
+has_pkey() { gs writable "$1" "$2" >/dev/null 2>&1; }
 set_key() {
     if has_key "$1" "$2"; then
         run gsettings set "$1" "$2" "$3"
@@ -69,7 +112,6 @@ BACKUP_KEYS=(
     "org.gnome.shell.extensions.user-theme name"
     "org.gnome.desktop.background picture-uri"
     "org.gnome.desktop.background picture-uri-dark"
-    "org.gnome.desktop.sound theme-name"
 )
 
 backup() {
@@ -94,6 +136,121 @@ backup() {
             cp "$CONF/gtk-$v.0/gtk.css" "$STATE/backup/gtk-$v.0.css"
         fi
     done
+}
+
+# ---- preset: every key changed here is backed up first (first value wins) ----
+PBACK=$STATE/backup/preset.txt
+
+# Prints U when the key has a user value, D when it is at its default.
+key_state() {
+    GSETTINGS_SCHEMA_DIR=$(schema_dir "$1") python3 - "$1" "$2" 2>/dev/null <<'PY' || echo U
+import sys
+from gi.repository import Gio
+schema, _, path = sys.argv[1].partition(":")
+s = Gio.Settings.new_with_path(schema, path) if path else Gio.Settings.new(schema)
+print("D" if s.get_user_value(sys.argv[2]) is None else "U")
+PY
+}
+
+preset_backup() {
+    local schema=$1 key=$2 st
+    if [ -f "$PBACK" ] && awk -v s="$schema" -v k="$key" '$1==s && $2==k {f=1} END{exit !f}' "$PBACK"; then
+        return
+    fi
+    st=$(key_state "$schema" "$key")
+    if [ "$DRY" = 1 ]; then
+        say "  would back up $schema $key ($st)"
+        return
+    fi
+    mkdir -p "$STATE/backup"
+    if [ "$st" = D ]; then
+        printf '%s %s D\n' "$schema" "$key" >> "$PBACK"
+    else
+        printf '%s %s U %s\n' "$schema" "$key" "$(gs get "$schema" "$key")" >> "$PBACK"
+    fi
+}
+
+preset_set() {
+    local val=$3 cur
+    if has_pkey "$1" "$2"; then
+        if [ "${val#merge:}" != "$val" ]; then
+            # Add our entries to the dict the user already has (keeps theirs).
+            val=${val#merge:}
+            cur=$(gs get "$1" "$2")
+            case $cur in
+                *pipeline_bordeaux_*) preset_backup "$1" "$2"; return ;;
+                "@"*" {}") cur= ;;
+                *) cur=${cur%\}}", " ;;
+            esac
+            val="${cur:+$cur}${val#\{}"
+            [ -n "$cur" ] || val="{${val}"
+        fi
+        preset_backup "$1" "$2"
+        gs_run set "$1" "$2" "$val"
+    else
+        warn "skipping $1 $2 (schema not installed)"
+    fi
+}
+
+theme_installed() {
+    local d
+    for d in "$DATA/icons" "$HOME/.icons" /usr/local/share/icons /usr/share/icons; do
+        [ -d "$d/$1" ] && return 0
+    done
+    return 1
+}
+
+apply_preset() {
+    local file="$ROOT/presets/$THEME.preset" group schema key value name
+    [ -f "$file" ] || { warn "no preset at $file; skipping"; return; }
+    while read -r group schema key value; do
+        case $group in ""|"#"*) continue ;; esac
+        case $group in
+            core) [ "$PRESET" = 1 ] || continue ;;
+            icons) [ "$ICONS" = 1 ] || continue ;;
+            cursor) [ "$CURSOR" = 1 ] || continue ;;
+            *) continue ;;
+        esac
+        if [ "$group" != core ]; then
+            name=${value//\'/}
+            theme_installed "$name" || { warn "$group theme $name is not installed; skipping (nothing is downloaded)"; continue; }
+        fi
+        preset_set "$schema" "$key" "$value"
+    done < "$file"
+}
+
+apply_terminal() {
+    local file="$ROOT/terminal/$THEME.dconf" uuid base list def new line key value
+    [ -f "$file" ] || return
+    uuid=$(sed -n 's/^\[:\(.*\)\]$/\1/p' "$file")
+    base="org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$uuid/"
+    if ! has_key org.gnome.Terminal.ProfilesList list; then
+        warn "GNOME Terminal schemas not installed; skipping the Terminal profile"
+        return
+    fi
+    list=$(gsettings get org.gnome.Terminal.ProfilesList list)
+    if [ "$list" = "@as []" ] || [ "$list" = "[]" ]; then
+        warn "GNOME Terminal has no profile list yet; open Terminal once, then run this again to add the profile"
+        return
+    fi
+    say "Adding the $THEME GNOME Terminal profile"
+    while IFS= read -r line; do
+        case $line in ""|"#"*|"["*) continue ;; esac
+        key=${line%%=*}; value=${line#*=}
+        preset_set "$base" "$key" "$value"
+    done < "$file"
+    case $list in
+        *"'$uuid'"*) ;;
+        *)
+            preset_backup org.gnome.Terminal.ProfilesList list
+            new="${list%]}, '$uuid']"
+            gs_run set org.gnome.Terminal.ProfilesList list "$new" ;;
+    esac
+    if [ "$TERM_DEFAULT" = 1 ]; then
+        def=default
+        preset_backup org.gnome.Terminal.ProfilesList "$def"
+        gs_run set org.gnome.Terminal.ProfilesList "$def" "'$uuid'"
+    fi
 }
 
 say "Installing Bordeaux GNOME: $THEME"
@@ -124,9 +281,9 @@ fi
 set_key org.gnome.shell.extensions.user-theme name "$THEME"
 
 if [ "$WALLPAPER" = 1 ]; then
-    src="$ROOT/pending-review/wallpapers/$VARIANT.png"
+    src="$ROOT/wallpapers/$THEME.jpg"
     if [ -f "$src" ]; then
-        dest="$DATA/backgrounds/bordeaux-gnome/$VARIANT.png"
+        dest="$DATA/backgrounds/bordeaux-gnome/$THEME.jpg"
         run mkdir -p "$(dirname "$dest")"
         run cp "$src" "$dest"
         set_key org.gnome.desktop.background picture-uri "file://$dest"
@@ -136,16 +293,12 @@ if [ "$WALLPAPER" = 1 ]; then
     fi
 fi
 
-if [ "$SOUNDS" = 1 ]; then
-    src="$ROOT/pending-review/sounds/bordeaux-velvet"
-    if [ -d "$src" ]; then
-        run mkdir -p "$DATA/sounds"
-        run rm -rf "${DATA:?}/sounds/bordeaux-velvet"
-        run cp -r "$src" "$DATA/sounds/bordeaux-velvet"
-        set_key org.gnome.desktop.sound theme-name bordeaux-velvet
-    else
-        warn "no sound theme at $src; skipping"
-    fi
+if [ "$PRESET" = 1 ] || [ "$ICONS" = 1 ] || [ "$CURSOR" = 1 ]; then
+    say "Applying the desktop preset (backed up first)"
+    apply_preset
+fi
+if [ "$PRESET" = 1 ]; then
+    apply_terminal
 fi
 
 if [ "$DRY" = 0 ]; then

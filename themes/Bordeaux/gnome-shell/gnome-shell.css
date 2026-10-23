@@ -98,11 +98,12 @@ stage {
 }
 
 /* Workspace indicator: gold ticks (the shell stretches the active one). */
-.workspace-dot {
+#panel .panel-button#panelActivities .workspace-dot,
+#panel:overview .panel-button#panelActivities .workspace-dot {
     background-color: #C9AE86;
     border-radius: 1px;
-    width: 6px;
-    height: 2px;
+    min-width: 5px;
+    min-height: 2px;
 }
 
 /* ==============================================================================
@@ -135,7 +136,7 @@ stage {
     color: #EEE7E4;
     border-radius: 16px !important;
     border: 1px solid #332A2C;
-    min-height: 40px;
+    min-height: 58px;
     transition-duration: 150ms;
 }
 
@@ -387,8 +388,8 @@ stage {
     border-bottom-color: rgba(0, 0, 0, 0.55) !important;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42) !important;
     border-radius: 6px 22px 22px 22px !important;
-    margin: 0 !important;
-    padding: 12px 4px !important;
+    margin: 8px !important;
+    padding: 12px 0 !important;
 }
 
 #dashtodockContainer.left.extended #dash .dash-background {
@@ -443,7 +444,7 @@ stage {
 }
 
 /* Running app: small fg-2 dot. The focused app keeps a gold tick. */
-#dashtodockContainer .running-dot,
+#dashtodockContainer .app-well-app-running-dot,
 #dashtodockContainer .app-grid-running-dot {
     background-color: #9E9390 !important;
     width: 4px !important;
@@ -451,7 +452,7 @@ stage {
     margin: 0 2px !important;
 }
 
-#dashtodockContainer .app-well-app.focused .running-dot,
+#dashtodockContainer .app-well-app.focused .app-well-app-running-dot,
 #dashtodockContainer .app-well-app.focused .app-grid-running-dot {
     background-color: #C9AE86 !important;
 }
@@ -650,13 +651,846 @@ stage {
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
 }
 
-.workspace-switcher {
-    background-color: rgba(22, 17, 18, 0.74);
-    border: 1px solid #332A2C;
-    border-radius: 9999px;
-    padding: 4px;
+/* ==============================================================================
+ * 5. NEW SURFACES (all slabs share: glass-strong gradient, gold top edge, lip)
+ * ============================================================================== */
+
+/* ---- Dock: running + active ticks (ubuntu-dock reads the dot's background) ---- */
+#dashtodockContainer .app-well-app.focused .overview-icon {
+    background-color: #231D1E !important;
+    border-radius: 12px !important;
 }
 
-.ws-active {
+#dashtodockContainer .dash-item-container .app-well-app:focus .overview-icon {
+    border: 1px solid #C9AE86 !important;
+}
+
+/* ---- Tooltips: small slab ---- */
+.dash-label,
+.window-caption,
+.screenshot-ui-tooltip {
+    background-color: rgba(22, 17, 18, 0.86);
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-top-color: rgba(201, 174, 134, 0.30);
+    border-bottom-color: rgba(0, 0, 0, 0.55);
+    border-radius: 6px 8px 8px 8px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    padding: 4px 12px;
+    font-family: "Geist", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ---- OSD: volume / brightness slab ---- */
+.osd-window {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(31, 26, 26, 0.865);
+    background-gradient-end: rgba(22, 17, 18, 0.86);
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-top-color: rgba(201, 174, 134, 0.30);
+    border-bottom-color: rgba(0, 0, 0, 0.55);
+    border-radius: 6px 22px 22px 22px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
+    padding: 12px 24px;
+    font-family: "Geist Mono", monospace;
+    font-weight: 500;
+}
+
+.osd-window .level {
+    -barlevel-height: 6px;
+    -barlevel-background-color: #2F2829;
+    -barlevel-border-width: 0;
+    -barlevel-active-background-color: #8E2A44;
+    -barlevel-active-border-width: 0;
+    -barlevel-overdrive-color: #EC7D86;
+    -barlevel-overdrive-separator-width: 2px;
+}
+
+.osd-monitor-label {
+    background-color: rgba(22, 17, 18, 0.86);
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-top-color: rgba(201, 174, 134, 0.30);
+    border-radius: 6px 22px 22px 22px;
+    font-family: "Geist Mono", monospace;
+    font-weight: 500;
+}
+
+/* ---- Alt-Tab: slab list, the current item gets a gold tick underneath ---- */
+.switcher-list {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(31, 26, 26, 0.865);
+    background-gradient-end: rgba(22, 17, 18, 0.86);
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-top-color: rgba(201, 174, 134, 0.30);
+    border-bottom-color: rgba(0, 0, 0, 0.55);
+    border-radius: 6px 22px 22px 22px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
+    padding: 12px;
+}
+
+.switcher-list .item-box {
+    background-color: transparent;
+    color: #EEE7E4;
+    border: 1px solid transparent;
+    border-bottom: 2px solid transparent;
+    border-radius: 16px;
+}
+
+.switcher-list .item-box:hover {
+    background-color: rgba(238, 231, 228, 0.05);
+}
+
+.switcher-list .item-box:focus {
+    border-color: #C9AE86;
+    box-shadow: none !important;
+    background-color: rgba(238, 231, 228, 0.05);
+}
+
+.switcher-list .item-box:selected,
+.switcher-list .item-box:highlighted,
+.switcher-list .item-box:checked {
+    background-color: #231D1E;
+    color: #EEE7E4;
+    border-color: #332A2C;
+    border-bottom-color: #C9AE86;
+}
+
+.switcher-list .item-box:selected:hover {
+    background-color: #262021;
+}
+
+.switcher-list .separator {
+    background-color: #332A2C;
+}
+
+.switcher-list .thumbnail-box {
+    padding: 4px;
+    spacing: 8px;
+}
+
+.switcher-list .thumbnail {
+    border-radius: 8px;
+}
+
+.switcher-arrow {
+    border-color: #9E9390;
+    color: #9E9390;
+}
+
+.switcher-arrow:highlighted {
+    border-color: #EEE7E4;
+    color: #EEE7E4;
+}
+
+.input-source-switcher-symbol {
+    font-family: "Geist Mono", monospace;
+    color: #EEE7E4;
+}
+
+.cycler-highlight {
+    border: 2px solid #C9AE86;
+}
+
+.resize-popup {
+    background-color: rgba(22, 17, 18, 0.86);
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-top-color: rgba(201, 174, 134, 0.30);
+    border-radius: 6px 8px 8px 8px;
+    font-family: "Geist Mono", monospace;
+}
+
+/* ---- Workspace switcher popup: thin gold ticks ---- */
+.workspace-switcher {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(31, 26, 26, 0.865);
+    background-gradient-end: rgba(22, 17, 18, 0.86);
+    border: 1px solid #332A2C;
+    border-top-color: rgba(201, 174, 134, 0.30);
+    border-bottom-color: rgba(0, 0, 0, 0.55);
+    border-radius: 6px 22px 22px 22px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36);
+    padding: 8px 16px;
+}
+
+.ws-switcher-indicator {
+    background-color: #9E9390;
+    border-radius: 1px;
+    padding: 1px 3px;
+    margin: 12px 4px;
+}
+
+.ws-switcher-indicator:active {
     background-color: #C9AE86;
+    padding: 1px 10px;
+    margin: 12px 4px;
+}
+
+/* ---- Popup menus: panel menu, app menu, input-method candidates ---- */
+.popup-menu {
+    color: #EEE7E4;
+}
+
+.popup-menu-boxpointer,
+.candidate-popup-boxpointer {
+    -arrow-rise: 0px;
+}
+
+.candidate-popup-content {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(31, 26, 26, 0.865);
+    background-gradient-end: rgba(22, 17, 18, 0.86);
+    border: 1px solid #332A2C;
+    border-top-color: rgba(201, 174, 134, 0.30);
+    border-bottom-color: rgba(0, 0, 0, 0.55);
+    border-radius: 6px 22px 22px 22px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36);
+}
+
+.candidate-index {
+    color: #9E9390;
+    font-family: "Geist Mono", monospace;
+}
+
+.candidate-box {
+    border-radius: 8px;
+    color: #EEE7E4;
+}
+
+.candidate-box:selected,
+.candidate-box:hover {
+    background-color: #32171E;
+    color: #EEE7E4;
+}
+
+.popup-sub-menu {
+    background-color: #181314;
+    border: 1px solid #332A2C;
+    border-radius: 12px;
+}
+
+.popup-menu-item:checked {
+    background-color: #32171E;
+    color: #E09AAE;
+}
+
+.popup-menu-item:insensitive {
+    color: #9E9390;
+}
+
+.popup-separator-menu-item .popup-separator-menu-item-separator {
+    background-color: #332A2C;
+    height: 1px;
+}
+
+.popup-menu.panel-menu {
+    margin-bottom: 8px;
+}
+
+.app-menu {
+    max-width: 27em;
+}
+
+.app-menu .popup-inactive-menu-item:first-child > StLabel {
+    color: #9E9390;
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+}
+
+/* ---- Notification banners (also .message above): eyebrow, title, split footer ---- */
+.notification-banner {
+    background-gradient-direction: vertical !important;
+    background-gradient-start: rgba(31, 26, 26, 0.865) !important;
+    background-gradient-end: rgba(22, 17, 18, 0.86) !important;
+    border: 1px solid #332A2C !important;
+    border-top-color: rgba(201, 174, 134, 0.30) !important;
+    border-bottom-color: rgba(0, 0, 0, 0.55) !important;
+    border-radius: 6px 22px 22px 22px !important;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42) !important;
+    padding: 4px 0 0 0 !important;
+    margin: 8px !important;
+}
+
+.notification-banner:hover {
+    border-color: rgba(201, 174, 134, 0.16) !important;
+    border-top-color: #C9AE86 !important;
+}
+
+.notification-buttons-bin {
+    spacing: 0;
+    border-top: 1px solid #332A2C;
+}
+
+.notification-button {
+    background-color: transparent;
+    color: #C3B8B5;
+    font-family: "Geist", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    border-left: 1px solid #332A2C;
+}
+
+.notification-button:first-child {
+    color: #E09AAE;
+    border-left: none;
+    border-radius: 0 0 0 22px;
+}
+
+.notification-button:last-child {
+    border-radius: 0 0 22px 0;
+}
+
+.notification-button:hover {
+    background-color: rgba(238, 231, 228, 0.05);
+    color: #EEE7E4;
+}
+
+.notification-button:first-child:hover {
+    color: #E09AAE;
+}
+
+.notification-button:focus {
+    background-color: rgba(238, 231, 228, 0.05);
+    box-shadow: none !important;
+}
+
+.notification-button:active {
+    background-color: rgba(238, 231, 228, 0.09);
+}
+
+/* ---- Modal and end-session dialogs ---- */
+.modal-dialog .modal-dialog-content-box {
+    margin: 24px 32px;
+    spacing: 24px;
+}
+
+.message-dialog-content .message-dialog-title {
+    font-family: "Geist", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #EEE7E4;
+}
+
+.message-dialog-content .message-dialog-description {
+    font-family: "Geist", sans-serif;
+    font-size: 13px;
+    color: #C3B8B5;
+}
+
+.end-session-dialog .end-session-dialog-battery-warning,
+.end-session-dialog .dialog-list-title {
+    color: #E2B06A;
+}
+
+.dialog-list .dialog-list-title {
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    color: #9E9390;
+}
+
+.dialog-list .dialog-list-box .dialog-list-item .dialog-list-item-title {
+    color: #EEE7E4;
+}
+
+.dialog-list .dialog-list-box .dialog-list-item .dialog-list-item-description {
+    color: #C3B8B5;
+}
+
+.modal-dialog .modal-dialog-linked-button {
+    background-color: transparent;
+    color: #C3B8B5;
+    font-family: "Geist", sans-serif;
+    font-size: 13px;
+    font-weight: 600 !important;
+    padding: 12px 16px;
+    margin: 0;
+    border-radius: 0;
+    border-top: 1px solid #332A2C;
+    border-left: 1px solid #332A2C;
+}
+
+.modal-dialog .modal-dialog-linked-button:first-child {
+    border-left: none;
+    border-radius: 0 0 0 22px;
+}
+
+.modal-dialog .modal-dialog-linked-button:last-child {
+    color: #E09AAE;
+    border-radius: 0 0 22px 0;
+}
+
+.modal-dialog .modal-dialog-linked-button:hover {
+    background-color: rgba(238, 231, 228, 0.05);
+    color: #EEE7E4;
+}
+
+.modal-dialog .modal-dialog-linked-button:last-child:hover {
+    color: #E09AAE;
+}
+
+.modal-dialog .modal-dialog-linked-button:focus {
+    background-color: rgba(238, 231, 228, 0.05);
+    box-shadow: none !important;
+}
+
+.modal-dialog .modal-dialog-linked-button:active {
+    background-color: rgba(238, 231, 228, 0.09);
+}
+
+.run-dialog .run-dialog-entry,
+.prompt-dialog-password-entry {
+    background-color: #1C1718;
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-radius: 8px;
+}
+
+.prompt-dialog-error-label {
+    color: #EC7D86;
+}
+
+.prompt-dialog-info-label,
+.prompt-dialog-null-label {
+    color: #C3B8B5;
+}
+
+/* ---- Search results ---- */
+#searchResults {
+    margin: 0 4px;
+}
+
+.search-section-content {
+    background-color: #181314;
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-top-color: rgba(201, 174, 134, 0.16);
+    border-radius: 12px;
+    padding: 8px;
+    margin: 0 12px;
+}
+
+.list-search-result,
+.search-provider-icon {
+    background-color: transparent;
+    color: #EEE7E4;
+    border: 1px solid transparent;
+    border-radius: 12px;
+}
+
+.list-search-result:hover,
+.search-provider-icon:hover {
+    background-color: rgba(238, 231, 228, 0.05);
+}
+
+.list-search-result:focus,
+.search-provider-icon:focus {
+    background-color: rgba(238, 231, 228, 0.05);
+    border-color: #C9AE86;
+    box-shadow: none !important;
+}
+
+.list-search-result:selected,
+.list-search-result:highlighted,
+.search-provider-icon:selected,
+.search-provider-icon:highlighted {
+    background-color: #32171E;
+    color: #EEE7E4;
+}
+
+.list-search-result .list-search-result-title {
+    font-weight: 600;
+    color: #EEE7E4;
+}
+
+.list-search-result .list-search-result-description,
+.search-statustext {
+    color: #9E9390;
+}
+
+.search-provider-icon .list-search-provider-content .list-search-provider-details {
+    color: #EEE7E4;
+}
+
+/* ---- Scrollbars ---- */
+StScrollBar StBin#trough {
+    background-color: transparent;
+    border-radius: 9999px;
+}
+
+StScrollBar StButton#vhandle,
+StScrollBar StButton#hhandle {
+    background-color: rgba(158, 147, 144, 0.45);
+    border: 3px solid transparent;
+    border-radius: 9999px;
+}
+
+StScrollBar StButton#vhandle:hover,
+StScrollBar StButton#hhandle:hover {
+    background-color: rgba(158, 147, 144, 0.75);
+}
+
+StScrollBar StButton#vhandle:active,
+StScrollBar StButton#hhandle:active {
+    background-color: rgba(195, 184, 181, 0.8);
+}
+
+/* ---- Check boxes: no recolourable SVG, so a flat square with a light core ---- */
+.check-box StBin {
+    background-image: none;
+    background-color: #1C1718;
+    border: 1px solid #332A2C;
+    border-radius: 4px;
+    width: 18px;
+    height: 18px;
+    margin: 3px;
+}
+
+.check-box:focus StBin {
+    background-image: none;
+    border-color: #C9AE86;
+}
+
+.check-box:checked StBin,
+.check-box:focus:checked StBin {
+    background-image: none;
+    background-color: #FFF3F1;
+    border-color: #A8354F;
+    box-shadow: inset 0 0 0 4px #8E2A44;
+}
+
+.check-box:focus:checked StBin {
+    border-color: #C9AE86;
+}
+
+/* ---- Screenshot UI ---- */
+.screenshot-ui-panel {
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(31, 26, 26, 0.865);
+    background-gradient-end: rgba(22, 17, 18, 0.86);
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-top-color: rgba(201, 174, 134, 0.30);
+    border-bottom-color: rgba(0, 0, 0, 0.55);
+    border-radius: 6px 22px 22px 22px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
+}
+
+.screenshot-ui-type-button,
+.screenshot-ui-show-pointer-button {
+    background-color: #231D1E;
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-radius: 16px;
+}
+
+.screenshot-ui-type-button:hover,
+.screenshot-ui-show-pointer-button:hover {
+    background-color: #262021;
+}
+
+.screenshot-ui-type-button:focus,
+.screenshot-ui-show-pointer-button:focus {
+    border-color: #C9AE86;
+    box-shadow: none !important;
+}
+
+.screenshot-ui-type-button:checked,
+.screenshot-ui-show-pointer-button:checked {
+    background-color: #8E2A44;
+    color: #FFF3F1;
+    border-color: #A8354F;
+}
+
+.screenshot-ui-shot-cast-container {
+    background-color: #231D1E;
+    border: 1px solid #332A2C;
+}
+
+.screenshot-ui-shot-cast-button:checked {
+    background-color: #8E2A44;
+    color: #FFF3F1;
+}
+
+.screenshot-ui-capture-button {
+    border: 4px #EEE7E4;
+}
+
+.screenshot-ui-capture-button .screenshot-ui-capture-button-circle {
+    background-color: #EEE7E4;
+}
+
+.screenshot-ui-capture-button:hover .screenshot-ui-capture-button-circle,
+.screenshot-ui-capture-button:focus .screenshot-ui-capture-button-circle {
+    background-color: #E09AAE;
+}
+
+.screenshot-ui-capture-button:cast .screenshot-ui-capture-button-circle {
+    background-color: #EC7D86;
+}
+
+.screenshot-ui-close-button {
+    background-color: rgba(22, 17, 18, 0.86);
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+}
+
+/* ---- Quick Settings bento: matte cards inside the 2-column slab ---- */
+.quick-toggle .quick-toggle-icon {
+    background-color: rgba(238, 231, 228, 0.05);
+    border-radius: 8px;
+    padding: 5px;
+    icon-size: 16px;
+}
+
+.quick-toggle:checked .quick-toggle-icon {
+    background-color: rgba(255, 243, 241, 0.15);
+}
+
+.quick-slider {
+    background-color: #181314;
+    border: 1px solid #332A2C;
+    border-radius: 16px;
+    padding: 4px 8px;
+}
+
+.quick-slider .slider-bin:focus {
+    background-color: transparent;
+    box-shadow: none !important;
+    border: 1px solid #C9AE86;
+}
+
+.quick-settings-system-item {
+    background-color: #181314;
+    border: 1px solid #332A2C;
+    border-radius: 16px;
+    padding: 8px 12px;
+}
+
+.quick-settings-system-item .power-item {
+    font-family: "Geist Mono", monospace;
+    font-weight: 500;
+    color: #EEE7E4;
+}
+
+.quick-toggle-menu {
+    background-color: #181314;
+    border: 1px solid #332A2C;
+    border-radius: 16px;
+}
+
+.quick-toggle-menu .header .title {
+    color: #EEE7E4;
+}
+
+.quick-toggle-menu .header .subtitle {
+    color: #9E9390;
+    font-family: "Geist Mono", monospace;
+}
+
+/* ==============================================================================
+ * 6. LOCK SCREEN & LOGIN
+ * ============================================================================== */
+#lockDialogGroup {
+    background-color: #0E0B0C;
+}
+
+.unlock-dialog,
+.login-dialog {
+    color: #EEE7E4;
+    font-family: "Geist", sans-serif;
+}
+
+.screen-shield-background {
+    background: #0E0B0C;
+    box-shadow: none;
+}
+
+.unlock-dialog-clock {
+    color: #EEE7E4;
+    spacing: 12px;
+}
+
+.unlock-dialog-clock .unlock-dialog-clock-time {
+    font-family: "Geist", sans-serif;
+    font-size: 96px;
+    font-weight: 200;
+    letter-spacing: -4px;
+    color: #EEE7E4;
+}
+
+.unlock-dialog-clock .unlock-dialog-clock-date {
+    font-family: "Geist Mono", monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    color: #C3B8B5;
+}
+
+.unlock-dialog-clock .unlock-dialog-clock-hint {
+    margin-top: 24px;
+    padding: 4px 16px;
+    border: 1px solid rgba(201, 174, 134, 0.30);
+    border-radius: 9999px;
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    color: #C3B8B5;
+}
+
+.login-dialog .user-widget .user-widget-label,
+.unlock-dialog .user-widget .user-widget-label {
+    color: #EEE7E4;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.login-dialog .user-widget .user-icon,
+.unlock-dialog .user-widget .user-icon {
+    background-color: #231D1E;
+    color: #D4BC95;
+    border: 1px solid rgba(201, 174, 134, 0.30);
+    border-radius: 9999px;
+}
+
+.login-dialog .caps-lock-warning-label,
+.login-dialog .login-dialog-message-warning,
+.unlock-dialog .caps-lock-warning-label,
+.unlock-dialog .login-dialog-message-warning {
+    color: #E2B06A;
+}
+
+.login-dialog-message {
+    color: #C3B8B5;
+}
+
+.login-dialog-prompt-layout {
+    spacing: 12px;
+}
+
+.login-dialog-prompt-entry,
+.login-dialog .login-dialog-prompt-entry,
+.unlock-dialog .login-dialog-prompt-entry {
+    background-color: #1C1718;
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: "Geist", sans-serif;
+    font-size: 14px;
+}
+
+.login-dialog-prompt-entry:hover,
+.unlock-dialog .login-dialog-prompt-entry:hover {
+    background-color: #1C1718;
+    border-color: rgba(201, 174, 134, 0.16);
+}
+
+.login-dialog-prompt-entry:focus,
+.login-dialog .login-dialog-prompt-entry:focus,
+.unlock-dialog .login-dialog-prompt-entry:focus {
+    background-color: #1C1718;
+    color: #EEE7E4;
+    border-color: #C9AE86;
+    box-shadow: 0 0 6px rgba(201, 174, 134, 0.14) !important;
+}
+
+.login-dialog-button.cancel-button,
+.login-dialog-button.switch-user-button,
+.login-dialog-button.login-dialog-auth-menu-button,
+.login-dialog-button.login-dialog-session-list-button,
+.unlock-dialog .button,
+.unlock-dialog .icon-button {
+    background-color: #231D1E;
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-radius: 9999px;
+}
+
+.login-dialog-button.cancel-button:hover,
+.login-dialog-button.switch-user-button:hover,
+.login-dialog-button.login-dialog-auth-menu-button:hover,
+.login-dialog-button.login-dialog-session-list-button:hover,
+.unlock-dialog .button:hover,
+.unlock-dialog .icon-button:hover {
+    background-color: #262021;
+}
+
+.login-dialog-button.cancel-button:focus,
+.login-dialog-button.switch-user-button:focus,
+.login-dialog-button.login-dialog-auth-menu-button:focus,
+.login-dialog-button.login-dialog-session-list-button:focus,
+.unlock-dialog .button:focus,
+.unlock-dialog .icon-button:focus {
+    border-color: #C9AE86;
+    box-shadow: none !important;
+}
+
+.login-dialog-auth-list-item {
+    color: #C3B8B5;
+    border-radius: 12px;
+}
+
+.login-dialog-auth-list-item:focus,
+.login-dialog-auth-list-item:selected {
+    background-color: #32171E;
+    color: #E09AAE;
+}
+
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item {
+    background-color: #181314;
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-radius: 12px;
+    padding: 8px;
+}
+
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:hover {
+    background-color: #231D1E;
+    border-color: rgba(201, 174, 134, 0.16);
+}
+
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:selected,
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:focus {
+    background-color: #32171E;
+    color: #EEE7E4;
+    border-color: #C9AE86;
+    box-shadow: none !important;
+}
+
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item .login-dialog-timed-login-indicator {
+    background-color: #C9AE86;
+}
+
+.login-dialog-not-listed-label {
+    color: #C3B8B5;
+}
+
+.login-dialog-not-listed-button {
+    border-radius: 12px;
+}
+
+.unlock-dialog-notifications-container .notification,
+.unlock-dialog-notifications-container .unlock-dialog-notification-source {
+    background-color: rgba(22, 17, 18, 0.86);
+    color: #EEE7E4;
+    border: 1px solid #332A2C;
+    border-top-color: rgba(201, 174, 134, 0.30);
+    border-radius: 12px;
+}
+
+.unlock-dialog-notification-count-text {
+    color: #FFF3F1;
+    background-color: #8E2A44;
+    font-family: "Geist Mono", monospace;
 }

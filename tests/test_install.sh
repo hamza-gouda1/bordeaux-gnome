@@ -38,9 +38,112 @@ grep -q "my own css" "$XDG_CONFIG_HOME/gtk-4.0/gtk.css" || fail "gtk4 css not re
 [ ! -e "$XDG_DATA_HOME/themes/Bordeaux" ] || fail "theme left behind"
 [ ! -e "$XDG_STATE_HOME/bordeaux-gnome" ] || fail "state left behind"
 
-# Boot installer previews without root.
+# ---- preset + Terminal profile ----
+# memory backend does not persist between gsettings processes, so this part uses
+# the keyfile backend inside the throwaway XDG_CONFIG_HOME (still never dconf).
+export GSETTINGS_BACKEND=keyfile
+DOCK=org.gnome.shell.extensions.dash-to-dock
+PROF=org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:9b0d3a10-0b0e-4d11-9a01-000000000001/
+OLD_LIST="['aaaaaaaa-0000-4000-8000-000000000000']"
+gsettings set org.gnome.desktop.interface font-name "'My Font 10'"
+gsettings set $DOCK dock-position "'BOTTOM'"
+gsettings set org.gnome.Terminal.ProfilesList list "$OLD_LIST"
+gsettings set org.gnome.Terminal.ProfilesList default "'aaaaaaaa-0000-4000-8000-000000000000'"
+mkdir -p "$XDG_DATA_HOME/icons/Papirus-Dark"
+# Extension schemas live inside the extension. Copy the real ones (read only)
+# into the throwaway home when present, so those keys are exercised too.
+BLUR=org.gnome.shell.extensions.blur-my-shell
+REAL_HOME=$(getent passwd "$(id -u)" | cut -d: -f6)
+SRC=$(ls -d "$REAL_HOME"/.local/share/gnome-shell/extensions/blur-my-shell@*/schemas 2>/dev/null | head -1 || true)
+HAVE_BLUR=0
+if [ -n "$SRC" ] && command -v glib-compile-schemas >/dev/null; then
+    EXT=$XDG_DATA_HOME/gnome-shell/extensions/blur-my-shell@test/schemas
+    mkdir -p "$EXT"; cp "$SRC"/*.gschema.xml "$EXT/"; glib-compile-schemas "$EXT"
+    HAVE_BLUR=1
+fi
+blurget() { GSETTINGS_SCHEMA_DIR=$EXT gsettings get "$@"; }
+KF=$XDG_CONFIG_HOME/glib-2.0/settings/keyfile
+before=$(cat "$KF")
+
+out=$("$ROOT/install.sh" --dry-run --icons 2>&1)
+[ "$(cat "$KF")" = "$before" ] || fail "preset dry run changed settings"
+[ ! -e "$XDG_STATE_HOME/bordeaux-gnome" ] || fail "preset dry run wrote state"
+grep -q "would run: gsettings set org.gnome.desktop.interface font-name" <<<"$out" || fail "dry run lacks font change"
+grep -q "would run: gsettings set $DOCK dock-position" <<<"$out" || fail "dry run lacks dock change"
+
+PB=$XDG_STATE_HOME/bordeaux-gnome/backup/preset.txt
+"$ROOT/install.sh" --icons --cursor >/dev/null 2>&1
+[ "$(gsettings get org.gnome.desktop.interface font-name)" = "'Geist 11'" ] || fail "font not set"
+[ "$(gsettings get $DOCK dock-position)" = "'LEFT'" ] || fail "dock position not set"
+[ "$(gsettings get $DOCK extend-height)" = "false" ] || fail "dock extend-height not set"
+[ "$(gsettings get org.gnome.desktop.interface icon-theme)" = "'Papirus-Dark'" ] || fail "installed icon theme not set"
+if [ -d /usr/share/icons/DMZ-Black ]; then want="'DMZ-Black'"; else want="'Yaru'"; fi
+[ "$(gsettings get org.gnome.desktop.interface cursor-theme)" = "$want" ] || fail "cursor theme only applies when installed"
+if [ "$HAVE_BLUR" = 1 ]; then
+    [ "$(blurget $BLUR.dash-to-dock pipeline)" = "'pipeline_bordeaux_slab'" ] || fail "blur-my-shell key not set via extension schema dir"
+    blurget $BLUR pipelines | grep -q pipeline_bordeaux_island || fail "pipelines not merged"
+    grep -qF "$BLUR.dash-to-dock pipeline D" "$PB" || fail "backup lacks blur-my-shell default marker"
+fi
+[ "$(gsettings get $PROF visible-name)" = "'Bordeaux Bordeaux'" ] || fail "terminal profile missing"
+gsettings get org.gnome.Terminal.ProfilesList list | grep -q 9b0d3a10-0b0e-4d11-9a01-000000000001 || fail "profile not listed"
+[ "$(gsettings get org.gnome.Terminal.ProfilesList default)" = "'aaaaaaaa-0000-4000-8000-000000000000'" ] || fail "terminal default changed without flag"
+grep -q "org.gnome.desktop.interface font-name U 'My Font 10'" "$PB" || fail "backup lacks old font"
+grep -q "$DOCK dock-position U 'BOTTOM'" "$PB" || fail "backup lacks old dock position"
+grep -q "$DOCK extend-height D" "$PB" || fail "backup lacks default marker"
+grep -qF "org.gnome.Terminal.ProfilesList list U $OLD_LIST" "$PB" || fail "backup lacks old profile list"
+
+# Re-installing is idempotent and keeps the first backup.
+cp "$PB" "$T/pb.1"; cp "$KF" "$T/kf.1"
+"$ROOT/install.sh" --icons --cursor >/dev/null 2>&1
+cmp -s "$PB" "$T/pb.1" || fail "re-install changed the preset backup"
+cmp -s "$KF" "$T/kf.1" || fail "re-install changed settings"
+
+# --terminal-default is opt-in.
+"$ROOT/install.sh" --terminal-default >/dev/null 2>&1
+[ "$(gsettings get org.gnome.Terminal.ProfilesList default)" = "'9b0d3a10-0b0e-4d11-9a01-000000000001'" ] || fail "--terminal-default ignored"
+
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+[ "$(gsettings get org.gnome.desktop.interface font-name)" = "'My Font 10'" ] || fail "font not restored"
+[ "$(gsettings get $DOCK dock-position)" = "'BOTTOM'" ] || fail "dock position not restored"
+[ "$(gsettings get org.gnome.Terminal.ProfilesList list)" = "$OLD_LIST" ] || fail "profile list not restored"
+[ "$(gsettings get org.gnome.Terminal.ProfilesList default)" = "'aaaaaaaa-0000-4000-8000-000000000000'" ] || fail "terminal default not restored"
+python3 - <<'PY' || fail "default-valued keys were left set"
+from gi.repository import Gio
+d = Gio.Settings.new("org.gnome.shell.extensions.dash-to-dock")
+assert d.get_user_value("extend-height") is None
+assert d.get_user_value("transparency-mode") is None
+p = Gio.Settings.new_with_path("org.gnome.Terminal.Legacy.Profile", "/org/gnome/terminal/legacy/profiles:/:9b0d3a10-0b0e-4d11-9a01-000000000001/")
+assert p.get_user_value("visible-name") is None
+assert Gio.Settings.new("org.gnome.desktop.interface").get_user_value("icon-theme") is None
+PY
+if [ "$HAVE_BLUR" = 1 ]; then
+    [ "$(blurget $BLUR.dash-to-dock pipeline)" = "'pipeline_default'" ] || fail "blur-my-shell key not reset"
+    blurget $BLUR pipelines | grep -q bordeaux && fail "pipelines not reset"
+fi
+
+# --no-preset leaves the desktop keys alone.
+"$ROOT/install.sh" --no-preset >/dev/null 2>&1
+[ "$(gsettings get org.gnome.desktop.interface font-name)" = "'My Font 10'" ] || fail "--no-preset set the font"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+
+# --wallpaper installs the generated jpg; uninstall restores the old keys.
+BG=org.gnome.desktop.background
+gsettings set $BG picture-uri "'file:///old.jpg'"
+"$ROOT/install.sh" --no-preset --wallpaper --variant oxblood-noir >/dev/null 2>&1
+cmp -s "$XDG_DATA_HOME/backgrounds/bordeaux-gnome/Oxblood-Noir.jpg" "$ROOT/wallpapers/Oxblood-Noir.jpg" || fail "wallpaper not installed"
+[ "$(gsettings get $BG picture-uri-dark)" = "'file://$XDG_DATA_HOME/backgrounds/bordeaux-gnome/Oxblood-Noir.jpg'" ] || fail "picture-uri-dark not set"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+[ "$(gsettings get $BG picture-uri)" = "'file:///old.jpg'" ] || fail "picture-uri not restored"
+[ ! -e "$XDG_DATA_HOME/backgrounds/bordeaux-gnome" ] || fail "wallpaper left behind"
+if "$ROOT/install.sh" --sounds >/dev/null 2>&1; then fail "--sounds still accepted"; fi
+
+# Boot installer previews without root; GRUB image per variant, none for Merlot-Day.
 "$ROOT/install-boot.sh" --dry-run >/dev/null
 "$ROOT/install-boot.sh" --dry-run --remove >/dev/null
+out=$("$ROOT/install-boot.sh" --dry-run --only grub --variant noir)
+grep -q "wallpapers/grub/Oxblood-Noir.png" <<<"$out" || fail "grub image not chosen"
+out=$("$ROOT/install-boot.sh" --dry-run --only grub --variant merlot-day)
+grep -q "no GRUB image" <<<"$out" || fail "merlot-day not skipped gracefully"
 
 # Bad input is refused.
 if "$ROOT/install.sh" --variant nope >/dev/null 2>&1; then fail "accepted a bad variant"; fi

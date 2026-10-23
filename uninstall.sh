@@ -26,6 +26,37 @@ run() {
     fi
 }
 
+
+# GNOME extensions ship their schemas inside the extension, not in the system
+# schema dir. Find the dir that defines a schema (user dir first).
+schema_dir() {
+    local base=${1%%:*} d
+    gsettings list-schemas 2>/dev/null | grep -qxF "$base" && return 0
+    gsettings list-relocatable-schemas 2>/dev/null | grep -qxF "$base" && return 0
+    for d in "$DATA"/gnome-shell/extensions/*/schemas /usr/share/gnome-shell/extensions/*/schemas; do
+        if grep -qsF "id=\"$base\"" "$d"/*.gschema.xml 2>/dev/null; then
+            printf '%s\n' "$d"; return 0
+        fi
+    done
+}
+# gs SUBCOMMAND SCHEMA ARGS...: gsettings with the extension's schema dir when needed.
+gs() {
+    local d
+    d=$(schema_dir "$2")
+    if [ -n "$d" ]; then
+        GSETTINGS_SCHEMA_DIR="$d${GSETTINGS_SCHEMA_DIR:+:$GSETTINGS_SCHEMA_DIR}" gsettings "$@"
+    else
+        gsettings "$@"
+    fi
+}
+gs_run() {
+    if [ "$DRY" = 1 ]; then
+        printf '  would run: gsettings'; printf ' %q' "$@"; printf '\n'
+    else
+        gs "$@"
+    fi
+}
+
 # True if the file is one of the gtk.css files this repo ships.
 is_ours() {
     local f=$1 v=$2 t
@@ -46,6 +77,18 @@ else
     warn "no saved settings found in $STATE; leaving GNOME settings as they are"
 fi
 
+if [ -f "$STATE/backup/preset.txt" ]; then
+    say "Restoring the preset keys (fonts, dock, extensions, Terminal profile)"
+    while read -r schema key state value; do
+        gs writable "$schema" "$key" >/dev/null 2>&1 || continue
+        if [ "$state" = D ]; then
+            gs_run reset "$schema" "$key"
+        else
+            gs_run set "$schema" "$key" "$value"
+        fi
+    done < "$STATE/backup/preset.txt"
+fi
+
 say "Restoring GTK 3 and GTK 4 styles"
 for v in 3 4; do
     css="$CONF/gtk-$v.0/gtk.css"
@@ -62,6 +105,7 @@ say "Removing installed files"
 for dir in "$ROOT"/themes/*/; do
     run rm -rf "${DATA:?}/themes/$(basename "$dir")"
 done
+# The sounds dir came from an older version that shipped a sound theme.
 run rm -rf "${DATA:?}/backgrounds/bordeaux-gnome" "${DATA:?}/sounds/bordeaux-velvet"
 run rm -rf "$STATE"
 

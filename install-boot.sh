@@ -14,22 +14,31 @@ PLY_LINK=/usr/share/plymouth/themes/default.plymouth
 DRY=0
 REMOVE=0
 ONLY=all
+VARIANT=Bordeaux
 
 usage() {
     cat <<EOF
 usage: sudo $(basename "$0") [--only grub|plymouth] [--remove] [--dry-run]
+       [--variant bordeaux|oxblood-noir|merlot-day]
 EOF
 }
 
 while [ $# -gt 0 ]; do
     case $1 in
         --only) ONLY=${2:?missing grub or plymouth}; shift 2 ;;
+        -v|--variant) VARIANT=${2:?missing variant name}; shift 2 ;;
         --remove) REMOVE=1; shift ;;
         -n|--dry-run) DRY=1; shift ;;
         -h|--help) usage; exit 0 ;;
         *) usage >&2; exit 2 ;;
     esac
 done
+case $VARIANT in
+    bordeaux|Bordeaux) VARIANT=Bordeaux ;;
+    oxblood-noir|noir|Oxblood-Noir) VARIANT=Oxblood-Noir ;;
+    merlot-day|merlot|Merlot-Day) VARIANT=Merlot-Day ;;
+    *) echo "unknown variant: $VARIANT" >&2; usage >&2; exit 2 ;;
+esac
 case $ONLY in all|grub|plymouth) ;; *) usage >&2; exit 2 ;; esac
 
 if [ "$DRY" = 0 ] && [ "$(id -u)" != 0 ]; then
@@ -50,10 +59,10 @@ grub_install() {
     say "Installing the GRUB theme to $GRUB_DIR"
     run mkdir -p "$GRUB_DIR"
     run cp "$ROOT"/boot/grub/bordeaux/* "$GRUB_DIR/"
-    if [ -f "$ROOT/pending-review/grub/background.png" ]; then
-        run cp "$ROOT/pending-review/grub/background.png" "$GRUB_DIR/"
+    if [ -f "$ROOT/wallpapers/grub/$VARIANT.png" ]; then
+        run cp "$ROOT/wallpapers/grub/$VARIANT.png" "$GRUB_DIR/background.png"
     else
-        say "  no background image; using the plain background color"
+        say "  no GRUB image for $VARIANT; using the plain background color"
         run sed -i '/^desktop-image:/d' "$GRUB_DIR/theme.txt"
     fi
     run mkdir -p "$(dirname "$GRUB_CFG")"
