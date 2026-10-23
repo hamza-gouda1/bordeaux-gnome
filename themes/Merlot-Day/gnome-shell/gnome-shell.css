@@ -110,13 +110,15 @@ stage {
     color: #2B1A1E;
 }
 
-/* Workspace indicator: gold ticks (the shell stretches the active one). */
+/* Workspace indicator: round 6px gold dots. The shell (WorkspaceDot) sets the
+   inactive ones to half opacity and 0.75 scale, so they read dim; it also widens
+   the active one's box, which no CSS can prevent. */
 #panel .panel-button#panelActivities .workspace-dot,
 #panel:overview .panel-button#panelActivities .workspace-dot {
     background-color: #A8844C;
-    border-radius: 1px;
+    border-radius: 999px;
     min-width: 6px;
-    min-height: 3px;
+    min-height: 6px;
 }
 
 /* ==============================================================================
@@ -402,11 +404,11 @@ stage {
     background-color: transparent !important;
     background-gradient-direction: vertical !important;
     background-gradient-start: rgba(253, 252, 250, 0.946) !important;
-    background-gradient-end: rgba(250, 247, 242, 0.72) !important;
+    background-gradient-end: #F3EEE6 !important;
     border: 1px solid #D6CAB9 !important;
     border-top-color: rgba(168, 132, 76, 0.85) !important;
     border-bottom-color: rgba(60, 30, 35, 0.16) !important;
-    box-shadow: 0 18px 40px rgba(60, 30, 35, 0.16) !important;
+    box-shadow: none !important;
     border-radius: 30px !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
@@ -611,21 +613,21 @@ stage {
 
 /* Folders: a smaller slab */
 .app-folder {
-    background-color: rgba(250, 247, 242, 0.72) !important;
+    background-color: #F3EEE6 !important;
     border: 1px solid #D6CAB9 !important;
     border-top-color: rgba(168, 132, 76, 0.55) !important;
     border-bottom-color: rgba(60, 30, 35, 0.16) !important;
-    box-shadow: 0 6px 16px rgba(60, 30, 35, 0.1) !important;
+    box-shadow: none !important;
     border-radius: 6px 22px 22px 22px !important;
     min-width: 120px;
     max-width: 175px;
 }
 
 .app-folder:hover {
-    background-color: rgba(250, 247, 242, 0.88) !important;
+    background-color: #F3EEE6 !important;
     border-color: rgba(168, 132, 76, 0.30) !important;
     border-top-color: #A8844C !important;
-    box-shadow: 0 12px 28px rgba(60, 30, 35, 0.13) !important;
+    box-shadow: none !important;
 }
 
 /* App Folder Dialog */
@@ -635,7 +637,7 @@ stage {
     border-top-color: rgba(168, 132, 76, 0.55) !important;
     border-bottom-color: rgba(60, 30, 35, 0.16) !important;
     border-radius: 6px 22px 22px 22px !important;
-    box-shadow: 0 18px 40px rgba(60, 30, 35, 0.16) !important;
+    box-shadow: none !important;
 }
 
 .app-folder-dialog .folder-name-container .folder-name-entry {

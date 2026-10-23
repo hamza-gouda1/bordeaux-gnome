@@ -96,9 +96,18 @@ def render_preset(toks):
         ("core", ui, "monospace-font-name", gv_str("Geist Mono 11")),
         # Ubuntu Dock on the left, one glass slab that does not span the screen.
         ("core", dock, "dock-position", gv_str("LEFT")),
-        ("core", dock, "dash-max-icon-size", "44"),
+        ("core", dock, "dash-max-icon-size", "48"),
         ("core", dock, "extend-height", "false"),
-        ("core", dock, "dock-fixed", "true"),
+        # Intellihide: the dock slides away when a window overlaps it and returns when
+        # the pointer touches the screen edge, so apps get the full width.
+        ("core", dock, "dock-fixed", "false"),
+        ("core", dock, "autohide", "true"),
+        ("core", dock, "intellihide", "true"),
+        ("core", dock, "intellihide-mode", gv_str("ALL_WINDOWS")),
+        ("core", dock, "require-pressure-to-show", "false"),
+        ("core", dock, "show-delay", "0.1"),
+        ("core", dock, "hide-delay", "0.2"),
+        ("core", dock, "animation-time", "0.15"),
         # DEFAULT transparency and no custom colour: anything else makes ubuntu-dock
         # set an inline `border-color`/`background-color` on the slab, which beats the
         # theme's gold top edge. The glass comes from the theme CSS instead.
@@ -113,21 +122,19 @@ def render_preset(toks):
         # user's existing ones; no panel blur, it would flatten the three capsules.
         ("core", blur, "pipelines", "merge:" + pipelines),
         ("core", blur + ".panel", "blur", "false"),
-        ("core", blur + ".dash-to-dock", "blur", "true"),
-        ("core", blur + ".dash-to-dock", "static-blur", "true"),
-        ("core", blur + ".dash-to-dock", "pipeline", gv_str("pipeline_bordeaux_slab")),
-        ("core", blur + ".dash-to-dock", "style-dash-to-dock", "0"),
+        # Dock and overview blur are off: they re-blur every frame while windows
+        # animate and made Super laggy. The dock slab is a solid colour in the CSS.
+        ("core", blur + ".dash-to-dock", "blur", "false"),
         # blur-my-shell's popup component re-skins menus with its own copy of the stock
         # sheet, `!important` and GNOME blue included (Quick Settings tiles, calendar
         # today). Turning its background override off leaves the theme in charge.
         ("core", blur + ".popup", "override-background", "false"),
-        ("core", blur + ".overview", "blur", "true"),
-        ("core", blur + ".overview", "pipeline", gv_str("pipeline_bordeaux_island")),
+        ("core", blur + ".overview", "blur", "false"),
         ("core", blur + ".lockscreen", "blur", "true"),
         ("core", blur + ".lockscreen", "pipeline", gv_str("pipeline_bordeaux_slab")),
-        # Just Perfection: bar height is the island row, animations a touch faster.
+        # Just Perfection: bar height is the island row, animation speed 4 (1 = stock, 8 = fastest).
         ("core", "org.gnome.shell.extensions.just-perfection", "panel-size", toks["panel-h"].removesuffix("px")),
-        ("core", "org.gnome.shell.extensions.just-perfection", "animation", "3"),
+        ("core", "org.gnome.shell.extensions.just-perfection", "animation", "4"),
         # No half-visible neighbouring workspace at the right edge of the overview.
         ("core", "org.gnome.shell.extensions.just-perfection", "workspace-peek", "false"),
         ("icons", ui, "icon-theme", gv_str(ICON_THEME[scheme])),

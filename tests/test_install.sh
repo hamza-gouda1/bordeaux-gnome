@@ -84,15 +84,22 @@ PB=$XDG_STATE_HOME/bordeaux-gnome/backup/preset.txt
 [ "$(gsettings get org.gnome.desktop.interface font-name)" = "'Geist 11'" ] || fail "font not set"
 [ "$(gsettings get $DOCK dock-position)" = "'LEFT'" ] || fail "dock position not set"
 [ "$(gsettings get $DOCK extend-height)" = "false" ] || fail "dock extend-height not set"
+[ "$(gsettings get $DOCK dock-fixed)" = "false" ] || fail "dock-fixed not cleared (intellihide)"
+[ "$(gsettings get $DOCK intellihide)" = "true" ] || fail "intellihide not set"
+[ "$(gsettings get $DOCK autohide)" = "true" ] || fail "autohide not set"
+[ "$(gsettings get $DOCK intellihide-mode)" = "'ALL_WINDOWS'" ] || fail "intellihide-mode not set"
+[ "$(gsettings get $DOCK dash-max-icon-size)" = "48" ] || fail "icon size not 48"
 [ "$(gsettings get $DOCK running-indicator-style)" = "'DASHES'" ] || fail "running indicator style not set"
 [ "$(gsettings get $DOCK custom-background-color)" = "false" ] || fail "dock custom background not cleared"
 [ "$(gsettings get org.gnome.desktop.interface icon-theme)" = "'Papirus-Dark'" ] || fail "installed icon theme not set"
 if [ -d /usr/share/icons/DMZ-Black ]; then want="'DMZ-Black'"; else want="'Yaru'"; fi
 [ "$(gsettings get org.gnome.desktop.interface cursor-theme)" = "$want" ] || fail "cursor theme only applies when installed"
 if [ "$HAVE_BLUR" = 1 ]; then
-    [ "$(blurget $BLUR.dash-to-dock pipeline)" = "'pipeline_bordeaux_slab'" ] || fail "blur-my-shell key not set via extension schema dir"
+    [ "$(blurget $BLUR.lockscreen pipeline)" = "'pipeline_bordeaux_slab'" ] || fail "blur-my-shell key not set via extension schema dir"
     blurget $BLUR pipelines | grep -q pipeline_bordeaux_island || fail "pipelines not merged"
-    grep -qF "$BLUR.dash-to-dock pipeline D" "$PB" || fail "backup lacks blur-my-shell default marker"
+    [ "$(blurget $BLUR.dash-to-dock blur)" = "false" ] || fail "dock blur not turned off"
+    [ "$(blurget $BLUR.overview blur)" = "false" ] || fail "overview blur not turned off"
+    grep -qF "$BLUR.lockscreen pipeline D" "$PB" || fail "backup lacks blur-my-shell default marker"
 fi
 [ "$(gsettings get $PROF visible-name)" = "'Bordeaux'" ] || fail "terminal profile missing or misnamed"
 gsettings get org.gnome.Terminal.ProfilesList list | grep -q 9b0d3a10-0b0e-4d11-9a01-000000000001 || fail "profile not listed"
@@ -121,13 +128,14 @@ python3 - <<'PY' || fail "default-valued keys were left set"
 from gi.repository import Gio
 d = Gio.Settings.new("org.gnome.shell.extensions.dash-to-dock")
 assert d.get_user_value("extend-height") is None
+assert d.get_user_value("intellihide") is None
 assert d.get_user_value("transparency-mode") is None
 p = Gio.Settings.new_with_path("org.gnome.Terminal.Legacy.Profile", "/org/gnome/terminal/legacy/profiles:/:9b0d3a10-0b0e-4d11-9a01-000000000001/")
 assert p.get_user_value("visible-name") is None
 assert Gio.Settings.new("org.gnome.desktop.interface").get_user_value("icon-theme") is None
 PY
 if [ "$HAVE_BLUR" = 1 ]; then
-    [ "$(blurget $BLUR.dash-to-dock pipeline)" = "'pipeline_default'" ] || fail "blur-my-shell key not reset"
+    [ "$(blurget $BLUR.lockscreen pipeline)" = "'pipeline_default'" ] || fail "blur-my-shell key not reset"
     blurget $BLUR pipelines | grep -q bordeaux && fail "pipelines not reset"
 fi
 

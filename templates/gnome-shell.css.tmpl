@@ -108,13 +108,15 @@ stage {
     color: ${fg-0};
 }
 
-/* Workspace indicator: gold ticks (the shell stretches the active one). */
+/* Workspace indicator: round 6px gold dots. The shell (WorkspaceDot) sets the
+   inactive ones to half opacity and 0.75 scale, so they read dim; it also widens
+   the active one's box, which no CSS can prevent. */
 #panel .panel-button#panelActivities .workspace-dot,
 #panel:overview .panel-button#panelActivities .workspace-dot {
     background-color: ${gold};
-    border-radius: 1px;
+    border-radius: 999px;
     min-width: 6px;
-    min-height: 3px;
+    min-height: 6px;
 }
 
 /* ==============================================================================
@@ -400,11 +402,11 @@ stage {
     background-color: transparent !important;
     background-gradient-direction: vertical !important;
     background-gradient-start: ${slab-top} !important;
-    background-gradient-end: ${glass} !important;
+    background-gradient-end: ${matte} !important;
     border: 1px solid ${border} !important;
     border-top-color: ${gold-edge} !important;
     border-bottom-color: ${lip} !important;
-    box-shadow: ${elev-4} !important;
+    box-shadow: none !important;
     border-radius: ${r-dock} !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
@@ -609,21 +611,21 @@ stage {
 
 /* Folders: a smaller slab */
 .app-folder {
-    background-color: ${glass} !important;
+    background-color: ${matte} !important;
     border: 1px solid ${border} !important;
     border-top-color: ${gold-line} !important;
     border-bottom-color: ${lip} !important;
-    box-shadow: ${elev-2} !important;
+    box-shadow: none !important;
     border-radius: ${r-slab} !important;
     min-width: 120px;
     max-width: 175px;
 }
 
 .app-folder:hover {
-    background-color: ${glass-strong} !important;
+    background-color: ${matte} !important;
     border-color: ${gold-faint} !important;
     border-top-color: ${gold} !important;
-    box-shadow: ${elev-3} !important;
+    box-shadow: none !important;
 }
 
 /* App Folder Dialog */
@@ -633,7 +635,7 @@ stage {
     border-top-color: ${gold-line} !important;
     border-bottom-color: ${lip} !important;
     border-radius: ${r-slab} !important;
-    box-shadow: ${elev-4} !important;
+    box-shadow: none !important;
 }
 
 .app-folder-dialog .folder-name-container .folder-name-entry {

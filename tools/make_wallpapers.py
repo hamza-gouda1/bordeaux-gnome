@@ -4,7 +4,7 @@
 
 Motif, "Drape": broad satin folds sweeping diagonally across the frame, lit
 from the upper left, with the light pooled right of centre and the upper-left
-(dock, top bar) kept calm and dark. One fine gold hairline rides a fold crest.
+(dock, top bar) kept calm and dark.
 Height field from warped sine sums -> normal map -> diffuse + anisotropic
 sheen + specular, mapped through a per-variant tone ramp, then grain and
 TPDF dither so there is no banding.
@@ -74,7 +74,7 @@ def look(pal, name, dark):
                  (0.78, acc * 1.08),
                  (1.00, mix(hi, fg, 0.22) * 1.15)]
         return dict(stops=stops, spec=mix(hi, fg, 0.6), spec_k=0.40, sheen=acc,
-                    sheen_k=0.22, line=gold, line_a=0.70, pool=0.92, floor=0.20,
+                    sheen_k=0.22, pool=0.92, floor=0.20,
                     grain=0.0065)
     if dark:                     # Bordeaux, Quiet Wine
         stops = [(0.00, bg * 0.60),
@@ -83,7 +83,7 @@ def look(pal, name, dark):
                  (0.78, hi * 1.18),
                  (1.00, mix(hi, gold, 0.35) * 1.45)]
         return dict(stops=stops, spec=mix(hi, fg, 0.5), spec_k=0.45, sheen=hi,
-                    sheen_k=0.30, line=gold, line_a=0.70, pool=1.0, floor=0.24,
+                    sheen_k=0.30, pool=1.0, floor=0.24,
                     grain=0.0070)
     # Merlot-Day: ivory satin with merlot in the shadows of the folds
     b1 = hex_rgb(pal["bg-1"])
@@ -93,7 +93,7 @@ def look(pal, name, dark):
              (0.75, bg),
              (1.00, mix(b1, np.ones(3, F), 0.35))]
     return dict(stops=stops, spec=np.ones(3, F), spec_k=0.30, sheen=b1, sheen_k=0.10,
-                line=gold, line_a=0.95, pool=1.0, floor=0.42, grain=0.0055)
+                pool=1.0, floor=0.42, grain=0.0055)
 
 
 # --------------------------------------------------------------------------
@@ -156,21 +156,6 @@ def render(pal, name, dark, w, h, seed, plain=False):
     img += spec[..., None] * lin(L["spec"]) * L["spec_k"]
     del sheen, spec, ndh, ndl
 
-    if not plain:
-        # gold hairline: a thread laid along one fold crest, lit through the pool
-        gvy, gvx = np.gradient(ph)
-        g = np.sqrt(gvx * gvx + gvy * gvy) + 1e-9
-        del gvx, gvy
-        c0 = 0.35
-        dpx = np.abs(ph - c0) / g
-        del g
-        lw = max(1.15 * h / 2400.0, 0.85)             # line width in px
-        cover = 1 - smoothstep(lw * 0.5 - 0.5, lw * 0.5 + 0.6, dpx)
-        along = smoothstep(0.55, 0.95, x) * (1 - smoothstep(1.45, 1.62, x))
-        a = (cover * along * L["line_a"] * (0.35 + 0.65 * pool) * min(1.0, lw / 1.15))
-        img = mix(img, lin(L["line"]), a[..., None])
-        del dpx, cover, a
-
     # vignette (dark only) for depth at the edges
     if dark:
         vig = 1 - 0.30 * smoothstep(0.35, 1.05, np.hypot((x - 0.85) / 1.0, (y - 0.55) / 0.75))
@@ -230,7 +215,7 @@ def main():
             p = a.out / name
             q = save_jpeg(render(pal, n, dark, w, h, a.seed), p, a.quality, cap)
             print(p, p.stat().st_size // 1024, "KB", f"q{q}")
-        if dark:   # GRUB: the same drape, no hairline, gentler grain
+        if dark:   # GRUB: the same drape, gentler grain
             (a.out / "grub").mkdir(exist_ok=True)
             p = a.out / "grub" / f"{n}.png"
             render(pal, n, dark, 1024, 768, a.seed, plain=True).save(p, optimize=True)

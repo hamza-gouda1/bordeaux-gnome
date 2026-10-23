@@ -67,8 +67,12 @@ Restart open apps to see the GTK colors; the Shell theme changes at once.
 
 By default the installer also applies a per-variant preset from
 `presets/<Variant>.preset`: Geist 11 and Geist Mono as interface fonts,
-Ubuntu Dock on the left as a floating glass slab, Blur my Shell (no panel
-blur, so the capsules stay crisp) and Just Perfection (46px bar). Keys whose
+Ubuntu Dock on the left as a floating slab with 48px icons, set to intellihide
+(it slides away when a window overlaps it and returns when the pointer touches
+the screen edge, so apps get the full width), Blur my Shell (only lock screen
+and popups; panel, dock and overview blur are off to keep Super smooth) and
+Just Perfection (animation speed 4, 46px bar). To keep the dock always visible:
+`gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true`. Keys whose
 schema is not installed are skipped. It also adds a GNOME Terminal profile
 from `terminal/<Variant>.dconf` (the variant's ANSI palette), which is not
 made the default unless you ask.

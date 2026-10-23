@@ -8,13 +8,13 @@ Motif, "Drape": broad satin folds sweeping diagonally, lit from the upper left
 with the light pooled right of centre; the upper-left (dock, top bar) stays in
 shadow. A height field of warped sines is turned into a normal map and shaded
 with diffuse, sheen and specular terms in linear light, then mapped through a
-tone ramp built from `tokens/tokens.toml`. One fine gold hairline follows a fold.
+tone ramp built from `tokens/tokens.toml`.
 Grain plus TPDF dither, so no banding.
 
 - Bordeaux: deep wine. Oxblood-Noir: the same drape, carbon-neutral and lower key.
   Merlot-Day: ivory satin with merlot in the fold shadows.
 - `<Variant>.jpg` 3840x2400 (capped at 1.5 MB), `<Variant>-1080p.jpg` 1920x1080 (lock screen)
-- `grub/<Variant>.png` 1024x768, the same drape without the hairline (dark variants only)
+- `grub/<Variant>.png` 1024x768, the same drape, gentler grain (dark variants only)
 
 Regenerate: `tools/make_wallpapers.py [--variant NAME] [--seed N] [--out DIR]`
 Quick look: `tools/make_wallpapers.py --variant Bordeaux --preview 1280x800 --out /tmp/wp`

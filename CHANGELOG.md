@@ -4,6 +4,20 @@
 
 First public version.
 
+Dock and performance pass:
+
+- Dock: `dock-fixed` false, `autohide` and `intellihide` true (mode ALL_WINDOWS),
+  no pressure needed, 0.1 s show / 0.2 s hide delay, 0.15 s animation, so it hides only
+  when a window overlaps it and apps get the full width.
+- Dock icons: `dash-max-icon-size` 44 to 48.
+- Blur my Shell: dock and overview blur off, it re-blurs every frame while windows animate (lock screen blur kept).
+- Dock slab: opaque gradient (no longer relies on blur) and no drop shadow.
+- Overview: no box-shadow on app folders and the folder dialog, opaque matte fill instead of translucent layers.
+- Just Perfection `animation` 3 to 4 (range 0-8, 1 is stock, higher is faster).
+- Activities capsule: workspace indicator is a round 6px gold dot instead of a 6x3 strip
+  (inactive dots are dimmed and shrunk by the Shell itself; the Shell still widens the active one).
+- Wallpapers and GRUB images: removed the diagonal gold hairline from all variants.
+
 - Three variants: Bordeaux and Oxblood Noir (dark), Merlot Day (light),
   each with a GNOME Shell theme and GTK 3 / GTK 4 colors.
 - `install.sh` / `uninstall.sh`: per-user install with a saved backup,
