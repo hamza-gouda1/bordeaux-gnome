@@ -1,0 +1,50 @@
+/* Bordeaux Design System - ${variant} GTK3 Overrides (${description}) */
+@define-color theme_base_color ${bg-2};
+@define-color theme_text_color ${fg-0};
+@define-color theme_bg_color ${bg-1};
+@define-color theme_fg_color ${fg-0};
+@define-color theme_selected_bg_color ${accent};
+@define-color theme_selected_fg_color ${on-accent};
+
+* {
+    font-family: ${font-sans};
+}
+
+window, .background {
+    background-color: @theme_bg_color;
+    color: @theme_fg_color;
+}
+
+headerbar {
+    min-height: ${header-h};
+    font-weight: ${fw-semibold};
+    background-color: ${bg-1};
+    color: ${fg-0};
+    border-bottom: 1px solid ${border};
+    box-shadow: none;
+}
+
+button {
+    font-weight: ${fw-semibold};
+    border-radius: ${r-sm};
+}
+
+button:checked, button.suggested-action {
+    background-color: ${accent};
+    background-image: none;
+    color: ${on-accent};
+}
+
+entry {
+    background-color: ${bg-2};
+    color: ${fg-0};
+    border: 1px solid ${border};
+    border-radius: ${r-sm};
+}
+
+/* Gold hairline focus ring (GTK3 has no :focus-visible). */
+button:focus,
+entry:focus {
+    outline: 1px solid ${focus};
+    outline-offset: 3px;
+}

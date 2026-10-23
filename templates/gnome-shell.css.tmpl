@@ -1,0 +1,660 @@
+/* ==============================================================================
+ * Bordeaux Design System - GNOME Shell stylesheet, ${variant} (${description})
+ * "Hallmark": glass slabs with a gold top edge, a darker lip, a cut top-left
+ * corner and one box-shadow. Tested target: GNOME 46 (Wayland), Ubuntu 24.04.
+ * St notes: one box-shadow per node, no text-transform, no CSS variables.
+ * ============================================================================== */
+
+/* Stage Root & Base Typography */
+stage {
+    font-family: ${font-sans};
+    font-size: ${fs-body};
+    font-weight: ${fw-semibold};
+}
+
+/* ==============================================================================
+ * 1. TOP BAR (#panel) - transparent strut holding three capsules
+ * ============================================================================== */
+#panel {
+    background-color: transparent !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    color: ${fg-0};
+    font-family: ${font-sans};
+    font-size: ${fs-body};
+    font-weight: ${fw-semibold} !important;
+    height: ${panel-h} !important;
+    transition-duration: ${dur-std};
+}
+
+/* Left, centre and right groups become the three island capsules. */
+#panelLeft,
+#panelCenter,
+#panelRight {
+    background-color: ${glass};
+    border: 1px solid ${border};
+    border-top-color: ${gold-faint};
+    border-radius: ${r-island};
+    box-shadow: ${elev-1};
+    margin: ${island-mt} 0;
+    padding: 0 ${sp-1};
+}
+
+#panelLeft {
+    margin-left: ${sp-3};
+}
+
+#panelRight {
+    margin-right: ${sp-3};
+}
+
+#panel .panel-button {
+    color: ${fg-0};
+    font-family: ${font-sans};
+    font-size: ${fs-body};
+    font-weight: ${fw-semibold} !important;
+    padding: 0 ${sp-2};
+    margin: 0 1px;
+    border-radius: ${r-md} !important;
+    transition-duration: ${dur-fast};
+}
+
+#panel .panel-button .system-status-icon {
+    icon-size: 16px;
+    padding: 0 3px;
+    margin: 0 1px;
+}
+
+#panel .panel-button:hover {
+    background-color: ${hover};
+    color: ${fg-0};
+    border-radius: ${r-md} !important;
+}
+
+#panel .panel-button:active,
+#panel .panel-button:overview,
+#panel .panel-button:focus,
+#panel .panel-button:checked {
+    background-color: ${accent};
+    color: ${on-accent};
+    border-radius: ${r-md} !important;
+    box-shadow: none;
+}
+
+/* Clock Display: Geist Mono with a wide tracking, like the eyebrow labels. */
+#panel .clock-display {
+    font-family: ${font-mono};
+    font-weight: ${fw-medium};
+    font-size: ${fs-eyebrow};
+    letter-spacing: ${ls-eyebrow};
+    color: ${fg-1};
+    border-radius: ${r-md} !important;
+}
+
+#panel .clock-display:hover {
+    color: ${fg-0};
+}
+
+/* Workspace indicator: gold ticks (the shell stretches the active one). */
+.workspace-dot {
+    background-color: ${gold};
+    border-radius: 1px;
+    width: 6px;
+    height: 2px;
+}
+
+/* ==============================================================================
+ * 2. QUICK SETTINGS & POPOVERS - glass slab, matte tiles, burgundy for state
+ * ============================================================================== */
+.popup-menu-content,
+.quick-settings {
+    background-gradient-direction: vertical;
+    background-gradient-start: ${slab-top};
+    background-gradient-end: ${glass-strong};
+    color: ${fg-0};
+    border: 1px solid ${border};
+    border-top-color: ${gold-line};
+    border-bottom-color: ${lip};
+    border-radius: ${r-slab} !important;
+    padding: ${sp-3};
+    box-shadow: ${elev-4};
+    font-size: ${fs-body};
+}
+
+.quick-settings-grid {
+    spacing-rows: ${sp-2};
+    spacing-columns: ${sp-2};
+}
+
+/* Inactive Toggle State */
+.quick-toggle,
+.quick-menu-toggle .quick-toggle {
+    background-color: ${tile};
+    color: ${fg-0};
+    border-radius: ${r-lg} !important;
+    border: 1px solid ${border};
+    min-height: 40px;
+    transition-duration: ${dur-fast};
+}
+
+.quick-toggle:hover,
+.quick-menu-toggle .quick-toggle:hover {
+    background-color: ${bg-3};
+    border-color: ${gold-faint};
+    color: ${fg-0};
+}
+
+.quick-toggle:focus,
+.quick-menu-toggle .quick-toggle:focus {
+    border-color: ${focus};
+}
+
+/* Active / Checked Toggle State: burgundy marks state, never blue */
+.quick-toggle:checked,
+.quick-toggle:focus:checked,
+.quick-toggle:hover:checked,
+.quick-toggle:active:checked,
+.quick-menu-toggle .quick-toggle:checked,
+.quick-menu-toggle .quick-toggle-arrow:checked {
+    background-color: ${accent} !important;
+    color: ${on-accent} !important;
+    border: 1px solid ${accent-hi} !important;
+    box-shadow: none !important;
+}
+
+.quick-menu-toggle .quick-toggle-arrow {
+    background-color: ${tile};
+    color: ${fg-0};
+    border-radius: 0 ${r-lg} ${r-lg} 0 !important;
+    border-left: 1px solid ${border};
+}
+
+.quick-toggle .quick-toggle-title {
+    font-family: ${font-sans};
+    font-weight: ${fw-semibold};
+    font-size: ${fs-body};
+    color: ${fg-0};
+}
+
+.quick-toggle:checked .quick-toggle-title {
+    color: ${on-accent};
+}
+
+.quick-toggle StBoxLayout > .quick-toggle-subtitle {
+    font-family: ${font-mono};
+    font-weight: ${fw-regular};
+    font-size: ${fs-caption};
+    color: ${fg-1};
+}
+
+.quick-toggle:checked StBoxLayout > .quick-toggle-subtitle {
+    color: ${on-accent@85};
+}
+
+.quick-toggle-menu .header .icon.active {
+    background-color: ${accent} !important;
+    color: ${on-accent} !important;
+}
+
+/* Sliders (Volume, Brightness) */
+.slider {
+    -barlevel-height: 6px;
+    -barlevel-background-color: ${bg-4};
+    -barlevel-border-width: 0;
+    -barlevel-active-background-color: ${accent};
+    -barlevel-overdrive-color: ${gold};
+    -slider-handle-radius: 8px;
+    -slider-handle-border-width: 1px;
+    -slider-handle-border-color: ${gold-line};
+}
+
+/* Popover Menu Items */
+.popup-menu-item {
+    color: ${fg-0};
+    font-family: ${font-sans};
+    border-radius: ${r-md} !important;
+    padding: ${sp-1} ${sp-3};
+    font-size: ${fs-body};
+    font-weight: ${fw-semibold};
+}
+
+.popup-menu-item:hover,
+.popup-menu-item:selected,
+.popup-menu-item:focus {
+    background-color: ${accent};
+    color: ${on-accent};
+}
+
+/* Date & Notification Popover (#calendarArea, .message-list, .calendar) */
+#calendarArea {
+    padding: ${sp-2};
+}
+
+.datemenu-popover {
+    border-radius: ${r-slab} !important;
+}
+
+.datemenu-today-button .day-label {
+    font-family: ${font-mono} !important;
+    font-size: ${fs-eyebrow} !important;
+    font-weight: ${fw-medium} !important;
+    letter-spacing: ${ls-eyebrow};
+    color: ${gold-text} !important;
+}
+
+.datemenu-today-button .date-label {
+    font-family: ${font-sans} !important;
+    font-size: ${fs-heading} !important;
+    font-weight: ${fw-semibold} !important;
+    color: ${fg-0} !important;
+}
+
+/* Calendar month & days */
+.calendar .calendar-month-header .calendar-month-label {
+    font-family: ${font-sans} !important;
+    font-size: ${fs-body} !important;
+    font-weight: ${fw-semibold} !important;
+    color: ${fg-0} !important;
+}
+
+.calendar .calendar-day-heading {
+    font-family: ${font-mono} !important;
+    font-size: ${fs-eyebrow} !important;
+    font-weight: ${fw-medium} !important;
+    letter-spacing: ${ls-eyebrow};
+    color: ${gold-text} !important;
+}
+
+.calendar .calendar-day {
+    font-family: ${font-mono} !important;
+    font-size: ${fs-body} !important;
+    font-weight: ${fw-medium} !important;
+    border-radius: ${r-pill} !important;
+}
+
+.calendar .calendar-day.calendar-today {
+    background-color: ${accent} !important;
+    color: ${on-accent} !important;
+    border: 1px solid ${gold-line} !important;
+    border-radius: ${r-pill} !important;
+}
+
+/* Message List & Notifications */
+.message-list {
+    border: none !important;
+}
+
+.message-list-section,
+.message-list-sections {
+    spacing: ${sp-2};
+}
+
+.message {
+    background-color: ${matte} !important;
+    border: 1px solid ${border} !important;
+    border-top-color: ${gold-faint} !important;
+    border-radius: ${r-md} !important;
+    box-shadow: ${elev-1} !important;
+    padding: ${sp-1} !important;
+    margin: ${sp-1} 0 !important;
+}
+
+.message:hover {
+    background-color: ${tile} !important;
+    border-color: ${gold-faint} !important;
+}
+
+.message .message-header {
+    color: ${fg-2} !important;
+    padding: 2px ${sp-1} !important;
+}
+
+.message .message-header .message-source-title {
+    font-family: ${font-mono} !important;
+    font-size: ${fs-eyebrow} !important;
+    font-weight: ${fw-medium} !important;
+    letter-spacing: ${ls-eyebrow};
+    color: ${fg-2} !important;
+}
+
+.message .message-header .event-time {
+    font-family: ${font-mono} !important;
+    font-size: ${fs-eyebrow} !important;
+    font-weight: ${fw-medium} !important;
+    color: ${fg-2} !important;
+}
+
+.message .message-box .message-content .message-title {
+    font-family: ${font-sans} !important;
+    font-size: ${fs-title} !important;
+    font-weight: ${fw-semibold} !important;
+    color: ${fg-0} !important;
+}
+
+.message .message-box .message-content .message-body,
+.message .message-box .message-content StLabel {
+    font-family: ${font-sans} !important;
+    font-size: ${fs-body} !important;
+    font-weight: ${fw-medium} !important;
+    color: ${fg-1} !important;
+}
+
+.message-list-controls {
+    color: ${fg-0} !important;
+    font-family: ${font-sans} !important;
+    font-size: ${fs-body} !important;
+    font-weight: ${fw-semibold} !important;
+}
+
+.message-list-controls .button {
+    background-color: ${tile} !important;
+    color: ${fg-0} !important;
+    border: 1px solid ${border} !important;
+    border-radius: ${r-pill} !important;
+    padding: ${sp-1} ${sp-3} !important;
+    font-family: ${font-sans} !important;
+    font-size: ${fs-body} !important;
+    font-weight: ${fw-semibold} !important;
+}
+
+.message-list-controls .button:hover {
+    background-color: ${accent} !important;
+    color: ${on-accent} !important;
+    border-color: ${accent-hi} !important;
+}
+
+/* ==============================================================================
+ * 3. DASH-TO-DOCK (Left Dock) - a slab: gold top edge, lip, cut corner
+ * ============================================================================== */
+#dashtodockContainer {
+    background-color: transparent;
+}
+
+#dashtodockContainer #dash {
+    padding: 0;
+    margin: 0;
+}
+
+#dashtodockContainer.left #dash .dash-background {
+    background-color: transparent !important;
+    background-gradient-direction: vertical !important;
+    background-gradient-start: ${slab-top} !important;
+    background-gradient-end: ${glass} !important;
+    border: 1px solid ${border} !important;
+    border-top-color: ${gold-line} !important;
+    border-bottom-color: ${lip} !important;
+    box-shadow: ${elev-4} !important;
+    border-radius: ${r-slab} !important;
+    margin: 0 !important;
+    padding: ${sp-3} ${sp-1} !important;
+}
+
+#dashtodockContainer.left.extended #dash .dash-background {
+    border-radius: ${r-lg} !important;
+}
+
+#dashtodockContainer .dash-item-container {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#dashtodockContainer .dash-item-container > StButton,
+#dashtodockContainer .dash-item-container .app-well-app,
+#dashtodockContainer .dash-item-container .show-apps,
+#dashtodockContainer .dash-item-container .overview-tile {
+    padding: 3px !important;
+    margin: 2px 2px !important;
+    min-width: 0 !important;
+    max-width: 9999px !important;
+    border-radius: ${r-md} !important;
+    border: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+#dashtodockContainer .dash-item-container .overview-icon,
+#dashtodockContainer .app-well-app .overview-icon,
+#dashtodockContainer .show-apps .overview-icon,
+#dashtodockContainer .overview-tile .overview-icon {
+    padding: 2px !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    max-width: 9999px !important;
+    border-radius: ${r-md} !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+#dashtodockContainer .dash-item-container .app-well-app:hover .overview-icon,
+#dashtodockContainer .dash-item-container .show-apps:hover .overview-icon,
+#dashtodockContainer .dash-item-container .overview-tile:hover {
+    background-color: ${hover} !important;
+    border: none !important;
+    border-radius: ${r-md} !important;
+    box-shadow: none !important;
+}
+
+#dashtodockContainer .dash-separator {
+    background-color: ${gold-line};
+    height: 1px;
+    margin: ${sp-1} 6px;
+}
+
+/* Running app: small fg-2 dot. The focused app keeps a gold tick. */
+#dashtodockContainer .running-dot,
+#dashtodockContainer .app-grid-running-dot {
+    background-color: ${fg-2} !important;
+    width: 4px !important;
+    height: 4px !important;
+    margin: 0 2px !important;
+}
+
+#dashtodockContainer .app-well-app.focused .running-dot,
+#dashtodockContainer .app-well-app.focused .app-grid-running-dot {
+    background-color: ${gold} !important;
+}
+
+/* App Notification Counter & Badges */
+#dashtodockContainer .notification-badge,
+#dashtodockContainer.left .notification-badge,
+#dashtodockContainer.bottom .notification-badge,
+#dashtodockContainer.top .notification-badge,
+#dashtodockContainer.right .notification-badge {
+    background-color: ${accent} !important;
+    color: ${on-accent} !important;
+    border: 1px solid ${gold-line} !important;
+    box-shadow: ${elev-1} !important;
+    border-radius: ${r-pill} !important;
+    font-family: ${font-mono} !important;
+    font-weight: ${fw-semibold} !important;
+    font-size: ${fs-eyebrow} !important;
+    min-width: 16px !important;
+    max-width: 24px !important;
+    min-height: 16px !important;
+    max-height: 18px !important;
+    padding: 0 ${sp-1} !important;
+    margin: 1px 2px !important;
+    text-align: center !important;
+}
+
+#dashtodockContainer .number-overlay {
+    color: ${fg-0} !important;
+    background-color: ${glass-strong} !important;
+    border: 1px solid ${gold-line} !important;
+    border-radius: ${r-pill} !important;
+    font-family: ${font-mono} !important;
+    font-weight: ${fw-semibold} !important;
+    text-align: center !important;
+}
+
+/* ==============================================================================
+ * 4. APP GRID & FOLDER ICONS
+ * ============================================================================== */
+.icon-grid {
+    row-spacing: ${sp-4};
+    column-spacing: 20px;
+    max-row-spacing: 36px;
+    max-column-spacing: 44px;
+    page-padding-top: ${sp-5};
+    page-padding-bottom: ${sp-5};
+    page-padding-left: 28px;
+    page-padding-right: 28px;
+}
+
+.overview-tile,
+.grid-search-result,
+#appDisplay .overview-tile,
+#appDisplay .app-well-app,
+.app-folder-dialog .overview-tile,
+.app-folder-dialog .app-well-app {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: ${fs-body};
+    font-weight: ${fw-semibold};
+    border-radius: ${r-lg} !important;
+    padding: ${sp-2} 10px;
+    min-width: 120px;
+    max-width: 175px;
+    text-align: center;
+    transition-duration: ${dur-fast};
+}
+
+.overview-tile .overview-icon,
+.grid-search-result .overview-icon,
+.app-well-app .overview-icon,
+.show-apps .overview-icon,
+#appDisplay .overview-icon,
+.app-folder-dialog .app-well-app .overview-icon,
+.app-folder .overview-icon {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.overview-tile .overview-icon.overview-icon-with-label > StBoxLayout,
+.grid-search-result .overview-icon.overview-icon-with-label > StBoxLayout {
+    spacing: 6px;
+}
+
+/* App Name Label Styling */
+.overview-icon StLabel,
+.overview-tile StLabel,
+#appDisplay StLabel,
+.app-folder StLabel {
+    font-family: ${font-sans};
+    font-size: ${fs-body};
+    font-weight: ${fw-semibold};
+    color: ${fg-0};
+    text-align: center;
+    min-width: 110px;
+    max-width: 175px;
+}
+
+/* Hover & Active States */
+#appDisplay .overview-tile:hover,
+#appDisplay .app-well-app:hover,
+.app-folder-dialog .overview-tile:hover,
+.app-folder-dialog .app-well-app:hover,
+.overview-tile:hover,
+.grid-search-result:hover {
+    background-color: ${hover} !important;
+    border: 1px solid ${border} !important;
+    border-radius: ${r-lg} !important;
+    box-shadow: none !important;
+}
+
+#appDisplay .overview-tile:focus,
+#appDisplay .app-well-app:focus,
+.overview-tile:focus {
+    border: 1px solid ${focus} !important;
+}
+
+#appDisplay .overview-tile:active,
+#appDisplay .app-well-app:active,
+.overview-tile:active {
+    background-color: ${press} !important;
+    border: 1px solid ${border} !important;
+    border-radius: ${r-lg} !important;
+}
+
+/* Folders: a smaller slab */
+.app-folder {
+    background-color: ${glass} !important;
+    border: 1px solid ${border} !important;
+    border-top-color: ${gold-line} !important;
+    border-bottom-color: ${lip} !important;
+    box-shadow: ${elev-2} !important;
+    border-radius: ${r-slab} !important;
+    min-width: 120px;
+    max-width: 175px;
+}
+
+.app-folder:hover {
+    background-color: ${glass-strong} !important;
+    border-color: ${gold-faint} !important;
+    border-top-color: ${gold} !important;
+    box-shadow: ${elev-3} !important;
+}
+
+/* App Folder Dialog */
+.app-folder-dialog {
+    background-color: ${glass-strong} !important;
+    border: 1px solid ${border} !important;
+    border-top-color: ${gold-line} !important;
+    border-bottom-color: ${lip} !important;
+    border-radius: ${r-slab} !important;
+    box-shadow: ${elev-4} !important;
+}
+
+.app-folder-dialog .folder-name-container .folder-name-entry {
+    font-family: ${font-sans};
+    font-size: ${fs-heading};
+    font-weight: ${fw-semibold};
+    color: ${fg-0};
+    background-color: ${bg-2};
+    border: 1px solid ${border};
+    border-radius: ${r-sm};
+}
+
+/* Search Entry */
+.search-entry {
+    background-color: ${glass} !important;
+    color: ${fg-0};
+    font-family: ${font-sans};
+    border: 1px solid ${border} !important;
+    border-radius: ${r-pill} !important;
+    padding: ${sp-2} 18px;
+    font-size: ${fs-body-lg};
+    font-weight: ${fw-semibold};
+    box-shadow: none !important;
+}
+
+.search-entry:focus {
+    border-color: ${focus};
+    box-shadow: 0 0 6px ${ring-glow};
+}
+
+/* Modal Dialogs: slab */
+.modal-dialog {
+    background-gradient-direction: vertical;
+    background-gradient-start: ${slab-top};
+    background-gradient-end: ${glass-strong};
+    color: ${fg-0};
+    border: 1px solid ${border};
+    border-top-color: ${gold-line};
+    border-bottom-color: ${lip};
+    border-radius: ${r-slab};
+    box-shadow: ${elev-4};
+}
+
+.workspace-switcher {
+    background-color: ${glass};
+    border: 1px solid ${border};
+    border-radius: ${r-pill};
+    padding: ${sp-1};
+}
+
+.ws-active {
+    background-color: ${gold};
+}

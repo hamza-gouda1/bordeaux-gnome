@@ -1,0 +1,468 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Single source of truth for the Bordeaux design tokens ("Hallmark" direction,
+# see docs/design-spec.md). tools/build.py renders templates/*.tmpl with these
+# values into themes/<Variant>/. Do not hand-edit the generated CSS.
+#
+# Template syntax:  ${token}        the value as written
+#                   ${token@30}     a hex/rgba colour token at 30% alpha
+# Variant tables override shared tables of the same key.
+
+[shared.font]
+font-sans = '"Geist", sans-serif'
+font-mono = '"Geist Mono", monospace'
+fw-regular = "400"
+fw-medium = "500"
+fw-semibold = "600"
+
+[shared.type]               # type scale
+fs-eyebrow = "10.5px"
+fs-caption = "11px"
+fs-body = "13px"
+fs-body-lg = "14px"
+fs-title = "15px"
+fs-heading = "20px"
+fs-display = "30px"
+ls-eyebrow = "1.5px"        # .14em of 10.5px; St has no em tracking guarantee
+ls-display = "-0.75px"      # -.025em of 30px
+
+[shared.radius]
+r-xs = "4px"                # chips
+r-sm = "8px"                # buttons, entries
+r-md = "12px"               # cards, lists
+r-lg = "16px"               # tiles, cells
+r-xl = "22px"
+r-window = "14px"
+r-island = "15px"
+r-pill = "9999px"
+r-cut = "6px"               # the cut corner
+r-slab = "6px 22px 22px 22px"   # cut top-left, then clockwise
+
+[shared.space]              # 4-pt scale
+sp-1 = "4px"
+sp-2 = "8px"
+sp-3 = "12px"
+sp-4 = "16px"
+sp-5 = "24px"
+sp-6 = "32px"
+sp-7 = "48px"
+row-min = "56px"
+row-sidebar = "38px"
+header-h = "46px"
+island-h = "30px"
+island-mt = "8px"
+panel-h = "46px"            # island-h + 2 * island-mt
+
+[shared.elevation]          # single layer only: St draws one box-shadow
+e1-geom = "0 1px 2px"
+e2-geom = "0 6px 16px"
+e3-geom = "0 12px 28px"
+e4-geom = "0 18px 40px"
+blur-island = "22"          # blur-my-shell hints, px
+blur-slab = "28"
+
+[shared.motion]
+dur-fast = "150ms"
+dur-std = "200ms"
+dur-enter = "300ms"
+dur-exit = "150ms"
+ease-std = "cubic-bezier(.2, 0, 0, 1)"
+ease-enter = "cubic-bezier(.05, .7, .1, 1)"
+ease-exit = "cubic-bezier(.3, 0, .8, .15)"
+
+# ---------------------------------------------------------------------------
+# Variants. Opaque colours are #rrggbb; translucent ones are rgba().
+# ---------------------------------------------------------------------------
+
+[variant.Bordeaux]          # dark, "Quiet Wine"
+scheme = "dark"
+description = "Quiet Wine"
+
+[variant.Bordeaux.palette]
+bg-0 = "#0E0B0C"            # desktop
+bg-1 = "#151112"            # window
+bg-2 = "#1C1718"            # card, entry
+bg-3 = "#262021"            # raised
+bg-4 = "#2F2829"            # pressed
+sidebar = "#120E0F"
+matte = "#181314"
+tile = "#231D1E"
+sel = "#32171E"
+fg-0 = "#EEE7E4"
+fg-1 = "#C3B8B5"
+fg-2 = "#9E9390"
+accent = "#8E2A44"
+accent-hi = "#A8354F"       # hover / lit fill
+accent-press = "#7A2239"
+on-accent = "#FFF3F1"
+accent-text = "#E09AAE"
+gold = "#C9AE86"
+gold-text = "#D4BC95"
+gold-line = "rgba(201, 174, 134, 0.30)"
+gold-faint = "rgba(201, 174, 134, 0.16)"
+focus = "#C9AE86"
+ring-glow = "rgba(201, 174, 134, 0.14)"
+border = "#332A2C"
+danger = "#EC7D86"
+success = "#8CC2A1"
+warning = "#E2B06A"
+info = "#9FB6DA"
+on-status = "#1A0F11"       # text on solid status fills
+hover = "rgba(238, 231, 228, 0.05)"
+press = "rgba(238, 231, 228, 0.09)"
+# shell overlays
+glass = "rgba(22, 17, 18, 0.74)"          # islands
+glass-strong = "rgba(22, 17, 18, 0.86)"   # slabs
+sheen = "rgba(238, 231, 228, 0.035)"
+lip = "rgba(0, 0, 0, 0.55)"
+shadow = "#000000"
+shadow-a1 = "30"
+shadow-a2 = "30"
+shadow-a3 = "36"
+shadow-a4 = "42"
+# terminal
+term-bg = "#110D0E"
+term-fg = "#DDD3D0"
+a0 = "#3B3335"
+a1 = "#E07A86"
+a2 = "#8CC2A1"
+a3 = "#E2B06A"
+a4 = "#8FAAD6"
+a5 = "#D99AC4"
+a6 = "#7FC0BC"
+a7 = "#E6DEDA"
+a8 = "#5A4F52"
+a9 = "#F0949C"
+a10 = "#A6D6B8"
+a11 = "#EEC689"
+a12 = "#A9BFE4"
+a13 = "#E8B4D6"
+a14 = "#99D3CF"
+a15 = "#F5EFEC"
+
+[variant.Oxblood-Noir]      # dark neutral: carbon blacks, oxblood accent, gold hairlines
+scheme = "dark"
+description = "Neutral carbon with oxblood"
+
+[variant.Oxblood-Noir.palette]
+bg-0 = "#0A0909"
+bg-1 = "#141011"
+bg-2 = "#1A1617"
+bg-3 = "#221E1F"
+bg-4 = "#2B2627"
+sidebar = "#0E0D0D"
+matte = "#171314"
+tile = "#201B1C"
+sel = "#2E161B"
+fg-0 = "#ECE6E4"
+fg-1 = "#BDB4B2"
+fg-2 = "#9A908E"
+accent = "#A3283A"
+accent-hi = "#B83348"
+accent-press = "#8A2030"
+on-accent = "#FFFFFF"
+accent-text = "#EC9AA6"
+gold = "#C6A06E"
+gold-text = "#D6B787"
+gold-line = "rgba(198, 160, 110, 0.32)"
+gold-faint = "rgba(198, 160, 110, 0.16)"
+focus = "#C6A06E"
+ring-glow = "rgba(198, 160, 110, 0.14)"
+border = "#2E2829"
+danger = "#EE808A"
+success = "#8CC2A1"
+warning = "#E2B06A"
+info = "#9FB6DA"
+on-status = "#140C0D"
+hover = "rgba(236, 230, 228, 0.05)"
+press = "rgba(236, 230, 228, 0.09)"
+glass = "rgba(14, 12, 12, 0.74)"
+glass-strong = "rgba(14, 12, 12, 0.88)"
+sheen = "rgba(236, 230, 228, 0.03)"
+lip = "rgba(0, 0, 0, 0.60)"
+shadow = "#000000"
+shadow-a1 = "34"
+shadow-a2 = "34"
+shadow-a3 = "40"
+shadow-a4 = "48"
+term-bg = "#0C0A0A"
+term-fg = "#DAD2D0"
+a0 = "#3A3637"
+a1 = "#E07A86"
+a2 = "#8CC2A1"
+a3 = "#E2B06A"
+a4 = "#8FAAD6"
+a5 = "#D99AC4"
+a6 = "#7FC0BC"
+a7 = "#E6DEDA"
+a8 = "#595354"
+a9 = "#F0949C"
+a10 = "#A6D6B8"
+a11 = "#EEC689"
+a12 = "#A9BFE4"
+a13 = "#E8B4D6"
+a14 = "#99D3CF"
+a15 = "#F5EFEC"
+
+[variant.Merlot-Day]        # light, "Ivory Merlot"
+scheme = "light"
+description = "Ivory Merlot"
+
+[variant.Merlot-Day.palette]
+bg-0 = "#E8DFD3"
+bg-1 = "#F8F4EE"
+bg-2 = "#FDFBF7"
+bg-3 = "#E6DDCF"
+bg-4 = "#DCD1C1"
+sidebar = "#EFE8DD"
+matte = "#F3EEE6"
+tile = "#ECE4D8"
+sel = "#EAD9D6"
+fg-0 = "#2B1A1E"
+fg-1 = "#5A454A"
+fg-2 = "#6B575B"
+accent = "#7A1C34"
+accent-hi = "#8E2A44"
+accent-press = "#64162A"
+on-accent = "#FFF7F2"
+accent-text = "#7A1C34"
+gold = "#A8844C"            # spec #B08D57 darkened: 3:1 on glass
+gold-text = "#6F5218"
+gold-line = "rgba(168, 132, 76, 0.55)"
+gold-faint = "rgba(168, 132, 76, 0.30)"
+focus = "#8C6B33"
+ring-glow = "rgba(140, 107, 51, 0.16)"
+border = "#D6CAB9"
+danger = "#A3232E"
+success = "#2E6B44"
+warning = "#7A4A0A"
+info = "#2F558C"
+on-status = "#FFFFFF"
+hover = "rgba(43, 26, 30, 0.045)"
+press = "rgba(43, 26, 30, 0.08)"
+glass = "rgba(250, 247, 242, 0.72)"
+glass-strong = "rgba(250, 247, 242, 0.88)"
+sheen = "rgba(255, 255, 255, 0.55)"
+lip = "rgba(60, 30, 35, 0.16)"
+shadow = "#3C1E23"
+shadow-a1 = "10"
+shadow-a2 = "10"
+shadow-a3 = "13"
+shadow-a4 = "16"
+term-bg = "#FBF8F3"
+term-fg = "#2B1A1E"
+a0 = "#4A3A3E"
+a1 = "#A3232E"
+a2 = "#2E6B44"
+a3 = "#7A4A0A"
+a4 = "#2F558C"
+a5 = "#7B2C6E"
+a6 = "#1F6A66"
+a7 = "#6B575B"
+a8 = "#6B575B"
+a9 = "#C0343F"
+a10 = "#3C8458"
+a11 = "#946016"
+a12 = "#3F6CAA"
+a13 = "#963F87"
+a14 = "#2A827D"
+a15 = "#2B1A1E"
+
+# ---------------------------------------------------------------------------
+# WCAG pairs checked by tools/check_contrast.py for every variant.
+# fg/bg are palette token names. A translucent bg is composited over `over`
+# (default bg-0), a translucent fg over its bg. min: 4.5 text, 3.0 UI.
+# ---------------------------------------------------------------------------
+
+[[contrast.pair]]
+fg = "fg-0"
+bg = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "bg-1"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "bg-2"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "bg-3"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "bg-4"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "sidebar"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "matte"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "tile"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "sel"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-1"
+bg = "bg-1"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-1"
+bg = "bg-2"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-1"
+bg = "bg-3"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-1"
+bg = "tile"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-2"
+bg = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-2"
+bg = "bg-1"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-2"
+bg = "bg-2"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-2"
+bg = "bg-3"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-2"
+bg = "sidebar"
+min = 4.5
+[[contrast.pair]]
+fg = "on-accent"
+bg = "accent"
+min = 4.5
+[[contrast.pair]]
+fg = "on-accent"
+bg = "accent-hi"
+min = 4.5
+[[contrast.pair]]
+fg = "on-accent"
+bg = "accent-press"
+min = 4.5
+[[contrast.pair]]
+fg = "accent-text"
+bg = "bg-1"
+min = 4.5
+[[contrast.pair]]
+fg = "accent-text"
+bg = "bg-2"
+min = 4.5
+[[contrast.pair]]
+fg = "accent-text"
+bg = "sel"
+min = 4.5
+[[contrast.pair]]
+fg = "gold-text"
+bg = "bg-1"
+min = 4.5
+[[contrast.pair]]
+fg = "gold-text"
+bg = "glass-strong"
+over = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "glass-strong"
+over = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-1"
+bg = "glass"
+over = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"
+bg = "glass"
+over = "bg-0"
+min = 4.5
+[[contrast.pair]]
+fg = "focus"
+bg = "bg-1"
+min = 3.0
+[[contrast.pair]]
+fg = "focus"
+bg = "bg-2"
+min = 3.0
+[[contrast.pair]]
+fg = "gold"
+bg = "glass-strong"
+over = "bg-0"
+min = 3.0
+[[contrast.pair]]
+fg = "danger"
+bg = "bg-1"
+min = 4.5
+[[contrast.pair]]
+fg = "success"
+bg = "bg-1"
+min = 4.5
+[[contrast.pair]]
+fg = "warning"
+bg = "bg-1"
+min = 4.5
+[[contrast.pair]]
+fg = "info"
+bg = "bg-1"
+min = 4.5
+[[contrast.pair]]
+fg = "term-fg"
+bg = "term-bg"
+min = 4.5
+[[contrast.pair]]
+fg = "a1"
+bg = "term-bg"
+min = 4.5
+[[contrast.pair]]
+fg = "a2"
+bg = "term-bg"
+min = 4.5
+[[contrast.pair]]
+fg = "a3"
+bg = "term-bg"
+min = 4.5
+[[contrast.pair]]
+fg = "a4"
+bg = "term-bg"
+min = 4.5
+[[contrast.pair]]
+fg = "a5"
+bg = "term-bg"
+min = 4.5
+[[contrast.pair]]
+fg = "a6"
+bg = "term-bg"
+min = 4.5
+[[contrast.pair]]
+fg = "a7"
+bg = "term-bg"
+min = 4.5
+[[contrast.pair]]
+fg = "on-status"
+bg = "danger"
+min = 4.5
+[[contrast.pair]]
+fg = "on-status"
+bg = "success"
+min = 4.5
+[[contrast.pair]]
+fg = "on-status"
+bg = "warning"
+min = 4.5

@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Typography specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Geist';src:local('Geist'),local('Geist Regular');font-weight:400}
+@font-face{font-family:'Geist';src:local('Geist Medium');font-weight:500}
+@font-face{font-family:'Geist';src:local('Geist SemiBold');font-weight:600}
+@font-face{font-family:'Geist';src:local('Geist Bold');font-weight:700}
+@font-face{font-family:'Geist Mono';src:local('Geist Mono'),local('Geist Mono Regular');font-weight:400}
+@font-face{font-family:'Geist Mono';src:local('Geist Mono Medium');font-weight:500}
+:root{--bg-0:#0E0B0C;--bg-1:#151112;--bg-2:#1C1718;--fg-0:#EEE7E4;--fg-1:#C0B5B2;--fg-2:#9A8F8C;--accent-hi:#D98CA2;--gold:#C9AE86;--border:#322A2B}
+*{box-sizing:border-box}body{margin:0;background:var(--bg-0);color:var(--fg-0);font-family:'Geist','Inter',sans-serif;padding:48px 64px;max-width:1920px}
+h1{font-size:32px;margin:0 0 6px;font-weight:600;letter-spacing:-.01em}
+.lead{color:var(--fg-1);margin:0 0 8px;max-width:900px;line-height:1.5}
+.note{color:var(--fg-2);font-size:13px;margin:0 0 28px}
+h3.g{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:30px 0 12px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+section{background:var(--bg-1);border:1px solid var(--border);border-radius:14px;padding:20px 22px}
+section h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-hi);margin:0 0 12px;font-family:'Geist',sans-serif;font-weight:600}
+.s{margin:0 0 8px;color:var(--fg-0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h{font-size:26px;font-weight:600;margin:14px 0 2px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden}
+.pc{font-family:'Geist',sans-serif;font-size:13px;line-height:1.55;color:var(--fg-1);border-top:1px solid var(--border);padding-top:10px;margin:14px 0 0}
+.pc b{color:var(--gold)}
+.rec{margin-top:34px;padding:18px 22px;border:1px solid var(--gold);border-radius:14px;background:var(--bg-2);font-size:16px}
+.rec b{color:var(--gold)}
+</style></head><body>
+<h1>Typography specimen</h1>
+<p class="lead">UI text at 11, 13 and 15 pt plus a heading with numerals, for five sans faces and three monospaces.</p>
+<p class="note">Preview only: Inter, IBM Plex Sans/Mono, Manrope, Source Sans 3 and JetBrains Mono are loaded from Google Fonts for this page (all SIL OFL 1.1) and are not bundled. Geist and Geist Mono (OFL) load from the locally installed copies via local().</p>
+<h3 class="g">Sans (UI)</h3><div class="grid"><section><h2>Geist</h2><div style="font-family:'Geist',sans-serif"><div class="s" style="font-size:11pt">Wi-Fi · Bluetooth · Appearance — 11 pt, Notifications 0123456789</div>
+<div class="s" style="font-size:13pt">Dark style applies to all windows and the shell. 13 pt body</div>
+<div class="s" style="font-size:15pt">Quick Settings · Night Light 21:30 – 06:45 · 15 pt</div>
+<div class="h">Bordeaux 2026 · 1 234 567 890 · 87%</div></div><p class="pc"><b>+</b> Clean geometric-neutral with crisp numerals; matches the owner's preference and is already installed.<br><b>−</b> Slightly wide; fewer weights shipped than Inter; hinting is modest at 11 pt.</p></section><section><h2>Inter</h2><div style="font-family:'Inter',sans-serif"><div class="s" style="font-size:11pt">Wi-Fi · Bluetooth · Appearance — 11 pt, Notifications 0123456789</div>
+<div class="s" style="font-size:13pt">Dark style applies to all windows and the shell. 13 pt body</div>
+<div class="s" style="font-size:15pt">Quick Settings · Night Light 21:30 – 06:45 · 15 pt</div>
+<div class="h">Bordeaux 2026 · 1 234 567 890 · 87%</div></div><p class="pc"><b>+</b> Best-in-class screen legibility and the widest language coverage.<br><b>−</b> Ubiquitous, so it reads generic; less premium character.</p></section><section><h2>IBM Plex Sans</h2><div style="font-family:'IBM Plex Sans',sans-serif"><div class="s" style="font-size:11pt">Wi-Fi · Bluetooth · Appearance — 11 pt, Notifications 0123456789</div>
+<div class="s" style="font-size:13pt">Dark style applies to all windows and the shell. 13 pt body</div>
+<div class="s" style="font-size:15pt">Quick Settings · Night Light 21:30 – 06:45 · 15 pt</div>
+<div class="h">Bordeaux 2026 · 1 234 567 890 · 87%</div></div><p class="pc"><b>+</b> Distinct, humanist-technical voice with strong numerals.<br><b>−</b> Slightly heavy colour at small sizes; reads corporate.</p></section><section><h2>Manrope</h2><div style="font-family:'Manrope',sans-serif"><div class="s" style="font-size:11pt">Wi-Fi · Bluetooth · Appearance — 11 pt, Notifications 0123456789</div>
+<div class="s" style="font-size:13pt">Dark style applies to all windows and the shell. 13 pt body</div>
+<div class="s" style="font-size:15pt">Quick Settings · Night Light 21:30 – 06:45 · 15 pt</div>
+<div class="h">Bordeaux 2026 · 1 234 567 890 · 87%</div></div><p class="pc"><b>+</b> Soft geometric forms, elegant at heading sizes.<br><b>−</b> Tight at 11 pt; low x-height hurts dense lists.</p></section><section><h2>Source Sans 3</h2><div style="font-family:'Source Sans 3',sans-serif"><div class="s" style="font-size:11pt">Wi-Fi · Bluetooth · Appearance — 11 pt, Notifications 0123456789</div>
+<div class="s" style="font-size:13pt">Dark style applies to all windows and the shell. 13 pt body</div>
+<div class="s" style="font-size:15pt">Quick Settings · Night Light 21:30 – 06:45 · 15 pt</div>
+<div class="h">Bordeaux 2026 · 1 234 567 890 · 87%</div></div><p class="pc"><b>+</b> Narrow and economical; very readable for long lists.<br><b>−</b> Looks dated next to the geometric faces; thin on dark backgrounds.</p></section></div>
+<h3 class="g">Monospace (terminal, code)</h3><div class="grid"><section><h2>Geist Mono</h2><div style="font-family:'Geist Mono',sans-serif"><div class="s" style="font-size:11pt">$ ls -la ~/themes   0O 1lI 5S 8B  { } [ ] =&gt; != 2026-10-23 14:07</div>
+<div class="s" style="font-size:13pt">hamza@bordeaux ~ $ ./install.sh --dry-run</div>
+<div class="s" style="font-size:15pt">ok  24 files · 0 fail · #9B1F40</div></div><p class="pc"><b>+</b> Pairs perfectly with Geist; calm, even texture.<br><b>−</b> Few programming ligatures; l/1 distinction is only fair.</p></section><section><h2>JetBrains Mono</h2><div style="font-family:'JetBrains Mono',sans-serif"><div class="s" style="font-size:11pt">$ ls -la ~/themes   0O 1lI 5S 8B  { } [ ] =&gt; != 2026-10-23 14:07</div>
+<div class="s" style="font-size:13pt">hamza@bordeaux ~ $ ./install.sh --dry-run</div>
+<div class="s" style="font-size:15pt">ok  24 files · 0 fail · #9B1F40</div></div><p class="pc"><b>+</b> Tall x-height, excellent code legibility, ligatures.<br><b>−</b> Dense and busy; character is more IDE than refined.</p></section><section><h2>IBM Plex Mono</h2><div style="font-family:'IBM Plex Mono',sans-serif"><div class="s" style="font-size:11pt">$ ls -la ~/themes   0O 1lI 5S 8B  { } [ ] =&gt; != 2026-10-23 14:07</div>
+<div class="s" style="font-size:13pt">hamza@bordeaux ~ $ ./install.sh --dry-run</div>
+<div class="s" style="font-size:15pt">ok  24 files · 0 fail · #9B1F40</div></div><p class="pc"><b>+</b> Characterful slab details, very distinct glyphs.<br><b>−</b> Wide and slightly quirky; clashes with geometric UI fonts.</p></section></div>
+<div class="rec"><b>Recommendation:</b> Geist for UI with Geist Mono for the terminal and code; keep Inter as the automatic fallback for missing glyphs. It keeps the look the owner liked, the pair shares proportions, and both are already installed.</div>
+</body></html>

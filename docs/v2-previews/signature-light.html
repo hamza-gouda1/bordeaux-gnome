@@ -1,0 +1,397 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Bordeaux Hallmark Light</title><meta name="viewport" content="width=1920"><style>/* Bordeaux v2 "Hallmark" signature scene. See docs/design-spec.md. */
+:root{
+  --bg-0:#E8DFD3;--bg-1:#F8F4EE;--bg-2:#F0EADF;--bg-3:#E6DDCF;--bg-4:#DCD1C1;--border:#D6CAB9;--border-soft:rgba(43,26,30,.06);
+  --fg-0:#2B1A1E;--fg-1:#5A454A;--fg-2:#6B575B;--accent:#7A1C34;--accent-press:#64162A;--on-accent:#FFF7F2;--accent-text:#7A1C34;
+  --gold:#B08D57;--gold-text:#6F5218;--gold-line:rgba(176,141,87,.55);--gold-faint:rgba(176,141,87,.30);--focus:#8C6B33;
+  --danger:#A3232E;--success:#2E6B44;--warning:#7A4A0A;--info:#2F558C;
+  --sel:#EAD9D6;--sidebar:#EFE8DD;--card:#FDFBF7;--hover:rgba(43,26,30,.045);--press:rgba(43,26,30,.08);
+  --glass:rgba(248,244,238,.80);--glass-strong:rgba(248,244,238,.92);--bar:rgba(248,244,238,.86);
+  --sh-rgb:60,30,35;--e1:0 1px 2px rgba(60,30,35,.10);
+  --e2:0 1px 2px rgba(60,30,35,.08),0 6px 16px rgba(60,30,35,.10);
+  --e3:0 2px 4px rgba(60,30,35,.08),0 12px 28px rgba(60,30,35,.13),0 32px 64px rgba(60,30,35,.12);
+  --e4:0 2px 6px rgba(60,30,35,.10),0 18px 40px rgba(60,30,35,.16),0 48px 96px rgba(60,30,35,.14);
+  --wall:radial-gradient(1200px 800px at 84% 96%,#DCC6BC 0%,transparent 62%),radial-gradient(900px 640px at 10% 0%,#F4ECE1 0%,transparent 60%),#E8DFD3;
+  --switch-off:#CFC2B1;--knob:#FFFFFF;--track:#D9CDBD;
+  --term-bg:#FBF8F3;--term-fg:#2B1A1E;
+  --a0:#4A3A3E;--a1:#A3232E;--a2:#2E6B44;--a3:#7A4A0A;--a4:#2F558C;--a5:#7B2C6E;--a6:#1F6A66;--a7:#6B575B;
+  --lock-wall:radial-gradient(260px 200px at 70% 90%,#D9BFB8 0%,transparent 70%),radial-gradient(240px 160px at 10% 0%,#F6EFE5 0%,transparent 70%),#E9E0D4;
+  --noise-op:.045;--lip:rgba(60,30,35,.16);--sheen:rgba(255,255,255,.55);--matte:#F3EEE6;--tile:#ECE4D8;--ring-glow:rgba(140,107,51,.16);
+  --glass:rgba(250,247,242,.72);--glass-strong:rgba(250,247,242,.88);
+  --wall:radial-gradient(1100px 760px at 86% 100%,#D8BDB3 0%,transparent 64%),radial-gradient(900px 620px at 8% 0%,#F5EEE4 0%,transparent 62%),#E7DED2;
+  --contour:rgba(122,28,52,.07);
+  --r-xs:4px;--r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:22px;--cut:6px;
+  --slab-r:var(--cut) var(--r-xl) var(--r-xl) var(--r-xl);
+  --ease:cubic-bezier(.2,0,0,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1200px;overflow:hidden;background:var(--bg-0)}
+body{font-family:'Geist',sans-serif;color:var(--fg-0);font-size:13px;line-height:1.4;-webkit-font-smoothing:antialiased}
+.mono{font-family:'Geist Mono',monospace}.tnum{font-feature-settings:"tnum" 1}
+svg.s{width:16px;height:16px;flex:none;display:block}
+.scene{position:relative;width:1920px;height:1200px;overflow:hidden;background:var(--wall)}
+.contours{position:absolute;left:0;top:0}
+.scene::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:var(--noise-op);mix-blend-mode:overlay;
+ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.abs{position:absolute}
+/* eyebrow: Geist Mono small-caps-style label */
+.eb{font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-2)}
+.cap{position:absolute;font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-1)}
+/* ===== the slab: signature shell material ===== */
+.slab{position:absolute;border-radius:var(--slab-r);background:linear-gradient(180deg,var(--sheen),transparent 38%),var(--glass-strong);backdrop-filter:blur(28px) saturate(1.15);
+ border:1px solid var(--border);border-top-color:var(--gold-line);border-bottom-color:var(--lip);box-shadow:var(--e4)}
+/* the hallmark tick: 18x1 full-gold rule on the top edge, beside the cut corner */
+.slab::before,.tickd::before{content:"";position:absolute;left:14px;top:-1px;width:18px;height:1px;background:var(--gold);z-index:3}
+.mono-b{width:22px;height:22px;border-radius:11px;box-shadow:inset 0 0 0 1px var(--gold-line);display:inline-flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;color:var(--gold-text);letter-spacing:0}
+/* ===== top bar: three islands ===== */
+.isl{position:absolute;top:8px;height:30px;display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:15px;background:var(--glass);backdrop-filter:blur(22px);
+ border:1px solid var(--border);border-top-color:var(--gold-faint);box-shadow:0 1px 2px rgba(var(--sh-rgb),.25),0 6px 16px rgba(var(--sh-rgb),.18);z-index:6}
+.ticks{display:flex;gap:6px;align-items:center}
+.ticks i{width:6px;height:2px;border-radius:1px;background:var(--gold);opacity:.5;transform:scaleX(.75)}
+.ticks i.on{width:20px;opacity:1;transform:none}
+.clk{font-family:'Geist Mono',monospace;font-feature-settings:"tnum" 1}
+.clk .d{font-size:10.5px;letter-spacing:.14em;color:var(--fg-1);font-weight:500}
+.clk .t{font-size:13px;font-weight:600;letter-spacing:.02em}
+.clk .sep{width:1px;height:12px;background:var(--gold-line)}
+.tray{color:var(--fg-0)}.tray b{font-family:'Geist Mono',monospace;font-size:11.5px;font-weight:500;color:var(--fg-1)}
+/* ===== dock ===== */
+.dock{left:12px;top:276px;width:68px;padding:12px 0 10px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:4;background:linear-gradient(180deg,var(--sheen),transparent 30%),var(--glass)}
+.app{position:relative;width:52px;height:52px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center}
+.app>svg{position:relative;width:44px;height:44px;z-index:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.app::before{content:"";position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-11px 0 0 -13px;border-radius:50%;background:var(--aura);box-shadow:0 0 22px 12px var(--aura)}
+.app.hover{background:var(--hover)}.app.hover>svg{transform:scale(1.06)}
+.app .run{position:absolute;left:-5px;top:50%;width:2px;height:6px;margin-top:-3px;border-radius:1px;background:var(--fg-2)}
+.app .run.two{margin-top:-7px;box-shadow:0 8px 0 var(--fg-2)}
+.app .run.act{width:2px;height:20px;margin-top:-10px;background:var(--gold)}
+.dock .sep{width:18px;height:1px;background:var(--gold-line);margin:2px 0}
+.dock .grid{color:var(--fg-1)}.dock .grid::before{display:none}
+.tip{position:absolute;left:82px;padding:6px 10px 6px 12px;border-radius:var(--cut) 10px 10px 10px;background:var(--glass-strong);backdrop-filter:blur(20px);border:1px solid var(--border);border-top-color:var(--gold-line);box-shadow:var(--e2);font-weight:500;white-space:nowrap;z-index:7;display:flex;gap:10px;align-items:center}
+.tip .eb{font-size:10px}
+/* ===== matte window (GTK) ===== */
+.win{position:absolute;background:var(--bg-1);border-radius:14px;box-shadow:0 0 0 1px var(--border),var(--e3);overflow:hidden}
+.win.focused{box-shadow:0 0 0 1px var(--border),var(--e4)}
+.hb{height:46px;flex:none;display:flex;align-items:center;gap:6px;padding:0 8px;position:relative}
+.hb .t{position:absolute;left:0;right:0;text-align:center;font-weight:600;pointer-events:none}
+.ib{width:32px;height:32px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center}
+.wc{width:22px;height:22px;border-radius:11px;background:var(--hover);display:flex;align-items:center;justify-content:center}
+.wc.hov{background:var(--press)}
+.split{display:flex;height:100%}.pane{display:flex;flex-direction:column}
+.side{width:256px;background:var(--sidebar);box-shadow:inset -1px 0 0 var(--border-soft)}
+.rows{padding:6px 10px;display:flex;flex-direction:column;gap:2px}
+.row{height:38px;display:flex;align-items:center;gap:12px;padding:0 12px;border-radius:var(--r-sm);font-weight:500;position:relative}
+.row svg{color:var(--fg-1)}
+/* location = gold tick + matte fill; burgundy is reserved for state */
+.row.sel{background:var(--tile);font-weight:600}
+.row.sel::before{content:"";position:absolute;left:-10px;top:11px;width:2px;height:16px;border-radius:1px;background:var(--gold)}
+.row.sel svg{color:var(--fg-0)}
+.row.hov{background:var(--hover)}
+.side .eb{padding:18px 12px 6px}
+.main{flex:1;background:var(--bg-1)}
+.content{padding:6px 48px 0}
+.pt{display:flex;align-items:baseline;gap:14px;margin-top:6px}
+.pt h1{font-size:30px;font-weight:600;letter-spacing:-.025em;line-height:1.1}
+.group{margin-top:22px}.group>.eb{margin:0 2px 10px;display:flex;align-items:center;gap:10px}
+.group>.eb::after{content:"";flex:1;height:1px;background:var(--border)}
+.list{background:var(--card);border-radius:var(--r-md);box-shadow:0 0 0 1px var(--border-soft),var(--e1);overflow:hidden}
+.list .r{min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 16px;position:relative}
+.list .r+.r::before{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:var(--border)}
+.r .tt{font-weight:500}.r .st{color:var(--fg-1);font-size:12px;margin-top:2px}
+.r.hov{background:var(--hover)}
+.val{font-family:'Geist Mono',monospace;font-size:12px;color:var(--fg-1);font-feature-settings:"tnum" 1;min-width:36px;text-align:right}
+.sw{width:40px;height:22px;border-radius:11px;background:var(--switch-off);position:relative;flex:none}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:8px;background:var(--knob);box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.sw.on{background:var(--accent)}.sw.on::after{left:21px}
+.styles{display:flex;gap:16px}
+.stl{width:156px}.thumb{height:84px;border-radius:var(--r-md);position:relative;overflow:hidden;box-shadow:0 0 0 1px var(--border)}
+.stl.on .thumb{box-shadow:0 0 0 2px var(--bg-1),0 0 0 4px var(--accent)}
+.stl .nm{margin-top:8px;font-weight:500;display:flex;justify-content:space-between;align-items:center}
+.stl.on .nm{color:var(--accent-text)}
+.sws{display:flex;gap:10px}.swc{width:20px;height:20px;border-radius:10px}
+.swc.on{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--fg-0)}
+.slider{position:relative;height:20px;display:flex;align-items:center;flex:1}
+.slider .tr{height:3px;border-radius:2px;background:var(--track);width:100%}
+.slider .fi{position:absolute;left:0;height:3px;border-radius:2px;background:var(--accent)}
+.slider .kn{position:absolute;width:16px;height:16px;border-radius:8px;background:var(--knob);box-shadow:0 0 0 1px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.35);margin-left:-8px}
+.entry{height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:var(--r-sm);background:var(--card);box-shadow:inset 0 0 0 1px var(--border)}
+/* signature focus: 1px gold hairline at 3px offset + a faint gold bloom */
+.focus{outline:1px solid var(--focus);outline-offset:3px;box-shadow:inset 0 0 0 1px var(--border),0 0 0 6px var(--ring-glow)}
+.entry svg{color:var(--fg-2)}.caret{width:1.5px;height:16px;background:var(--fg-0);margin-left:-6px}
+.btn{height:34px;padding:0 16px;border-radius:var(--r-sm);display:inline-flex;align-items:center;gap:8px;font-weight:600;background:var(--tile);color:var(--fg-0)}
+.btn.sug{background:var(--accent);color:var(--on-accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 1px 2px rgba(0,0,0,.25)}
+.btn.flat{background:transparent}.btn.dest{background:transparent;color:var(--danger);box-shadow:inset 0 0 0 1px var(--border)}
+.chip{height:22px;padding:0 9px;border-radius:var(--r-xs);display:inline-flex;align-items:center;gap:7px;font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;box-shadow:inset 0 0 0 1px var(--border)}
+.chip i{width:5px;height:5px;border-radius:3px;background:currentColor}
+/* ===== quick settings (bento) ===== */
+.qs{left:1516px;top:50px;width:392px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;--qs-bg:var(--matte)}
+.cell2{grid-column:span 2}
+.card{background:var(--matte);border-radius:var(--r-lg);box-shadow:inset 0 0 0 1px var(--border-soft),inset 0 1px 0 var(--sheen)}
+.sys{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 12px 16px}
+.big{font-family:'Geist Mono',monospace;font-size:30px;font-weight:500;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum" 1}
+.big small{font-size:13px;color:var(--fg-1);margin-left:2px}
+.qbs{display:flex;gap:6px}.qb{width:34px;height:34px;border-radius:17px;background:var(--tile);display:flex;align-items:center;justify-content:center}
+.sls{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.sl{display:flex;align-items:center;gap:12px}
+.tile{height:58px;border-radius:var(--r-lg);background:var(--tile);display:flex;align-items:center;gap:12px;padding:0 6px 0 14px;position:relative}
+.tile .ic{width:30px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center;background:var(--hover);flex:none}
+.tile .tx{flex:1;min-width:0}.tile .tx b{display:block;font-weight:600}.tile .tx span{display:block;font-size:12px;color:var(--fg-1)}
+.tile .ar{width:28px;height:40px;display:flex;align-items:center;justify-content:center;color:var(--fg-1)}
+.tile.on{background:var(--accent);color:var(--on-accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.tile.on .ic{background:rgba(255,255,255,.14)}
+.tile.on .tx span,.tile.on .ar{color:var(--on-accent);opacity:.86}
+.tile.focus{outline:1px solid var(--focus);outline-offset:3px;box-shadow:0 0 0 6px var(--ring-glow)}
+.qfoot{display:flex;align-items:center;gap:10px;padding:8px 4px 2px}
+.qfoot .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--gold-line),transparent)}
+/* ===== notification ===== */
+.note{left:740px;top:52px;width:440px;padding:0;overflow:hidden}
+.note .hd{display:flex;align-items:center;gap:8px;padding:12px 16px 0}
+.note .hd svg{width:16px;height:16px}
+.note .bd{padding:6px 16px 14px 40px}
+.note .bd b{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.note .bd p{color:var(--fg-1);margin-top:3px}
+.note .ft{display:flex;border-top:1px solid var(--border)}
+.note .ft div{flex:1;height:40px;display:flex;align-items:center;justify-content:center;font-weight:600}
+.note .ft div+div{box-shadow:inset 1px 0 0 var(--border)}
+.note .ft .p{color:var(--accent-text)}
+/* ===== terminal ===== */
+.term{left:1000px;top:250px;width:496px;height:300px;background:var(--term-bg)}
+.term .hb{background:var(--bg-1);box-shadow:inset 0 -1px 0 var(--border)}
+.tabx{height:30px;padding:0 12px;border-radius:var(--r-sm);display:flex;align-items:center;color:var(--fg-1);font-weight:500}
+.tabx.on{background:var(--tile);color:var(--fg-0)}
+.tbody{padding:14px 18px;font-family:'Geist Mono',monospace;font-size:12.5px;line-height:1.66;color:var(--term-fg)}
+.c1{color:var(--a1)}.c2{color:var(--a2)}.c3{color:var(--a3)}.c4{color:var(--a4)}.c5{color:var(--a5)}.c6{color:var(--a6)}.cg{color:var(--fg-2)}
+.ansi{display:flex;gap:5px;margin-top:10px}.ansi i{width:26px;height:12px;border-radius:2px}
+.cursor{display:inline-block;width:8px;height:15px;background:var(--term-fg);vertical-align:-3px;opacity:.85}
+/* ===== app grid ===== */
+.agrid{left:112px;top:770px;width:620px;height:356px;padding:18px 22px}
+.agrid .top{display:flex;justify-content:space-between;align-items:center}
+.search{width:280px;height:32px;border-radius:16px;background:var(--matte);box-shadow:inset 0 0 0 1px var(--border-soft);display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--fg-2)}
+.cells{display:grid;grid-template-columns:repeat(5,1fr);row-gap:6px;margin-top:18px}
+.cell{height:116px;border-radius:var(--r-lg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;position:relative}
+.cell .ico{position:relative;width:60px;height:60px}
+.cell .ico svg{width:60px;height:60px;position:relative;z-index:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.cell .nm{font-weight:500}
+.cell.hov{background:var(--hover)}
+.cell.hov .ico::before,.cell.focus .ico::before{content:"";position:absolute;left:50%;top:50%;width:32px;height:32px;margin:-14px 0 0 -16px;border-radius:50%;background:var(--aura);box-shadow:0 0 30px 16px var(--aura)}
+.cell.focus{outline:1px solid var(--focus);outline-offset:-4px;box-shadow:inset 0 0 0 8px transparent}
+.dots{display:flex;gap:6px;justify-content:center;margin-top:6px}.dots i{width:6px;height:2px;background:var(--gold);opacity:.5}.dots i.on{width:20px;opacity:1}
+/* ===== lock screen ===== */
+.lock{position:absolute;left:760px;top:790px;width:448px;height:280px;border-radius:var(--r-md);overflow:hidden;background:var(--lock-wall);box-shadow:0 0 0 1px var(--border),var(--e3)}
+.lock .lc{position:absolute;inset:0;overflow:hidden}
+.lock .dt{position:absolute;left:0;right:0;top:40px;text-align:center}
+.lock .tm{position:absolute;left:0;right:0;top:58px;text-align:center;font-size:86px;font-weight:200;letter-spacing:-.045em;line-height:1;font-feature-settings:"tnum" 1}
+.lock .hair{position:absolute;left:214px;width:20px;top:164px;height:1px;background:var(--gold)}
+.lock .who{position:absolute;left:0;right:0;top:182px;display:flex;justify-content:center;align-items:center;gap:10px}
+.lock .pw{position:absolute;left:144px;top:220px;width:160px;height:30px;border-radius:15px;background:var(--hover);box-shadow:inset 0 0 0 1px var(--border);display:flex;align-items:center;padding:0 14px;gap:5px}
+.lock .pw i{width:5px;height:5px;border-radius:3px;background:var(--fg-0)}
+/* ===== alt-tab ===== */
+.switcher{left:1240px;top:790px;width:524px;padding:18px 16px 14px;display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.sitem{width:92px;height:88px;display:flex;align-items:center;justify-content:center;position:relative}
+.sitem .ico{position:relative;width:56px;height:56px}
+.sitem .ico svg{width:56px;height:56px;position:relative;z-index:1}
+.sitem .ico::before{content:"";position:absolute;left:50%;top:50%;width:28px;height:28px;margin:-12px 0 0 -14px;border-radius:50%;background:var(--aura);box-shadow:0 0 24px 12px var(--aura)}
+.sitem.cur::after{content:"";position:absolute;left:37px;bottom:2px;width:18px;height:2px;border-radius:1px;background:var(--gold)}
+.slabel{width:100%;text-align:center;margin-top:6px;display:flex;justify-content:center;gap:10px;align-items:baseline}
+.slabel b{font-weight:600;font-size:14px}
+/* ===== osd ===== */
+.osd{left:1240px;top:990px;width:300px;height:52px;display:flex;align-items:center;gap:14px;padding:0 20px}
+.osd .lv{flex:1;height:3px;border-radius:2px;background:var(--track);position:relative}
+.osd .lv i{position:absolute;left:0;top:0;bottom:0;width:64%;border-radius:2px;background:var(--fg-0)}
+.osd b{font-family:'Geist Mono',monospace;font-weight:500;font-size:15px;font-feature-settings:"tnum" 1}
+/* ===== shell modal dialog ===== */
+.dlg{left:1572px;top:972px;width:336px;padding:22px 22px 0;overflow:hidden}
+.dlg h3{font-size:17px;font-weight:600;letter-spacing:-.01em;margin-top:6px}
+.dlg p{color:var(--fg-1);margin-top:6px}
+.dlg .ft{display:flex;margin:18px -22px 0;border-top:1px solid var(--border)}
+.dlg .ft div{flex:1;height:44px;display:flex;align-items:center;justify-content:center;font-weight:600}
+.dlg .ft div+div{box-shadow:inset 1px 0 0 var(--border)}
+.dlg .ft .p{color:var(--accent-text)}
+</style></head><body>
+<div class="scene"><svg class="contours" width="1920" height="1200" viewBox="0 0 1920 1200"><g fill="none" stroke="var(--contour)" stroke-width="1"><circle cx="1760" cy="1260" r="140" /><circle cx="1760" cy="1260" r="186" /><circle cx="1760" cy="1260" r="232" /><circle cx="1760" cy="1260" r="278" /><circle cx="1760" cy="1260" r="324" /><circle cx="1760" cy="1260" r="370" /><circle cx="1760" cy="1260" r="416" /><circle cx="1760" cy="1260" r="462" /><circle cx="1760" cy="1260" r="508" /><circle cx="1760" cy="1260" r="554" /><circle cx="1760" cy="1260" r="600" /><circle cx="1760" cy="1260" r="646" /><circle cx="1760" cy="1260" r="692" /><circle cx="1760" cy="1260" r="738" /><circle cx="1760" cy="1260" r="784" /><circle cx="1760" cy="1260" r="830" /><circle cx="1760" cy="1260" r="876" /><circle cx="1760" cy="1260" r="922" /><circle cx="1760" cy="1260" r="968" /><circle cx="1760" cy="1260" r="1014" /><circle cx="1760" cy="1260" r="1060" /><circle cx="1760" cy="1260" r="1106" /><circle cx="1760" cy="1260" r="1152" /><circle cx="1760" cy="1260" r="1198" /><circle cx="1760" cy="1260" r="1244" /><circle cx="1760" cy="1260" r="1290" /><circle cx="1760" cy="1260" r="1336" /><circle cx="1760" cy="1260" r="1382" /><circle cx="1760" cy="1260" r="1428" /><circle cx="1760" cy="1260" r="1474" /></g></svg>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+ <linearGradient id="g-files" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B9C3CE"/><stop offset="1" stop-color="#8D9AA8"/></linearGradient>
+ <linearGradient id="g-files2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D5DCE3"/><stop offset="1" stop-color="#AEB9C5"/></linearGradient>
+ <radialGradient id="g-ff1" cx=".3" cy=".25" r=".9"><stop offset="0" stop-color="#FFE14D"/><stop offset=".35" stop-color="#FF9A2E"/><stop offset=".7" stop-color="#FF4F3A"/><stop offset="1" stop-color="#E2265E"/></radialGradient>
+ <radialGradient id="g-ff2" cx=".55" cy=".45" r=".6"><stop offset="0" stop-color="#9059FF"/><stop offset="1" stop-color="#4B1FB0"/></radialGradient>
+ <linearGradient id="g-tb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4FA3FF"/><stop offset="1" stop-color="#1655C9"/></linearGradient>
+ <linearGradient id="g-term" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A4446"/><stop offset="1" stop-color="#2A2627"/></linearGradient>
+ <linearGradient id="g-vs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3EB1F7"/><stop offset="1" stop-color="#0B6DC0"/></linearGradient>
+ <linearGradient id="g-ob" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A88BFA"/><stop offset="1" stop-color="#5B2DC7"/></linearGradient>
+ <linearGradient id="g-set" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9A6A4"/><stop offset="1" stop-color="#6E6B69"/></linearGradient>
+ <linearGradient id="g-ac" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7774A"/><stop offset="1" stop-color="#D6431B"/></linearGradient>
+ <linearGradient id="g-tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#41BCF2"/><stop offset="1" stop-color="#1D93D2"/></linearGradient>
+ <linearGradient id="g-sp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2BD06A"/><stop offset="1" stop-color="#159A45"/></linearGradient>
+ <linearGradient id="g-ph" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD15C"/><stop offset="1" stop-color="#F0962E"/></linearGradient>
+ <linearGradient id="g-mp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6FD08F"/><stop offset="1" stop-color="#2F8C55"/></linearGradient>
+ <linearGradient id="g-mu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7AA2"/><stop offset="1" stop-color="#D23C6A"/></linearGradient>
+ <symbol id="i-files" viewBox="0 0 48 48"><path d="M5 12a4 4 0 0 1 4-4h10l4 4h16a4 4 0 0 1 4 4v20a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z" fill="url(#g-files)"/><path d="M5 18a4 4 0 0 1 4-4h30a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z" fill="url(#g-files2)"/><rect x="19" y="24" width="10" height="2" rx="1" fill="#7C8996"/></symbol>
+ <symbol id="i-firefox" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="url(#g-ff1)"/><circle cx="25" cy="25.5" r="12.5" fill="url(#g-ff2)"/><path d="M8 18c3-9 14-13 22-9-6 0-9 3-9.5 6 5-1 9 1 10 4-4-1-7 1-7 4 0 6 8 8 13 3-1 8-9 14-18 13C10 38 5 28 8 18z" fill="#FF8A2B" opacity=".95"/><path d="M12 14c-2 3-2 6-1 8 1-3 3-4 5-4-2-1-3-2-4-4z" fill="#FFD23F"/></symbol>
+ <symbol id="i-thunderbird" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="url(#g-tb)"/><path d="M12 18h24v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2z" fill="#EAF2FF"/><path d="M12 18l12 9 12-9" fill="none" stroke="#9BC1F5" stroke-width="2"/><path d="M8 22c6-10 20-13 30-6-8-2-15 0-20 6z" fill="#0E3F9A" opacity=".85"/></symbol>
+ <symbol id="i-terminal" viewBox="0 0 48 48"><rect x="5" y="7" width="38" height="34" rx="6" fill="url(#g-term)"/><rect x="5" y="7" width="38" height="7" rx="6" fill="#5A5456"/><rect x="5" y="11" width="38" height="3" fill="#5A5456"/><path d="M12 21l6 5-6 5" fill="none" stroke="#E8E2DE" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="21" y="30" width="10" height="2.4" rx="1.2" fill="#E8E2DE"/></symbol>
+ <symbol id="i-vscode" viewBox="0 0 48 48"><path d="M33 5l9 4.5v29L33 43 15 27l-7 5.5-3-1.5V17l3-1.5 7 5.5z" fill="url(#g-vs)"/><path d="M33 5v38L15 27z" fill="#0A5FA8" opacity=".55"/><path d="M33 14v20l-10-10z" fill="#E9F5FE"/><path d="M8 18.5l5 5.5-5 5.5z" fill="#E9F5FE"/></symbol>
+ <symbol id="i-spotify" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="url(#g-sp)"/><path d="M13 18.5c7-2 16-1.5 22 2M14.5 24.5c6-1.6 13-1 18 1.8M16 30c5-1.2 10-.8 14 1.2" fill="none" stroke="#0C2A16" stroke-width="2.8" stroke-linecap="round"/></symbol>
+ <symbol id="i-obsidian" viewBox="0 0 48 48"><path d="M19 4l14 6 6 16-9 18H16L9 28z" fill="url(#g-ob)"/><path d="M19 4l3 18-13 6z" fill="#C7B5FF" opacity=".55"/><path d="M22 22l11-12 6 16z" fill="#3D1A9A" opacity=".45"/><path d="M22 22l8 22H16z" fill="#7A52E8" opacity=".6"/></symbol>
+ <symbol id="i-settings" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="url(#g-set)"/><path d="M24 12l2.4.4.9 3 2.6 1.1 2.8-1.5 3.4 3.4-1.5 2.8 1.1 2.6 3 .9v4.8l-3 .9-1.1 2.6 1.5 2.8-3.4 3.4-2.8-1.5-2.6 1.1-.9 3h-4.8l-.9-3-2.6-1.1-2.8 1.5-3.4-3.4 1.5-2.8-1.1-2.6-3-.9v-4.8l3-.9 1.1-2.6-1.5-2.8 3.4-3.4 2.8 1.5 2.6-1.1.9-3z" fill="#EDEBEA" transform="translate(24 24) scale(.82) translate(-24 -24)"/><circle cx="24" cy="24" r="4.6" fill="#7E7B79"/></symbol>
+ <symbol id="i-appcenter" viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="9" fill="url(#g-ac)"/><path d="M15 19h18l-1.5 15a2 2 0 0 1-2 1.8h-11a2 2 0 0 1-2-1.8z" fill="#FFF4EE"/><path d="M19.5 19v-2a4.5 4.5 0 0 1 9 0v2" fill="none" stroke="#FFF4EE" stroke-width="2.2"/><circle cx="24" cy="27" r="2.6" fill="#E95420"/></symbol>
+ <symbol id="i-telegram" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="url(#g-tg)"/><path d="M12 23.5l21-8.3c1-.4 1.9.3 1.6 1.7l-3.6 16.8c-.3 1.2-1 1.5-2 .9l-5.4-4-2.6 2.5c-.3.3-.5.5-1.1.5l.4-5.5 10-9c.4-.4-.1-.6-.7-.2l-12.3 7.8-5.3-1.7c-1.2-.4-1.2-1.1.2-1.6z" fill="#FFFFFF"/></symbol>
+ <symbol id="i-writer" viewBox="0 0 48 48"><path d="M11 5h18l10 10v26a2 2 0 0 1-2 2H11a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" fill="#F7F9FC"/><path d="M29 5l10 10h-8a2 2 0 0 1-2-2z" fill="#B7CBEA"/><rect x="9" y="30" width="30" height="13" rx="0" fill="#2A6FD6"/><path d="M9 41a2 2 0 0 0 2 2h26a2 2 0 0 0 2-2v-11H9z" fill="#2A6FD6"/><rect x="14" y="17" width="14" height="2" rx="1" fill="#9AA9BF"/><rect x="14" y="22" width="20" height="2" rx="1" fill="#9AA9BF"/><rect x="14" y="34" width="12" height="2.4" rx="1.2" fill="#E9F1FF"/></symbol>
+ <symbol id="i-calendar" viewBox="0 0 48 48"><rect x="6" y="7" width="36" height="35" rx="7" fill="#FBFBFA"/><path d="M6 14a7 7 0 0 1 7-7h22a7 7 0 0 1 7 7v3H6z" fill="#E0453A"/><text x="24" y="36" text-anchor="middle" font-family="Geist" font-weight="600" font-size="16" fill="#2B2B2B">23</text></symbol>
+ <symbol id="i-photos" viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="9" fill="url(#g-ph)"/><path d="M10 36l9-11 6 7 4-4 9 8z" fill="#FFF6E3"/><circle cx="31" cy="17" r="3.5" fill="#FFF6E3"/></symbol>
+ <symbol id="i-maps" viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="9" fill="url(#g-mp)"/><path d="M6 30l36-12v6L6 36z" fill="#E7F6EC" opacity=".8"/><path d="M24 11a7 7 0 0 1 7 7c0 5-7 12-7 12s-7-7-7-12a7 7 0 0 1 7-7z" fill="#D9363E"/><circle cx="24" cy="18" r="2.6" fill="#FFF"/></symbol>
+ <symbol id="i-music" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="url(#g-mu)"/><path d="M20 14l12-3v17" fill="none" stroke="#FFF" stroke-width="2.4" stroke-linejoin="round"/><path d="M20 14v18" stroke="#FFF" stroke-width="2.4"/><circle cx="17" cy="32" r="3.6" fill="#FFF"/><circle cx="29" cy="28.5" r="3.6" fill="#FFF"/></symbol>
+ <symbol id="i-gimp" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#8A7660"/><circle cx="24" cy="24" r="14" fill="#B8A58C"/><path d="M14 30c4-8 14-12 22-6-4 0-6 2-7 5-5-2-10-1-15 1z" fill="#5E4E3C"/></symbol>
+ <symbol id="i-grid" viewBox="0 0 48 48"><g fill="currentColor"><circle cx="15" cy="15" r="3"/><circle cx="24" cy="15" r="3"/><circle cx="33" cy="15" r="3"/><circle cx="15" cy="24" r="3"/><circle cx="24" cy="24" r="3"/><circle cx="33" cy="24" r="3"/><circle cx="15" cy="33" r="3"/><circle cx="24" cy="33" r="3"/><circle cx="33" cy="33" r="3"/></g></symbol>
+ <symbol id="s-wifi" viewBox="0 0 16 16"><path d="M8 13.2l1.6-1.9a2.2 2.2 0 0 0-3.2 0z M3.1 7.4a7 7 0 0 1 9.8 0l-1.3 1.5a5 5 0 0 0-7.2 0z M.7 4.6a10.5 10.5 0 0 1 14.6 0l-1.3 1.5a8.5 8.5 0 0 0-12 0z" fill="currentColor"/></symbol>
+ <symbol id="s-bt" viewBox="0 0 16 16"><path d="M4.5 5l7 6-3.5 3V2l3.5 3-7 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+ <symbol id="s-vol" viewBox="0 0 16 16"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor"/><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12.5 3.5a6.3 6.3 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+ <symbol id="s-bat" viewBox="0 0 16 16"><rect x="1.5" y="4.5" width="11.5" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="3" y="6" width="7.5" height="4" rx="1" fill="currentColor"/><rect x="13.6" y="6.5" width="1.4" height="3" rx=".7" fill="currentColor"/></symbol>
+ <symbol id="s-pow" viewBox="0 0 16 16"><path d="M8 1.8v5.4M4.6 3.9a5.4 5.4 0 1 0 6.8 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+ <symbol id="s-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/><g stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3"/></g></symbol>
+ <symbol id="s-moon" viewBox="0 0 16 16"><path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/></symbol>
+ <symbol id="s-bell" viewBox="0 0 16 16"><path d="M8 1.8a4 4 0 0 0-4 4v3L2.6 11.5h10.8L12 8.8v-3a4 4 0 0 0-4-4zM6.4 13a1.7 1.7 0 0 0 3.2 0" fill="currentColor"/></symbol>
+ <symbol id="s-lock" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="2" fill="currentColor"/><path d="M5.2 7V5.2a2.8 2.8 0 0 1 5.6 0V7" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+ <symbol id="s-cam" viewBox="0 0 16 16"><path d="M2 5.5A1.5 1.5 0 0 1 3.5 4h1.6l1-1.5h3.8l1 1.5h1.6A1.5 1.5 0 0 1 14 5.5v6A1.5 1.5 0 0 1 12.5 13h-9A1.5 1.5 0 0 1 2 11.5z" fill="currentColor"/><circle cx="8" cy="8.5" r="2.3" fill="var(--qs-bg)"/></symbol>
+ <symbol id="s-gear" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-dasharray="2.2 1.5"/><circle cx="8" cy="8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+ <symbol id="s-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.4 10.4L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+ <symbol id="s-menu" viewBox="0 0 16 16"><path d="M3 4.5h10M3 8h10M3 11.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+ <symbol id="s-x" viewBox="0 0 16 16"><path d="M5 5l6 6M11 5l-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+ <symbol id="s-min" viewBox="0 0 16 16"><path d="M5 10.5h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+ <symbol id="s-max" viewBox="0 0 16 16"><rect x="5" y="5" width="6" height="6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/></symbol>
+ <symbol id="s-chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="s-plus" viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+ <symbol id="s-mon" viewBox="0 0 16 16"><rect x="1.8" y="2.8" width="12.4" height="8.4" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 13.6h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></symbol>
+ <symbol id="s-palette" viewBox="0 0 16 16"><path d="M8 1.8a6.2 6.2 0 0 0 0 12.4c1 0 1.4-.7 1.1-1.5-.4-1 .2-1.9 1.3-1.9h1.6a2.2 2.2 0 0 0 2.2-2.2C14.2 4.9 11.4 1.8 8 1.8z" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="5" cy="7.2" r="1" fill="currentColor"/><circle cx="7.6" cy="4.8" r="1" fill="currentColor"/><circle cx="10.6" cy="5.6" r="1" fill="currentColor"/></symbol>
+ <symbol id="s-dock" viewBox="0 0 16 16"><rect x="1.8" y="2.8" width="12.4" height="10.4" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="3.4" y="4.4" width="2.4" height="7.2" rx="1" fill="currentColor"/></symbol>
+ <symbol id="s-shield" viewBox="0 0 16 16"><path d="M8 1.6l5.2 2v4.2c0 3.2-2.2 5.5-5.2 6.6-3-1.1-5.2-3.4-5.2-6.6V3.6z" fill="none" stroke="currentColor" stroke-width="1.3"/></symbol>
+ <symbol id="s-info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="5" r=".9" fill="currentColor"/></symbol>
+ <symbol id="s-key" viewBox="0 0 16 16"><rect x="1.5" y="4" width="13" height="8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M4 6.6h.01M6.5 6.6h.01M9 6.6h.01M11.5 6.6h.01M5 9.4h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+ <symbol id="s-net" viewBox="0 0 16 16"><rect x="5.5" y="1.8" width="5" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="1.5" y="10.2" width="5" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="9.5" y="10.2" width="5" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 5.8v2.2M4 10.2V8h8v2.2" fill="none" stroke="currentColor" stroke-width="1.3"/></symbol>
+ <symbol id="s-tab" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6 2.5v11" stroke="currentColor" stroke-width="1.3"/></symbol>
+</defs></svg>
+<!-- top bar: three floating islands (bar itself transparent) -->
+<div class="isl" style="left:12px"><div class="ticks"><i class="on"></i><i></i><i></i><i></i></div></div>
+<div class="isl clk" style="left:50%;transform:translateX(-50%)"><span class="d">THU 23 OCT</span><span class="sep"></span><span class="t">14:07</span></div>
+<div class="isl tray" style="right:12px"><svg class="s"><use href="#s-wifi"/></svg><svg class="s"><use href="#s-vol"/></svg><svg class="s"><use href="#s-bat"/></svg><b>87%</b></div>
+
+<div class="slab dock"><div class="app" style="--aura:rgba(154,148,161,0.140)"><i class="run"></i><svg><use href="#i-files"/></svg></div><div class="app" style="--aura:rgba(222,136,114,0.550)"><i class="run act"></i><svg><use href="#i-firefox"/></svg></div><div class="app" style="--aura:rgba(121,145,200,0.460)"><svg><use href="#i-thunderbird"/></svg></div><div class="app" style="--aura:rgba(161,140,144,0.140)"><i class="run"></i><svg><use href="#i-terminal"/></svg></div><div class="app" style="--aura:rgba(113,148,198,0.460)"><i class="run two"></i><svg><use href="#i-vscode"/></svg></div><div class="app hover" style="--aura:rgba(129,168,120,0.550)"><i class="run two"></i><svg><use href="#i-spotify"/></svg></div><div class="app" style="--aura:rgba(160,130,196,0.460)"><svg><use href="#i-obsidian"/></svg></div><div class="app" style="--aura:rgba(118,165,209,0.460)"><i class="run"></i><svg><use href="#i-telegram"/></svg></div><div class="app" style="--aura:rgba(159,141,141,0.140)"><i class="run"></i><svg><use href="#i-settings"/></svg></div><div class="app" style="--aura:rgba(205,120,101,0.460)"><svg><use href="#i-appcenter"/></svg></div><div class="sep"></div><div class="app grid"><svg style="width:30px;height:30px;filter:none"><use href="#i-grid"/></svg></div></div>
+<div class="tip" style="top:599px">Spotify <span class="eb">2 windows</span></div>
+
+<!-- Settings: matte GTK window -->
+<div class="win focused" style="left:112px;top:64px;width:860px;height:660px">
+ <div class="split">
+  <div class="side pane">
+   <div class="hb"><div class="ib"><svg class="s"><use href="#s-search"/></svg></div><div class="t">Settings</div><div style="flex:1"></div><div class="ib"><svg class="s"><use href="#s-menu"/></svg></div></div>
+   <div class="rows">
+    <div class="row"><svg class="s"><use href="#s-wifi"/></svg>Wi-Fi</div>
+    <div class="row"><svg class="s"><use href="#s-net"/></svg>Network</div>
+    <div class="row"><svg class="s"><use href="#s-bt"/></svg>Bluetooth</div>
+    <div class="row"><svg class="s"><use href="#s-mon"/></svg>Displays</div>
+    <div class="row"><svg class="s"><use href="#s-vol"/></svg>Sound</div>
+    <div class="row"><svg class="s"><use href="#s-bat"/></svg>Power</div>
+    <div class="row sel"><svg class="s"><use href="#s-palette"/></svg>Appearance</div>
+    <div class="row hov"><svg class="s"><use href="#s-dock"/></svg>Ubuntu Desktop</div>
+    <div class="row"><svg class="s"><use href="#s-bell"/></svg>Notifications</div>
+    <div class="eb">System</div>
+    <div class="row"><svg class="s"><use href="#s-shield"/></svg>Privacy &amp; Security</div>
+    <div class="row"><svg class="s"><use href="#s-key"/></svg>Keyboard</div>
+    <div class="row"><svg class="s"><use href="#s-info"/></svg>About</div>
+   </div>
+  </div>
+  <div class="main pane">
+   <div class="hb"><div style="flex:1"></div><div class="wc"><svg class="s"><use href="#s-min"/></svg></div><div class="wc"><svg class="s"><use href="#s-max"/></svg></div><div class="wc hov"><svg class="s"><use href="#s-x"/></svg></div></div>
+   <div class="content">
+    <div class="eb">Desktop · 04</div>
+    <div class="pt"><h1>Appearance</h1></div>
+    <div class="group"><div class="eb">Style</div><div class="styles">
+     <div class="stl on"><div class="thumb" style="background:#EFE8DD"><div class="abs" style="left:14px;top:12px;width:88px;height:56px;border-radius:3px 9px 9px 9px;background:#FAF7F2;box-shadow:0 2px 8px rgba(60,30,35,.18),inset 0 1px 0 rgba(176,141,87,.55)"></div><div class="abs" style="left:24px;top:44px;width:30px;height:9px;border-radius:5px;background:#7A1C34"></div></div><div class="nm">Ivory<span class="eb">Light</span></div></div>
+     <div class="stl "><div class="thumb" style="background:#0E0B0C"><div class="abs" style="left:14px;top:12px;width:88px;height:56px;border-radius:3px 9px 9px 9px;background:#1C1718;box-shadow:0 2px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(201,174,134,.35)"></div><div class="abs" style="left:24px;top:44px;width:30px;height:9px;border-radius:5px;background:#8E2A44"></div></div><div class="nm">Wine<span class="eb">Dark</span></div></div>
+    </div></div>
+    <div class="group"><div class="eb">Accent &amp; dock</div><div class="list">
+     <div class="r"><div><div class="tt">Accent colour</div><div class="st">Bordeaux</div></div>
+      <div class="sws"><div class="swc on" style="background:var(--accent)"></div><div class="swc" style="background:#9C5B2E"></div><div class="swc" style="background:#4F6B4A"></div><div class="swc" style="background:#3F5F86"></div><div class="swc" style="background:#6A4E86"></div><div class="swc" style="background:#6E6563"></div></div></div>
+     <div class="r"><div><div class="tt">Dock aura</div><div class="st">A soft glow in each app's own colour</div></div><div class="sw on"></div></div>
+     <div class="r hov"><div style="width:150px"><div class="tt">Aura intensity</div><div class="st">Subtle</div></div>
+      <div class="slider" style="max-width:280px"><div class="tr"></div><div class="fi" style="width:38%"></div><div class="kn" style="left:38%"></div></div><span class="val">38%</span></div>
+    </div></div>
+    <div class="group" style="display:flex;gap:12px;align-items:center">
+     <div class="entry focus" style="width:300px"><svg class="s"><use href="#s-search"/></svg>wallpaper<span class="caret"></span></div><div class="btn">Browse…</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:18px">
+     <div class="btn sug">Apply</div><div class="btn">Cancel</div><div class="btn flat">Reset</div><div style="flex:1"></div><div class="btn dest">Remove theme</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px">
+     <span class="chip" style="color:var(--success)"><i></i>Installed</span><span class="chip" style="color:var(--warning)"><i></i>Update 2.1</span><span class="chip" style="color:var(--danger)"><i></i>1 conflict</span><span class="chip" style="color:var(--info)"><i></i>Wayland</span>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- notification -->
+<div class="slab note">
+ <div class="hd"><svg><use href="#i-thunderbird"/></svg><span class="eb">Thunderbird</span><span class="eb" style="margin-left:auto">now</span></div>
+ <div class="bd"><b>Lina Haddad</b><p>Re: palette review. The gold hairlines are perfect, ship it.</p></div>
+ <div class="ft"><div class="p">Reply</div><div>Mark as read</div></div>
+</div>
+
+<!-- quick settings: bento -->
+<div class="slab qs">
+ <div class="card cell2 sys"><div><div class="eb" style="margin-bottom:6px">Battery · 5:12 left</div><div class="big">87<small>%</small></div></div>
+  <div class="qbs"><div class="qb"><svg class="s"><use href="#s-cam"/></svg></div><div class="qb"><svg class="s"><use href="#s-gear"/></svg></div><div class="qb"><svg class="s"><use href="#s-lock"/></svg></div><div class="qb"><svg class="s"><use href="#s-pow"/></svg></div></div></div>
+ <div class="card cell2 sls">
+  <div class="sl"><svg class="s"><use href="#s-vol"/></svg><div class="slider"><div class="tr"></div><div class="fi" style="width:64%"></div><div class="kn" style="left:64%"></div></div><span class="val">64</span></div>
+  <div class="sl"><svg class="s"><use href="#s-sun"/></svg><div class="slider"><div class="tr"></div><div class="fi" style="width:42%"></div><div class="kn" style="left:42%"></div></div><span class="val">42</span></div>
+ </div>
+ <div class="tile on"><div class="ic"><svg class="s"><use href="#s-wifi"/></svg></div><div class="tx"><b>Wi-Fi</b><span>Home-5G</span></div><div class="ar"><svg class="s"><use href="#s-chev"/></svg></div></div>
+ <div class="tile on"><div class="ic"><svg class="s"><use href="#s-bt"/></svg></div><div class="tx"><b>Bluetooth</b><span>2 devices</span></div><div class="ar"><svg class="s"><use href="#s-chev"/></svg></div></div>
+ <div class="tile"><div class="ic"><svg class="s"><use href="#s-bat"/></svg></div><div class="tx"><b>Balanced</b><span>Power mode</span></div><div class="ar"><svg class="s"><use href="#s-chev"/></svg></div></div>
+ <div class="tile  focus"><div class="ic"><svg class="s"><use href="#s-moon"/></svg></div><div class="tx"><b>Dark Style</b><span>Off</span></div></div>
+ <div class="tile"><div class="ic"><svg class="s"><use href="#s-sun"/></svg></div><div class="tx"><b>Night Light</b><span>Off</span></div></div>
+ <div class="tile"><div class="ic"><svg class="s"><use href="#s-bell"/></svg></div><div class="tx"><b>Do Not Disturb</b><span>Off</span></div></div>
+ <div class="cell2 qfoot"><span class="mono-b">B</span><span class="eb">Bordeaux · Ivory Merlot</span><span class="rule"></span><span class="eb">Aura 38%</span></div>
+</div>
+
+<!-- terminal -->
+<div class="win term">
+ <div class="hb"><div class="tabx on">~/bordeaux-gnome</div><div class="tabx">btop</div><div style="flex:1"></div>
+  <div class="ib"><svg class="s"><use href="#s-plus"/></svg></div><div class="wc"><svg class="s"><use href="#s-min"/></svg></div><div class="wc"><svg class="s"><use href="#s-max"/></svg></div><div class="wc"><svg class="s"><use href="#s-x"/></svg></div></div>
+ <div class="tbody">
+  <div><span class="c2">hamza</span> <span class="c4">~/bordeaux-gnome</span> <span class="c5">main</span> $ aura-scan</div>
+  <div class="cg">142 entries · icon theme Yaru</div>
+  <div><span class="c3">firefox </span> <span class="cg">#FF7139</span> → <span class="c1">#DE8872</span> α 0.46</div>
+  <div><span class="c3">code    </span> <span class="cg">#1F8AD8</span> → <span class="c4">#7194C6</span> α 0.46</div>
+  <div><span class="c3">terminal</span> <span class="cg">#3A3537</span> → neutral α 0.14</div>
+  <div><span class="c2">ok</span> 142  <span class="c3">warn</span> 3  <span class="c1">fail</span> 0</div>
+  <div><span class="c2">hamza</span> <span class="c4">~/bordeaux-gnome</span> <span class="c5">main</span> $ <span class="cursor"></span></div>
+  <div class="ansi"><i style="background:var(--a0)"></i><i style="background:var(--a1)"></i><i style="background:var(--a2)"></i><i style="background:var(--a3)"></i><i style="background:var(--a4)"></i><i style="background:var(--a5)"></i><i style="background:var(--a6)"></i><i style="background:var(--a7)"></i></div>
+ </div>
+</div>
+
+<!-- app grid -->
+<div class="slab agrid">
+ <div class="top"><span class="eb">All apps · 1 / 3</span><div class="search"><svg class="s"><use href="#s-search"/></svg>Type to search</div></div>
+ <div class="cells"><div class="cell" style="--aura:rgba(222,136,114,0.550)"><div class="ico"><svg><use href="#i-firefox"/></svg></div><div class="nm">Firefox</div></div><div class="cell hov" style="--aura:rgba(154,148,161,0.196)"><div class="ico"><svg><use href="#i-files"/></svg></div><div class="nm">Files</div></div><div class="cell" style="--aura:rgba(125,144,201,0.550)"><div class="ico"><svg><use href="#i-writer"/></svg></div><div class="nm">Writer</div></div><div class="cell" style="--aura:rgba(206,118,111,0.550)"><div class="ico"><svg><use href="#i-calendar"/></svg></div><div class="nm">Calendar</div></div><div class="cell" style="--aura:rgba(218,166,103,0.550)"><div class="ico"><svg><use href="#i-photos"/></svg></div><div class="nm">Photos</div></div><div class="cell" style="--aura:rgba(114,160,118,0.550)"><div class="ico"><svg><use href="#i-maps"/></svg></div><div class="nm">Maps</div></div><div class="cell" style="--aura:rgba(203,115,137,0.550)"><div class="ico"><svg><use href="#i-music"/></svg></div><div class="nm">Rhythmbox</div></div><div class="cell" style="--aura:rgba(171,138,121,0.266)"><div class="ico"><svg><use href="#i-gimp"/></svg></div><div class="nm">GIMP</div></div><div class="cell focus" style="--aura:rgba(118,165,209,0.550)"><div class="ico"><svg><use href="#i-telegram"/></svg></div><div class="nm">Telegram</div></div><div class="cell" style="--aura:rgba(160,130,196,0.550)"><div class="ico"><svg><use href="#i-obsidian"/></svg></div><div class="nm">Obsidian</div></div></div>
+ <div class="dots"><i class="on"></i><i></i><i></i></div>
+</div>
+
+<!-- lock -->
+<div class="lock"><div class="lc">
+ <div class="dt eb" style="color:var(--fg-1)">Thursday · 23 October</div>
+ <div class="tm">14:07</div><div class="hair"></div>
+ <div class="who"><span class="mono-b" style="width:26px;height:26px;border-radius:13px">H</span><span style="font-weight:600">Hamza Gouda</span></div>
+ <div class="pw"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div></div>
+<div class="cap" style="left:760px;top:770px">Lock screen</div>
+
+<!-- alt-tab -->
+<div class="slab switcher"><div class="sitem" style="--aura:rgba(222,136,114,0.460)"><div class="ico"><svg><use href="#i-firefox"/></svg></div></div><div class="sitem cur" style="--aura:rgba(161,140,144,0.224)"><div class="ico"><svg><use href="#i-terminal"/></svg></div></div><div class="sitem" style="--aura:rgba(113,148,198,0.460)"><div class="ico"><svg><use href="#i-vscode"/></svg></div></div><div class="sitem" style="--aura:rgba(121,145,200,0.460)"><div class="ico"><svg><use href="#i-thunderbird"/></svg></div></div><div class="sitem" style="--aura:rgba(129,168,120,0.460)"><div class="ico"><svg><use href="#i-spotify"/></svg></div></div><div class="slabel"><b>Terminal</b><span class="eb">2 windows</span></div></div>
+
+<!-- osd -->
+<div class="slab osd"><svg class="s"><use href="#s-vol"/></svg><div class="lv"><i></i></div><b>64</b></div>
+
+<!-- shell modal -->
+<div class="slab dlg"><div class="eb">Session</div><h3>Restart</h3><p>The system will restart automatically in <span class="mono tnum">52</span> seconds.</p>
+ <div class="ft"><div>Cancel</div><div class="p">Restart</div></div></div>
+
+<div class="cap" style="right:24px;bottom:14px">Bordeaux · Hallmark · Ivory Merlot</div>
+</div>
+</body></html>
