@@ -102,13 +102,9 @@ switch:focus-visible {
     box-shadow: 0 0 0 6px rgba(201, 174, 134, 0.14);
 }
 
-/* Sidebar location: gold tick on the leading edge, tile fill, no burgundy. */
+/* Sidebar location: tile fill only, no gold strip, no burgundy. */
 .navigation-sidebar row:selected,
 .sidebar-pane row:selected {
     background-color: #231D1E;
     color: @sidebar_fg_color;
-    background-image: linear-gradient(to bottom, transparent 8px, #C9AE86 8px, #C9AE86 24px, transparent 24px);
-    background-repeat: no-repeat;
-    background-size: 2px 100%;
-    background-position: left center;
 }

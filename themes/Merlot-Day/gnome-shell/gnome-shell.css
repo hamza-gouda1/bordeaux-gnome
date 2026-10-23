@@ -2,8 +2,8 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /* ==============================================================================
  * Bordeaux Design System - GNOME Shell stylesheet, Merlot-Day (Ivory Merlot)
- * "Hallmark": glass slabs with a gold top edge, a darker lip, a cut top-left
- * corner and one box-shadow. Tested target: GNOME 46 (Wayland), Ubuntu 24.04.
+ * "Hallmark": glass slabs with a uniform 1px hairline, a cut top-left
+ * corner and one box-shadow. Gold only marks focus and place, never an edge. Tested target: GNOME 46 (Wayland), Ubuntu 24.04.
  * St notes: one box-shadow per node, no text-transform, no CSS variables.
  * ============================================================================== */
 
@@ -35,7 +35,6 @@ stage {
 #panelRight {
     background-color: rgba(250, 247, 242, 0.72);
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.85);
     border-radius: 18px;
     box-shadow: 0 1px 2px rgba(60, 30, 35, 0.1);
     margin: 8px 0;
@@ -110,12 +109,12 @@ stage {
     color: #2B1A1E;
 }
 
-/* Workspace indicator: round 6px gold dots. The shell (WorkspaceDot) sets the
-   inactive ones to half opacity and 0.75 scale, so they read dim; it also widens
-   the active one's box, which no CSS can prevent. */
+/* Workspace indicator: round 6px dots in neutral light. The shell (WorkspaceDot)
+   dims the inactive ones and stretches the active one into a pill, which no CSS can
+   prevent; a gold stretched dot read as a gold dash, so no gold here. */
 #panel .panel-button#panelActivities .workspace-dot,
 #panel:overview .panel-button#panelActivities .workspace-dot {
-    background-color: #A8844C;
+    background-color: #2B1A1E;
     border-radius: 999px;
     min-width: 6px;
     min-height: 6px;
@@ -131,8 +130,6 @@ stage {
     background-gradient-end: rgba(250, 247, 242, 0.88);
     color: #2B1A1E;
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
-    border-bottom-color: rgba(60, 30, 35, 0.16);
     border-radius: 6px 22px 22px 22px !important;
     padding: 12px;
     box-shadow: 0 18px 40px rgba(60, 30, 35, 0.16);
@@ -158,7 +155,7 @@ stage {
 .quick-toggle:hover,
 .quick-menu-toggle .quick-toggle:hover {
     background-color: #E6DDCF;
-    border-color: rgba(168, 132, 76, 0.30);
+    border-color: rgba(43, 26, 30, 0.08);
     color: #2B1A1E;
 }
 
@@ -225,7 +222,7 @@ stage {
     color: #2B1A1E;
     -slider-handle-radius: 8px;
     -slider-handle-border-width: 1px;
-    -slider-handle-border-color: rgba(168, 132, 76, 0.55);
+    -slider-handle-border-color: #D6CAB9;
 }
 
 /* Popover Menu Items */
@@ -243,7 +240,6 @@ stage {
 .popup-menu-item:focus {
     background-color: #7A1C34;
     color: #FFF7F2;
-    border-left: 2px solid #A8844C;
 }
 
 /* Date & Notification Popover (#calendarArea, .message-list, .calendar) */
@@ -260,7 +256,7 @@ stage {
     font-size: 10.5px !important;
     font-weight: 500 !important;
     letter-spacing: 1.5px;
-    color: #6F5218 !important;
+    color: #6B575B !important;
 }
 
 .datemenu-today-button .date-label {
@@ -283,7 +279,7 @@ stage {
     font-size: 10.5px !important;
     font-weight: 500 !important;
     letter-spacing: 1.5px;
-    color: #6F5218 !important;
+    color: #6B575B !important;
 }
 
 .calendar .calendar-day {
@@ -296,7 +292,7 @@ stage {
 .calendar .calendar-day.calendar-today {
     background-color: #7A1C34 !important;
     color: #FFF7F2 !important;
-    border: 1px solid #A8844C !important;
+    border: 1px solid #8E2A44 !important;
     border-radius: 9999px !important;
 }
 
@@ -313,7 +309,6 @@ stage {
 .message {
     background-color: #F3EEE6 !important;
     border: 1px solid #D6CAB9 !important;
-    border-top-color: rgba(168, 132, 76, 0.30) !important;
     border-radius: 12px !important;
     box-shadow: 0 1px 2px rgba(60, 30, 35, 0.1) !important;
     padding: 4px !important;
@@ -322,7 +317,7 @@ stage {
 
 .message:hover {
     background-color: #ECE4D8 !important;
-    border-color: rgba(168, 132, 76, 0.30) !important;
+    border-color: rgba(43, 26, 30, 0.08) !important;
 }
 
 .message .message-header {
@@ -385,7 +380,7 @@ stage {
 }
 
 /* ==============================================================================
- * 3. DASH-TO-DOCK (Left Dock) - a slab: gold top edge, lip, cut corner
+ * 3. DASH-TO-DOCK (Left Dock) - a slab: uniform hairline, cut corner
  * ============================================================================== */
 #dashtodockContainer {
     background-color: transparent;
@@ -409,8 +404,6 @@ stage {
     background-gradient-start: rgba(253, 252, 250, 0.946) !important;
     background-gradient-end: #F3EEE6 !important;
     border: 1px solid #D6CAB9 !important;
-    border-top-color: rgba(168, 132, 76, 0.85) !important;
-    border-bottom-color: rgba(60, 30, 35, 0.16) !important;
     box-shadow: none !important;
     border-radius: 30px !important;
     margin-top: 0 !important;
@@ -466,7 +459,7 @@ stage {
 }
 
 #dashtodockContainer .dash-separator {
-    background-color: rgba(168, 132, 76, 0.55) !important;
+    background-color: #D6CAB9 !important;
     height: 1px !important;
     margin: 4px 6px !important;
 }
@@ -498,7 +491,7 @@ stage {
 #dashtodockContainer.right .notification-badge {
     background-color: #7A1C34 !important;
     color: #FFF7F2 !important;
-    border: 1px solid rgba(168, 132, 76, 0.55) !important;
+    border: 1px solid #8E2A44 !important;
     box-shadow: 0 1px 2px rgba(60, 30, 35, 0.1) !important;
     border-radius: 9999px !important;
     font-family: "Geist Mono", monospace !important;
@@ -516,7 +509,7 @@ stage {
 #dashtodockContainer .number-overlay {
     color: #2B1A1E !important;
     background-color: rgba(250, 247, 242, 0.88) !important;
-    border: 1px solid rgba(168, 132, 76, 0.55) !important;
+    border: 1px solid #D6CAB9 !important;
     border-radius: 9999px !important;
     font-family: "Geist Mono", monospace !important;
     font-weight: 600 !important;
@@ -618,8 +611,6 @@ stage {
 .app-folder {
     background-color: #F3EEE6 !important;
     border: 1px solid #D6CAB9 !important;
-    border-top-color: rgba(168, 132, 76, 0.55) !important;
-    border-bottom-color: rgba(60, 30, 35, 0.16) !important;
     box-shadow: none !important;
     border-radius: 6px 22px 22px 22px !important;
     min-width: 120px;
@@ -628,8 +619,7 @@ stage {
 
 .app-folder:hover {
     background-color: #F3EEE6 !important;
-    border-color: rgba(168, 132, 76, 0.30) !important;
-    border-top-color: #A8844C !important;
+    border-color: rgba(43, 26, 30, 0.08) !important;
     box-shadow: none !important;
 }
 
@@ -637,8 +627,6 @@ stage {
 .app-folder-dialog {
     background-color: rgba(250, 247, 242, 0.88) !important;
     border: 1px solid #D6CAB9 !important;
-    border-top-color: rgba(168, 132, 76, 0.55) !important;
-    border-bottom-color: rgba(60, 30, 35, 0.16) !important;
     border-radius: 6px 22px 22px 22px !important;
     box-shadow: none !important;
 }
@@ -678,17 +666,15 @@ stage {
     background-gradient-end: rgba(250, 247, 242, 0.88);
     color: #2B1A1E;
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
-    border-bottom-color: rgba(60, 30, 35, 0.16);
     border-radius: 6px 22px 22px 22px;
     box-shadow: 0 18px 40px rgba(60, 30, 35, 0.16);
 }
 
 /* ==============================================================================
- * 5. NEW SURFACES (all slabs share: glass-strong gradient, gold top edge, lip)
+ * 5. NEW SURFACES (all slabs share: glass-strong gradient, 1px hairline)
  * ============================================================================== */
 
-/* ---- Dock: running + active ticks (ubuntu-dock reads the dot's background) ---- */
+/* ---- Dock: focused app gets a tile fill and a gold dot (above) ---- */
 #dashtodockContainer .app-well-app.focused .overview-icon {
     background-color: #ECE4D8 !important;
     border-radius: 22px !important;
@@ -705,8 +691,6 @@ stage {
     background-color: rgba(250, 247, 242, 0.88);
     color: #2B1A1E;
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
-    border-bottom-color: rgba(60, 30, 35, 0.16);
     border-radius: 6px 8px 8px 8px;
     box-shadow: 0 6px 16px rgba(60, 30, 35, 0.1);
     padding: 4px 12px;
@@ -722,8 +706,6 @@ stage {
     background-gradient-end: rgba(250, 247, 242, 0.88);
     color: #2B1A1E;
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
-    border-bottom-color: rgba(60, 30, 35, 0.16);
     border-radius: 6px 22px 22px 22px;
     box-shadow: 0 18px 40px rgba(60, 30, 35, 0.16);
     padding: 12px 24px;
@@ -745,21 +727,18 @@ stage {
     background-color: rgba(250, 247, 242, 0.88);
     color: #2B1A1E;
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
     border-radius: 6px 22px 22px 22px;
     font-family: "Geist Mono", monospace;
     font-weight: 500;
 }
 
-/* ---- Alt-Tab: slab list, the current item gets a gold tick underneath ---- */
+/* ---- Alt-Tab: slab list, the current item gets a thin gold full outline ---- */
 .switcher-list {
     background-gradient-direction: vertical;
     background-gradient-start: rgba(253, 252, 250, 0.946);
     background-gradient-end: rgba(250, 247, 242, 0.88);
     color: #2B1A1E;
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
-    border-bottom-color: rgba(60, 30, 35, 0.16);
     border-radius: 6px 22px 22px 22px;
     box-shadow: 0 18px 40px rgba(60, 30, 35, 0.16);
     padding: 12px;
@@ -769,7 +748,6 @@ stage {
     background-color: transparent;
     color: #2B1A1E;
     border: 1px solid transparent;
-    border-bottom: 2px solid transparent;
     border-radius: 16px;
 }
 
@@ -788,8 +766,7 @@ stage {
 .switcher-list .item-box:checked {
     background-color: #ECE4D8;
     color: #2B1A1E;
-    border-color: #D6CAB9;
-    border-bottom-color: #A8844C;
+    border-color: #A8844C;
 }
 
 .switcher-list .item-box:selected:hover {
@@ -832,19 +809,16 @@ stage {
     background-color: rgba(250, 247, 242, 0.88);
     color: #2B1A1E;
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
     border-radius: 6px 8px 8px 8px;
     font-family: "Geist Mono", monospace;
 }
 
-/* ---- Workspace switcher popup: thin gold ticks ---- */
+/* ---- Workspace switcher popup: round dots ---- */
 .workspace-switcher {
     background-gradient-direction: vertical;
     background-gradient-start: rgba(253, 252, 250, 0.946);
     background-gradient-end: rgba(250, 247, 242, 0.88);
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
-    border-bottom-color: rgba(60, 30, 35, 0.16);
     border-radius: 6px 22px 22px 22px;
     box-shadow: 0 12px 28px rgba(60, 30, 35, 0.13);
     padding: 8px 16px;
@@ -852,14 +826,14 @@ stage {
 
 .ws-switcher-indicator {
     background-color: #6B575B;
-    border-radius: 1px;
-    padding: 1px 3px;
+    border-radius: 999px;
+    padding: 3px;
     margin: 12px 4px;
 }
 
 .ws-switcher-indicator:active {
     background-color: #A8844C;
-    padding: 1px 10px;
+    padding: 3px;
     margin: 12px 4px;
 }
 
@@ -878,8 +852,6 @@ stage {
     background-gradient-start: rgba(253, 252, 250, 0.946);
     background-gradient-end: rgba(250, 247, 242, 0.88);
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
-    border-bottom-color: rgba(60, 30, 35, 0.16);
     border-radius: 6px 22px 22px 22px;
     box-shadow: 0 12px 28px rgba(60, 30, 35, 0.13);
 }
@@ -941,8 +913,6 @@ stage {
     background-gradient-start: rgba(253, 252, 250, 0.946) !important;
     background-gradient-end: rgba(250, 247, 242, 0.88) !important;
     border: 1px solid #D6CAB9 !important;
-    border-top-color: rgba(168, 132, 76, 0.55) !important;
-    border-bottom-color: rgba(60, 30, 35, 0.16) !important;
     border-radius: 6px 22px 22px 22px !important;
     box-shadow: 0 18px 40px rgba(60, 30, 35, 0.16) !important;
     padding: 4px 0 0 0 !important;
@@ -950,8 +920,7 @@ stage {
 }
 
 .notification-banner:hover {
-    border-color: rgba(168, 132, 76, 0.30) !important;
-    border-top-color: #A8844C !important;
+    border-color: rgba(43, 26, 30, 0.08) !important;
 }
 
 .notification-buttons-bin {
@@ -1106,7 +1075,6 @@ stage {
     background-color: #F3EEE6;
     color: #2B1A1E;
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.30);
     border-radius: 12px;
     padding: 8px;
     margin: 0 12px;
@@ -1212,8 +1180,6 @@ StScrollBar StButton#hhandle:active {
     background-gradient-end: rgba(250, 247, 242, 0.88);
     color: #2B1A1E;
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
-    border-bottom-color: rgba(60, 30, 35, 0.16);
     border-radius: 6px 22px 22px 22px;
     box-shadow: 0 18px 40px rgba(60, 30, 35, 0.16);
 }
@@ -1372,7 +1338,7 @@ StScrollBar StButton#hhandle:active {
 .unlock-dialog-clock .unlock-dialog-clock-hint {
     margin-top: 24px;
     padding: 4px 16px;
-    border: 1px solid rgba(168, 132, 76, 0.55);
+    border: 1px solid #D6CAB9;
     border-radius: 9999px;
     font-family: "Geist Mono", monospace;
     font-size: 10.5px;
@@ -1391,8 +1357,8 @@ StScrollBar StButton#hhandle:active {
 .login-dialog .user-widget .user-icon,
 .unlock-dialog .user-widget .user-icon {
     background-color: #ECE4D8;
-    color: #6F5218;
-    border: 1px solid rgba(168, 132, 76, 0.55);
+    color: #2B1A1E;
+    border: 1px solid #D6CAB9;
     border-radius: 9999px;
 }
 
@@ -1426,7 +1392,7 @@ StScrollBar StButton#hhandle:active {
 .login-dialog-prompt-entry:hover,
 .unlock-dialog .login-dialog-prompt-entry:hover {
     background-color: #FDFBF7;
-    border-color: rgba(168, 132, 76, 0.30);
+    border-color: rgba(43, 26, 30, 0.08);
 }
 
 .login-dialog-prompt-entry:focus,
@@ -1490,7 +1456,7 @@ StScrollBar StButton#hhandle:active {
 
 .login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:hover {
     background-color: #ECE4D8;
-    border-color: rgba(168, 132, 76, 0.30);
+    border-color: rgba(43, 26, 30, 0.08);
 }
 
 .login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:selected,
@@ -1518,7 +1484,6 @@ StScrollBar StButton#hhandle:active {
     background-color: rgba(250, 247, 242, 0.88);
     color: #2B1A1E;
     border: 1px solid #D6CAB9;
-    border-top-color: rgba(168, 132, 76, 0.55);
     border-radius: 12px;
 }
 
@@ -1693,7 +1658,7 @@ StEntry:focus {
     color: #6F5218;
 }
 .message-list-controls .dnd-button:focus {
-    border-color: rgba(168, 132, 76, 0.55);
+    border-color: #8C6B33;
 }
 .url-highlighter {
     link-color: #6F5218;
@@ -1728,7 +1693,7 @@ StEntry:focus {
     background-color: #7A1C34;
 }
 .quick-menu-toggle .quick-toggle-arrow:checked {
-    border-color: #A8844C;
+    border-color: #8E2A44;
 }
 .quick-slider .slider-bin:focus {
     box-shadow: inset 0 0 0 2px #8C6B33 !important;

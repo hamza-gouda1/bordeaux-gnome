@@ -4,6 +4,13 @@
 
 First public version.
 
+Gold strip removal:
+
+- Every asymmetric gold border (top edge on the dock, top-bar capsules, Quick Settings, menus, notifications, app folders, OSD, Alt-Tab, dialogs, tooltips, lock screen widgets) is now a uniform 1px `border` hairline; the dark `lip` bottom edge is gone too, so rounded corners no longer taper.
+- Removed the gold left rule on active menu items, the gold bar on GTK4 sidebar rows, gold separator in the dock, gold-bordered calendar today, and the gold workspace-switcher bar (now round dots). Alt-Tab selection is a thin gold full outline instead of an underline tick.
+- Dock running indicator style DASHES to DEFAULT (round dots; focused app gold). The Activities workspace indicator is neutral light, since the shell stretches the active dot into a pill.
+- blur-my-shell popup blur turned off in the preset: its rectangular blur surface showed as a larger dark box around Quick Settings.
+
 Dock and performance pass:
 
 - Dock aura: new optional `bordeaux-aura@hamza-gouda` extension, a faint glow in each app's own colour behind the dock icons (icons untouched), with tests for its colour maths.

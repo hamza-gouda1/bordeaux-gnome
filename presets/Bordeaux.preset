@@ -18,12 +18,13 @@ core org.gnome.shell.extensions.dash-to-dock animation-time 0.15
 core org.gnome.shell.extensions.dash-to-dock transparency-mode 'DEFAULT'
 core org.gnome.shell.extensions.dash-to-dock custom-background-color false
 core org.gnome.shell.extensions.dash-to-dock apply-custom-theme false
-core org.gnome.shell.extensions.dash-to-dock running-indicator-style 'DASHES'
+core org.gnome.shell.extensions.dash-to-dock running-indicator-style 'DEFAULT'
 core org.gnome.desktop.interface clock-show-weekday true
 core org.gnome.shell.extensions.blur-my-shell pipelines merge:{'pipeline_bordeaux_slab': {'name': <'Bordeaux slab'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_slab'>, 'params': <{'unscaled_radius': <28>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_island': {'name': <'Bordeaux island'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_island'>, 'params': <{'unscaled_radius': <22>, 'brightness': <0.75>}>}>]>}}
 core org.gnome.shell.extensions.blur-my-shell.panel blur false
 core org.gnome.shell.extensions.blur-my-shell.dash-to-dock blur false
 core org.gnome.shell.extensions.blur-my-shell.popup override-background false
+core org.gnome.shell.extensions.blur-my-shell.popup blur false
 core org.gnome.shell.extensions.blur-my-shell.overview blur false
 core org.gnome.shell.extensions.blur-my-shell.lockscreen blur true
 core org.gnome.shell.extensions.blur-my-shell.lockscreen pipeline 'pipeline_bordeaux_slab'

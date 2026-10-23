@@ -91,7 +91,7 @@ PB=$XDG_STATE_HOME/bordeaux-gnome/backup/preset.txt
 [ "$(gsettings get $DOCK autohide)" = "true" ] || fail "autohide not set"
 [ "$(gsettings get $DOCK intellihide-mode)" = "'ALL_WINDOWS'" ] || fail "intellihide-mode not set"
 [ "$(gsettings get $DOCK dash-max-icon-size)" = "48" ] || fail "icon size not 48"
-[ "$(gsettings get $DOCK running-indicator-style)" = "'DASHES'" ] || fail "running indicator style not set"
+[ "$(gsettings get $DOCK running-indicator-style)" = "'DEFAULT'" ] || fail "running indicator style not set"
 [ "$(gsettings get $DOCK custom-background-color)" = "false" ] || fail "dock custom background not cleared"
 [ "$(gsettings get org.gnome.desktop.interface icon-theme)" = "'Papirus-Dark'" ] || fail "installed icon theme not set"
 if [ -d /usr/share/icons/DMZ-Black ]; then want="'DMZ-Black'"; else want="'Yaru'"; fi
@@ -101,6 +101,7 @@ if [ "$HAVE_BLUR" = 1 ]; then
     blurget $BLUR pipelines | grep -q pipeline_bordeaux_island || fail "pipelines not merged"
     [ "$(blurget $BLUR.dash-to-dock blur)" = "false" ] || fail "dock blur not turned off"
     [ "$(blurget $BLUR.overview blur)" = "false" ] || fail "overview blur not turned off"
+    [ "$(blurget $BLUR.popup blur)" = "false" ] || fail "popup blur not turned off"
     grep -qF "$BLUR.lockscreen pipeline D" "$PB" || fail "backup lacks blur-my-shell default marker"
 fi
 [ "$(gsettings get $PROF visible-name)" = "'Bordeaux'" ] || fail "terminal profile missing or misnamed"

@@ -1,7 +1,7 @@
 /* ==============================================================================
  * Bordeaux Design System - GNOME Shell stylesheet, ${variant} (${description})
- * "Hallmark": glass slabs with a gold top edge, a darker lip, a cut top-left
- * corner and one box-shadow. Tested target: GNOME 46 (Wayland), Ubuntu 24.04.
+ * "Hallmark": glass slabs with a uniform 1px hairline, a cut top-left
+ * corner and one box-shadow. Gold only marks focus and place, never an edge. Tested target: GNOME 46 (Wayland), Ubuntu 24.04.
  * St notes: one box-shadow per node, no text-transform, no CSS variables.
  * ============================================================================== */
 
@@ -33,7 +33,6 @@ stage {
 #panelRight {
     background-color: ${glass};
     border: 1px solid ${border};
-    border-top-color: ${gold-edge};
     border-radius: ${r-island};
     box-shadow: ${elev-1};
     margin: ${island-mt} 0;
@@ -108,12 +107,12 @@ stage {
     color: ${fg-0};
 }
 
-/* Workspace indicator: round 6px gold dots. The shell (WorkspaceDot) sets the
-   inactive ones to half opacity and 0.75 scale, so they read dim; it also widens
-   the active one's box, which no CSS can prevent. */
+/* Workspace indicator: round 6px dots in neutral light. The shell (WorkspaceDot)
+   dims the inactive ones and stretches the active one into a pill, which no CSS can
+   prevent; a gold stretched dot read as a gold dash, so no gold here. */
 #panel .panel-button#panelActivities .workspace-dot,
 #panel:overview .panel-button#panelActivities .workspace-dot {
-    background-color: ${gold};
+    background-color: ${fg-0};
     border-radius: 999px;
     min-width: 6px;
     min-height: 6px;
@@ -129,8 +128,6 @@ stage {
     background-gradient-end: ${glass-strong};
     color: ${fg-0};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
-    border-bottom-color: ${lip};
     border-radius: ${r-slab} !important;
     padding: ${sp-3};
     box-shadow: ${elev-4};
@@ -156,7 +153,7 @@ stage {
 .quick-toggle:hover,
 .quick-menu-toggle .quick-toggle:hover {
     background-color: ${bg-3};
-    border-color: ${gold-faint};
+    border-color: ${press};
     color: ${fg-0};
 }
 
@@ -223,7 +220,7 @@ stage {
     color: ${fg-0};
     -slider-handle-radius: 8px;
     -slider-handle-border-width: 1px;
-    -slider-handle-border-color: ${gold-line};
+    -slider-handle-border-color: ${border};
 }
 
 /* Popover Menu Items */
@@ -241,7 +238,6 @@ stage {
 .popup-menu-item:focus {
     background-color: ${accent};
     color: ${on-accent};
-    border-left: 2px solid ${gold};
 }
 
 /* Date & Notification Popover (#calendarArea, .message-list, .calendar) */
@@ -258,7 +254,7 @@ stage {
     font-size: ${fs-eyebrow} !important;
     font-weight: ${fw-medium} !important;
     letter-spacing: ${ls-eyebrow};
-    color: ${gold-text} !important;
+    color: ${fg-2} !important;
 }
 
 .datemenu-today-button .date-label {
@@ -281,7 +277,7 @@ stage {
     font-size: ${fs-eyebrow} !important;
     font-weight: ${fw-medium} !important;
     letter-spacing: ${ls-eyebrow};
-    color: ${gold-text} !important;
+    color: ${fg-2} !important;
 }
 
 .calendar .calendar-day {
@@ -294,7 +290,7 @@ stage {
 .calendar .calendar-day.calendar-today {
     background-color: ${accent} !important;
     color: ${on-accent} !important;
-    border: 1px solid ${gold} !important;
+    border: 1px solid ${accent-hi} !important;
     border-radius: ${r-pill} !important;
 }
 
@@ -311,7 +307,6 @@ stage {
 .message {
     background-color: ${matte} !important;
     border: 1px solid ${border} !important;
-    border-top-color: ${gold-faint} !important;
     border-radius: ${r-md} !important;
     box-shadow: ${elev-1} !important;
     padding: ${sp-1} !important;
@@ -320,7 +315,7 @@ stage {
 
 .message:hover {
     background-color: ${tile} !important;
-    border-color: ${gold-faint} !important;
+    border-color: ${press} !important;
 }
 
 .message .message-header {
@@ -383,7 +378,7 @@ stage {
 }
 
 /* ==============================================================================
- * 3. DASH-TO-DOCK (Left Dock) - a slab: gold top edge, lip, cut corner
+ * 3. DASH-TO-DOCK (Left Dock) - a slab: uniform hairline, cut corner
  * ============================================================================== */
 #dashtodockContainer {
     background-color: transparent;
@@ -407,8 +402,6 @@ stage {
     background-gradient-start: ${slab-top} !important;
     background-gradient-end: ${matte} !important;
     border: 1px solid ${border} !important;
-    border-top-color: ${gold-edge} !important;
-    border-bottom-color: ${lip} !important;
     box-shadow: none !important;
     border-radius: ${r-dock} !important;
     margin-top: 0 !important;
@@ -464,7 +457,7 @@ stage {
 }
 
 #dashtodockContainer .dash-separator {
-    background-color: ${gold-line} !important;
+    background-color: ${border} !important;
     height: 1px !important;
     margin: ${sp-1} 6px !important;
 }
@@ -496,7 +489,7 @@ stage {
 #dashtodockContainer.right .notification-badge {
     background-color: ${accent} !important;
     color: ${on-accent} !important;
-    border: 1px solid ${gold-line} !important;
+    border: 1px solid ${accent-hi} !important;
     box-shadow: ${elev-1} !important;
     border-radius: ${r-pill} !important;
     font-family: ${font-mono} !important;
@@ -514,7 +507,7 @@ stage {
 #dashtodockContainer .number-overlay {
     color: ${fg-0} !important;
     background-color: ${glass-strong} !important;
-    border: 1px solid ${gold-line} !important;
+    border: 1px solid ${border} !important;
     border-radius: ${r-pill} !important;
     font-family: ${font-mono} !important;
     font-weight: ${fw-semibold} !important;
@@ -616,8 +609,6 @@ stage {
 .app-folder {
     background-color: ${matte} !important;
     border: 1px solid ${border} !important;
-    border-top-color: ${gold-line} !important;
-    border-bottom-color: ${lip} !important;
     box-shadow: none !important;
     border-radius: ${r-slab} !important;
     min-width: 120px;
@@ -626,8 +617,7 @@ stage {
 
 .app-folder:hover {
     background-color: ${matte} !important;
-    border-color: ${gold-faint} !important;
-    border-top-color: ${gold} !important;
+    border-color: ${press} !important;
     box-shadow: none !important;
 }
 
@@ -635,8 +625,6 @@ stage {
 .app-folder-dialog {
     background-color: ${glass-strong} !important;
     border: 1px solid ${border} !important;
-    border-top-color: ${gold-line} !important;
-    border-bottom-color: ${lip} !important;
     border-radius: ${r-slab} !important;
     box-shadow: none !important;
 }
@@ -676,17 +664,15 @@ stage {
     background-gradient-end: ${glass-strong};
     color: ${fg-0};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
-    border-bottom-color: ${lip};
     border-radius: ${r-slab};
     box-shadow: ${elev-4};
 }
 
 /* ==============================================================================
- * 5. NEW SURFACES (all slabs share: glass-strong gradient, gold top edge, lip)
+ * 5. NEW SURFACES (all slabs share: glass-strong gradient, 1px hairline)
  * ============================================================================== */
 
-/* ---- Dock: running + active ticks (ubuntu-dock reads the dot's background) ---- */
+/* ---- Dock: focused app gets a tile fill and a gold dot (above) ---- */
 #dashtodockContainer .app-well-app.focused .overview-icon {
     background-color: ${tile} !important;
     border-radius: ${r-xl} !important;
@@ -703,8 +689,6 @@ stage {
     background-color: ${glass-strong};
     color: ${fg-0};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
-    border-bottom-color: ${lip};
     border-radius: ${r-cut} ${r-sm} ${r-sm} ${r-sm};
     box-shadow: ${elev-2};
     padding: ${sp-1} ${sp-3};
@@ -720,8 +704,6 @@ stage {
     background-gradient-end: ${glass-strong};
     color: ${fg-0};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
-    border-bottom-color: ${lip};
     border-radius: ${r-slab};
     box-shadow: ${elev-4};
     padding: ${sp-3} ${sp-5};
@@ -743,21 +725,18 @@ stage {
     background-color: ${glass-strong};
     color: ${fg-0};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
     border-radius: ${r-slab};
     font-family: ${font-mono};
     font-weight: ${fw-medium};
 }
 
-/* ---- Alt-Tab: slab list, the current item gets a gold tick underneath ---- */
+/* ---- Alt-Tab: slab list, the current item gets a thin gold full outline ---- */
 .switcher-list {
     background-gradient-direction: vertical;
     background-gradient-start: ${slab-top};
     background-gradient-end: ${glass-strong};
     color: ${fg-0};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
-    border-bottom-color: ${lip};
     border-radius: ${r-slab};
     box-shadow: ${elev-4};
     padding: ${sp-3};
@@ -767,7 +746,6 @@ stage {
     background-color: transparent;
     color: ${fg-0};
     border: 1px solid transparent;
-    border-bottom: 2px solid transparent;
     border-radius: ${r-lg};
 }
 
@@ -786,8 +764,7 @@ stage {
 .switcher-list .item-box:checked {
     background-color: ${tile};
     color: ${fg-0};
-    border-color: ${border};
-    border-bottom-color: ${gold};
+    border-color: ${gold};
 }
 
 .switcher-list .item-box:selected:hover {
@@ -830,19 +807,16 @@ stage {
     background-color: ${glass-strong};
     color: ${fg-0};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
     border-radius: ${r-cut} ${r-sm} ${r-sm} ${r-sm};
     font-family: ${font-mono};
 }
 
-/* ---- Workspace switcher popup: thin gold ticks ---- */
+/* ---- Workspace switcher popup: round dots ---- */
 .workspace-switcher {
     background-gradient-direction: vertical;
     background-gradient-start: ${slab-top};
     background-gradient-end: ${glass-strong};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
-    border-bottom-color: ${lip};
     border-radius: ${r-slab};
     box-shadow: ${elev-3};
     padding: ${sp-2} ${sp-4};
@@ -850,14 +824,14 @@ stage {
 
 .ws-switcher-indicator {
     background-color: ${fg-2};
-    border-radius: 1px;
-    padding: 1px 3px;
+    border-radius: 999px;
+    padding: 3px;
     margin: ${sp-3} ${sp-1};
 }
 
 .ws-switcher-indicator:active {
     background-color: ${gold};
-    padding: 1px 10px;
+    padding: 3px;
     margin: ${sp-3} ${sp-1};
 }
 
@@ -876,8 +850,6 @@ stage {
     background-gradient-start: ${slab-top};
     background-gradient-end: ${glass-strong};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
-    border-bottom-color: ${lip};
     border-radius: ${r-slab};
     box-shadow: ${elev-3};
 }
@@ -939,8 +911,6 @@ stage {
     background-gradient-start: ${slab-top} !important;
     background-gradient-end: ${glass-strong} !important;
     border: 1px solid ${border} !important;
-    border-top-color: ${gold-line} !important;
-    border-bottom-color: ${lip} !important;
     border-radius: ${r-slab} !important;
     box-shadow: ${elev-4} !important;
     padding: ${sp-1} 0 0 0 !important;
@@ -948,8 +918,7 @@ stage {
 }
 
 .notification-banner:hover {
-    border-color: ${gold-faint} !important;
-    border-top-color: ${gold} !important;
+    border-color: ${press} !important;
 }
 
 .notification-buttons-bin {
@@ -1104,7 +1073,6 @@ stage {
     background-color: ${matte};
     color: ${fg-0};
     border: 1px solid ${border};
-    border-top-color: ${gold-faint};
     border-radius: ${r-md};
     padding: ${sp-2};
     margin: 0 ${sp-3};
@@ -1210,8 +1178,6 @@ StScrollBar StButton#hhandle:active {
     background-gradient-end: ${glass-strong};
     color: ${fg-0};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
-    border-bottom-color: ${lip};
     border-radius: ${r-slab};
     box-shadow: ${elev-4};
 }
@@ -1370,7 +1336,7 @@ StScrollBar StButton#hhandle:active {
 .unlock-dialog-clock .unlock-dialog-clock-hint {
     margin-top: ${sp-5};
     padding: ${sp-1} ${sp-4};
-    border: 1px solid ${gold-line};
+    border: 1px solid ${border};
     border-radius: ${r-pill};
     font-family: ${font-mono};
     font-size: ${fs-eyebrow};
@@ -1389,8 +1355,8 @@ StScrollBar StButton#hhandle:active {
 .login-dialog .user-widget .user-icon,
 .unlock-dialog .user-widget .user-icon {
     background-color: ${tile};
-    color: ${gold-text};
-    border: 1px solid ${gold-line};
+    color: ${fg-0};
+    border: 1px solid ${border};
     border-radius: ${r-pill};
 }
 
@@ -1424,7 +1390,7 @@ StScrollBar StButton#hhandle:active {
 .login-dialog-prompt-entry:hover,
 .unlock-dialog .login-dialog-prompt-entry:hover {
     background-color: ${bg-2};
-    border-color: ${gold-faint};
+    border-color: ${press};
 }
 
 .login-dialog-prompt-entry:focus,
@@ -1488,7 +1454,7 @@ StScrollBar StButton#hhandle:active {
 
 .login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:hover {
     background-color: ${tile};
-    border-color: ${gold-faint};
+    border-color: ${press};
 }
 
 .login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:selected,
@@ -1516,7 +1482,6 @@ StScrollBar StButton#hhandle:active {
     background-color: ${glass-strong};
     color: ${fg-0};
     border: 1px solid ${border};
-    border-top-color: ${gold-line};
     border-radius: ${r-md};
 }
 
@@ -1691,7 +1656,7 @@ StEntry:focus {
     color: ${gold-text};
 }
 .message-list-controls .dnd-button:focus {
-    border-color: ${gold-line};
+    border-color: ${focus};
 }
 .url-highlighter {
     link-color: ${gold-text};
@@ -1726,7 +1691,7 @@ StEntry:focus {
     background-color: ${accent};
 }
 .quick-menu-toggle .quick-toggle-arrow:checked {
-    border-color: ${gold};
+    border-color: ${accent-hi};
 }
 .quick-slider .slider-bin:focus {
     box-shadow: inset 0 0 0 2px ${focus} !important;

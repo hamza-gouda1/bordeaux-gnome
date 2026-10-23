@@ -116,13 +116,13 @@ def render_preset(toks):
         ("core", dock, "animation-time", "0.15"),
         # DEFAULT transparency and no custom colour: anything else makes ubuntu-dock
         # set an inline `border-color`/`background-color` on the slab, which beats the
-        # theme's gold top edge. The glass comes from the theme CSS instead.
+        # theme's border. The glass comes from the theme CSS instead.
         ("core", dock, "transparency-mode", gv_str("DEFAULT")),
         ("core", dock, "custom-background-color", "false"),
         ("core", dock, "apply-custom-theme", "false"),
-        # DASHES draws the active/running tick on the dock's inner edge; DEFAULT puts
-        # a dot under the icon, which CSS cannot move.
-        ("core", dock, "running-indicator-style", gv_str("DASHES")),
+        # DEFAULT draws round running-app dots (focused one gold via the theme CSS);
+        # DASHES draws a bar on the dock's inner edge, which is a gold strip when focused.
+        ("core", dock, "running-indicator-style", gv_str("DEFAULT")),
         ("core", ui, "clock-show-weekday", "true"),
         # blur-my-shell (pipeline schema): our two pipelines are merged into the
         # user's existing ones; no panel blur, it would flatten the three capsules.
@@ -135,6 +135,11 @@ def render_preset(toks):
         # sheet, `!important` and GNOME blue included (Quick Settings tiles, calendar
         # today). Turning its background override off leaves the theme in charge.
         ("core", blur + ".popup", "override-background", "false"),
+        # Popup blur (default true) puts a rectangular blur surface behind Quick Settings,
+        # notifications and menus. It follows the target's allocation with its own corner
+        # radius (quick-settings-corner-radius defaults to 36, ours is r-slab) and shows
+        # as a larger dark rectangle around the popup. The slabs are already 0.86-opaque.
+        ("core", blur + ".popup", "blur", "false"),
         ("core", blur + ".overview", "blur", "false"),
         ("core", blur + ".lockscreen", "blur", "true"),
         ("core", blur + ".lockscreen", "pipeline", gv_str("pipeline_bordeaux_slab")),
