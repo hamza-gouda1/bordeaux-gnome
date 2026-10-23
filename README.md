@@ -11,9 +11,11 @@ change.
 
 ![Bordeaux desktop](screenshots/bordeaux-desktop.png)
 
-| Oxblood Noir | Merlot Day |
+Design previews of the dark and light schemes (rendered from the design tokens):
+
+| Dark | Light |
 |---|---|
-| ![Oxblood Noir](screenshots/oxblood-noir-desktop.png) | ![Merlot Day](screenshots/merlot-day-desktop.png) |
+| ![Dark preview](docs/v2-previews/signature-dark.png) | ![Light preview](docs/v2-previews/signature-light.png) |
 
 ## The palette
 
