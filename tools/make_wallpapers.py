@@ -2,11 +2,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Procedural wallpaper generator for the Bordeaux themes (Hallmark direction).
 
+Motif, "Drape": broad satin folds sweeping diagonally across the frame, lit
+from the upper left, with the light pooled right of centre and the upper-left
+(dock, top bar) kept calm and dark. One fine gold hairline rides a fold crest.
+Height field from warped sine sums -> normal map -> diffuse + anisotropic
+sheen + specular, mapped through a per-variant tone ramp, then grain and
+TPDF dither so there is no banding.
+
 Deterministic: the same --seed always gives the same pixels. Colours come from
 tokens/tokens.toml. Needs only Pillow and numpy.
 
   tools/make_wallpapers.py                      # all variants -> wallpapers/
   tools/make_wallpapers.py --variant Bordeaux --seed 7 --out /tmp/wp
+  tools/make_wallpapers.py --variant Bordeaux --preview 1280x800 --out /tmp/wp
 """
 import argparse
 import tomllib
@@ -16,26 +24,22 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
+F = np.float32
+MAX_BYTES = 1_500_000            # cap for the 3840x2400 JPEG
 
 
 def hex_rgb(h):
     h = h.lstrip("#")
-    return np.array([int(h[i:i + 2], 16) for i in (0, 2, 4)], np.float32) / 255.0
+    return np.array([int(h[i:i + 2], 16) for i in (0, 2, 4)], F) / 255.0
 
 
-def smooth_noise(rng, w, h, cells, octaves=4):
-    """Fractal value noise in [-1, 1], bicubic-upsampled from coarse grids."""
-    out = np.zeros((h, w), np.float32)
-    amp, tot = 1.0, 0.0
-    for o in range(octaves):
-        n = cells * 2 ** o
-        gw, gh = n + 3, max(3, int(n * h / w) + 3)
-        g = rng.random((gh, gw)).astype(np.float32)
-        im = Image.fromarray(g, "F").resize((w, h), Image.BICUBIC)
-        out += amp * (np.asarray(im) - 0.5) * 2
-        tot += amp
-        amp *= 0.5
-    return out / tot
+def lin(c):                      # sRGB -> linear, so blends and light are physical
+    return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4).astype(F)
+
+
+def srgb(c):
+    c = np.clip(c, 0, 1)
+    return np.where(c <= 0.0031308, c * 12.92, 1.055 * c ** (1 / 2.4) - 0.055).astype(F)
 
 
 def smoothstep(a, b, x):
@@ -43,75 +47,155 @@ def smoothstep(a, b, x):
     return t * t * (3 - 2 * t)
 
 
-def render(pal, dark, w, h, seed, lines=True, strength=1.0):
-    rng = np.random.default_rng(seed)
-    S = h / 2400.0                       # scale so look is size-independent
-    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-    nx, ny = xx / w, yy / h
+def mix(a, b, t):
+    return a + (b - a) * t
 
-    bg = hex_rgb(pal["bg-0"])
-    accent = hex_rgb(pal["accent"])
-    gold = hex_rgb(pal["gold"])
-    ink = gold if dark else accent       # line colour (spec: gold dark, merlot light)
 
-    # --- base: deep warm vertical gradient, slightly lifted toward the glow
+def ramp(t, stops):
+    """Piecewise-linear colour ramp; t is (h, w) in [0, 1], stops [(pos, rgb)]."""
+    t = np.clip(t, 0, 1)
+    out = np.empty(t.shape + (3,), F)
+    for c in range(3):
+        out[..., c] = np.interp(t, [p for p, _ in stops], [col[c] for _, col in stops])
+    return out
+
+
+# --------------------------------------------------------------------------
+# Per-variant look. Everything is derived from palette tokens.
+# --------------------------------------------------------------------------
+def look(pal, name, dark):
+    bg, acc, hi = hex_rgb(pal["bg-0"]), hex_rgb(pal["accent"]), hex_rgb(pal["accent-hi"])
+    gold, fg = hex_rgb(pal["gold"]), hex_rgb(pal["fg-0"])
+    grey = lambda c, k: mix(c, np.full(3, c.mean(), F), k)
+    if name == "Oxblood-Noir":   # same drape, carbon-neutral, lower key
+        stops = [(0.00, bg * 0.55),
+                 (0.24, mix(bg, grey(acc, 0.35), 0.30)),
+                 (0.52, mix(bg, grey(acc, 0.15), 0.78)),
+                 (0.78, acc * 1.08),
+                 (1.00, mix(hi, fg, 0.22) * 1.15)]
+        return dict(stops=stops, spec=mix(hi, fg, 0.6), spec_k=0.40, sheen=acc,
+                    sheen_k=0.22, line=gold, line_a=0.70, pool=0.92, floor=0.20,
+                    grain=0.0065)
+    if dark:                     # Bordeaux, Quiet Wine
+        stops = [(0.00, bg * 0.60),
+                 (0.24, mix(bg, acc, 0.42) * 0.90),
+                 (0.52, acc * 1.02),
+                 (0.78, hi * 1.18),
+                 (1.00, mix(hi, gold, 0.35) * 1.45)]
+        return dict(stops=stops, spec=mix(hi, fg, 0.5), spec_k=0.45, sheen=hi,
+                    sheen_k=0.30, line=gold, line_a=0.70, pool=1.0, floor=0.24,
+                    grain=0.0070)
+    # Merlot-Day: ivory satin with merlot in the shadows of the folds
+    b1 = hex_rgb(pal["bg-1"])
+    stops = [(0.00, mix(bg * 0.60, acc, 0.46)),
+             (0.24, mix(bg * 0.84, acc, 0.20)),
+             (0.50, mix(bg * 0.95, acc, 0.06)),
+             (0.75, bg),
+             (1.00, mix(b1, np.ones(3, F), 0.35))]
+    return dict(stops=stops, spec=np.ones(3, F), spec_k=0.30, sheen=b1, sheen_k=0.10,
+                line=gold, line_a=0.95, pool=1.0, floor=0.42, grain=0.0055)
+
+
+# --------------------------------------------------------------------------
+def drape(w, h, seed):
+    """Return (height, fold-axis coordinate) in unit space (frame height = 1)."""
+    r = np.random.default_rng(seed)
+    p = r.uniform(-0.25, 0.25, 6).astype(F)          # small, seed-driven phase drift
+    yy, xx = np.mgrid[0:h, 0:w].astype(F)
+    x, y = xx / F(h), yy / F(h)
+    del xx, yy
+    a = np.deg2rad(-30.0)
+    u = (x * np.cos(a) - y * np.sin(a)).astype(F)    # along the folds
+    v = (x * np.sin(a) + y * np.cos(a)).astype(F)    # across the folds
+    # the cloth twists: across-fold coordinate warped by the along-fold one
+    vv = v + 0.085 * np.sin(u * 2.2 + 0.7 + p[0]) + 0.040 * np.sin(u * 4.1 - v * 2.0 + 1.9 + p[1])
+    ph = vv * 8.6 + 0.70 * np.sin(u * 1.6 + 0.2 + p[2])
+    # asymmetric fold profile: soft bulge, tighter crease
+    hgt = (np.sin(ph) + 0.30 * np.sin(2 * ph + 0.9)) * 0.62
+    hgt += np.sin(vv * 2.3 - u * 0.9 + 1.0 + p[3]) * 0.80          # broad swell
+    hgt += np.sin(vv * 15.0 + u * 2.6 + 0.4 + p[4]) * 0.045        # fine ripple
+    return x, y, hgt.astype(F), ph.astype(F)
+
+
+def render(pal, name, dark, w, h, seed, plain=False):
+    L = look(pal, name, dark)
+    x, y, hgt, ph = drape(w, h, seed)
+    px = F(1.0 / h)                                  # unit size of one pixel
+
+    # normals from the height field (unit-space slope)
+    gy, gx = np.gradient(hgt)
+    k = F(0.36) / px
+    gx *= -k
+    gy *= -k
+    inv = 1.0 / np.sqrt(gx * gx + gy * gy + 1.0)
+    nx, ny, nz = gx * inv, gy * inv, inv
+    del gx, gy, inv
+
+    Ld = np.array([-0.50, -0.62, 0.60], F); Ld /= np.linalg.norm(Ld)
+    Hv = Ld + np.array([0, 0, 1], F); Hv /= np.linalg.norm(Hv)
+    ndl = np.clip(nx * Ld[0] + ny * Ld[1] + nz * Ld[2], 0, 1)
+    ndh = np.clip(nx * Hv[0] + ny * Hv[1] + nz * Hv[2], 0, 1)
+    del nx, ny, nz
+
+    # where the light lands: a soft pool right of centre, calm upper left
+    pool = np.exp(-((x - 1.08) ** 2 / 0.50 + (y - 0.60) ** 2 / 0.34)).astype(F)
+    calm = smoothstep(0.0, 1.0, np.hypot(x * 0.9, y * 1.1) / 0.95)   # 0 at top-left
+    lightmap = (L["floor"] + (1 - L["floor"]) * pool * L["pool"]) * (0.55 + 0.45 * calm)
+    occl = 0.62 + 0.38 * smoothstep(-1.6, 1.4, hgt)  # valleys sit deeper
+
+    tone = (0.10 + 0.90 * ndl ** 1.35) * occl * lightmap
+    if not dark:
+        tone = 0.22 + 0.78 * tone / 0.70
+    tone = np.clip(tone * 1.08, 0, 1)
+    img = lin(ramp(tone, L["stops"]))
+    del tone, occl
+
+    sheen = (ndh ** 5) * pool
+    spec = (ndh ** 48) * pool
+    img += sheen[..., None] * lin(L["sheen"]) * L["sheen_k"]
+    img += spec[..., None] * lin(L["spec"]) * L["spec_k"]
+    del sheen, spec, ndh, ndl
+
+    if not plain:
+        # gold hairline: a thread laid along one fold crest, lit through the pool
+        gvy, gvx = np.gradient(ph)
+        g = np.sqrt(gvx * gvx + gvy * gvy) + 1e-9
+        del gvx, gvy
+        c0 = 0.35
+        dpx = np.abs(ph - c0) / g
+        del g
+        lw = max(1.15 * h / 2400.0, 0.85)             # line width in px
+        cover = 1 - smoothstep(lw * 0.5 - 0.5, lw * 0.5 + 0.6, dpx)
+        along = smoothstep(0.55, 0.95, x) * (1 - smoothstep(1.45, 1.62, x))
+        a = (cover * along * L["line_a"] * (0.35 + 0.65 * pool) * min(1.0, lw / 1.15))
+        img = mix(img, lin(L["line"]), a[..., None])
+        del dpx, cover, a
+
+    # vignette (dark only) for depth at the edges
     if dark:
-        top, bot = bg * 0.82, bg * 1.12 + 0.004
-    else:
-        top, bot = bg * 1.03, bg * 0.95
-    t = (0.55 * ny + 0.45 * nx)[..., None]
-    img = top + (bot - top) * t
+        vig = 1 - 0.30 * smoothstep(0.35, 1.05, np.hypot((x - 0.85) / 1.0, (y - 0.55) / 0.75))
+        img *= vig[..., None]
+    del x, y, hgt, ph, pool
 
-    # --- burgundy glow, low-right
-    gx, gy = 0.80, 0.90
-    d = np.hypot((nx - gx) * w / h, ny - gy)
-    glow = np.exp(-(d / 0.55) ** 2) * 0.85 + np.exp(-(d / 0.20) ** 2) * 0.25
-    if dark:
-        img = img + glow[..., None] * accent * 0.50
-        # soft vignette
-        v = np.hypot((nx - 0.5) * 1.1, (ny - 0.5)) ** 2
-        img *= (1 - 0.35 * v)[..., None]
-    else:
-        img = img * (1 - glow[..., None] * 0.0) + glow[..., None] * (accent * 0.55 + 0.45 * bg - bg) * 0.30
+    out = srgb(img)
+    del img
+    rng = np.random.default_rng(seed + 1)
+    g1 = rng.standard_normal((h, w)).astype(F)
+    g1 = (g1 + 0.6 * np.roll(g1, 1, 0) + 0.6 * np.roll(g1, 1, 1)) / 1.39   # slightly soft grain
+    out += (g1 * (L["grain"] * (0.5 if plain else 1.0)))[..., None]
+    del g1
+    tp = (rng.random((h, w), F) - rng.random((h, w), F)) / 255.0         # TPDF dither
+    out += tp[..., None]
+    return Image.fromarray((np.clip(out, 0, 1) * 255 + 0.5).astype(np.uint8), "RGB")
 
-    # --- contour field: warped concentric distance from a point past the corner
-    if lines:
-        warp = smooth_noise(rng, w, h, 3, 4) * 0.045 * h
-        warp2 = smooth_noise(rng, w, h, 8, 3) * 0.004 * h
-        cx, cy = w * 1.02, h * 1.08
-        r = np.hypot(xx - cx, (yy - cy) * 1.05) + warp + warp2
-        spacing = 44.0 * S
-        f = r / spacing
-        gyr, gxr = np.gradient(f)
-        gm = np.hypot(gxr, gyr) + 1e-6               # field units per pixel
-        fr = f - np.floor(f + 0.5)                   # distance to nearest line (field units)
-        dist_px = np.abs(fr) / gm
-        wpx = 0.75 * max(S, 0.6)                     # hairline width
-        cover = 1 - smoothstep(wpx * 0.5, wpx * 0.5 + 1.0, dist_px)
-        idx = np.floor(f + 0.5).astype(np.int32)
-        major = (idx % 5 == 0).astype(np.float32)
-        # fade lines out away from the corner so the upper-left stays calm
-        reach = np.exp(-(np.hypot((nx - 1.0) * w / h, ny - 1.0) / 1.15) ** 2)
-        mod = 0.30 + 0.70 * smoothstep(0.0, 1.0, reach)
-        a_base = 0.085 if dark else 0.060
-        alpha = cover * (a_base * (1 + 0.8 * major)) * mod * strength
-        img = img * (1 - alpha[..., None]) + ink * alpha[..., None]
 
-        # sparing gold hairline: one index contour, lit over a short arc only
-        k = 15
-        sel = (idx == k).astype(np.float32)
-        ang = np.arctan2(-(yy - cy), -(xx - cx))
-        lit = smoothstep(0.10, 0.45, ang) * (1 - smoothstep(0.55, 0.90, ang))
-        ga = cover * sel * lit * (0.34 if dark else 0.40) * strength
-        img = img * (1 - ga[..., None]) + gold * ga[..., None]
-
-    # --- grain / dither: luminance noise, a little over 1 LSB
-    g1 = rng.standard_normal((h, w)).astype(np.float32)
-    g1 = (g1 + 0.5 * np.roll(g1, 1, 1)) / 1.12
-    amp = (0.010 if dark else 0.008)
-    img = img + (g1 * amp)[..., None]
-    img += (rng.random((h, w, 1)).astype(np.float32) - 0.5) / 255.0   # TPDF-ish dither
-    return Image.fromarray((np.clip(img, 0, 1) * 255 + 0.5).astype(np.uint8), "RGB")
+def save_jpeg(im, path, quality, cap=None):
+    q = quality
+    while True:
+        im.save(path, quality=q, subsampling=0, optimize=True, progressive=True)
+        if cap is None or path.stat().st_size <= cap or q <= 70:
+            return q
+        q -= 2
 
 
 def main():
@@ -119,7 +203,8 @@ def main():
     ap.add_argument("--variant", help="variant name (default: all)")
     ap.add_argument("--seed", type=int, default=20)
     ap.add_argument("--out", type=Path, default=ROOT / "wallpapers")
-    ap.add_argument("--quality", type=int, default=90)
+    ap.add_argument("--quality", type=int, default=92)
+    ap.add_argument("--preview", metavar="WxH", help="render one PNG at this size only")
     a = ap.parse_args()
 
     with open(ROOT / "tokens" / "tokens.toml", "rb") as fh:
@@ -128,20 +213,28 @@ def main():
     for n in names:
         if n not in variants:
             ap.error(f"unknown variant {n!r}; have {', '.join(variants)}")
-    (a.out / "grub").mkdir(parents=True, exist_ok=True)
+    a.out.mkdir(parents=True, exist_ok=True)
 
     for n in names:
         v = variants[n]
         dark = v["scheme"] == "dark"
         pal = v["palette"]
-        for (w, h, name) in ((3840, 2400, f"{n}.jpg"), (1920, 1080, f"{n}-1080p.jpg")):
-            im = render(pal, dark, w, h, a.seed)
-            im.save(a.out / name, quality=a.quality, subsampling=0, optimize=True)
-            print(a.out / name, (a.out / name).stat().st_size // 1024, "KB")
-        if dark:   # GRUB: plain dark tones, no line motif, very light grain
-            im = render(pal, dark, 1024, 768, a.seed, lines=False)
-            im.save(a.out / "grub" / f"{n}.png", optimize=True)
-            print(a.out / "grub" / f"{n}.png", (a.out / "grub" / f"{n}.png").stat().st_size // 1024, "KB")
+        if a.preview:
+            w, h = (int(s) for s in a.preview.lower().split("x"))
+            p = a.out / f"{n}-preview.png"
+            render(pal, n, dark, w, h, a.seed).save(p)
+            print(p)
+            continue
+        for (w, h, name, cap) in ((3840, 2400, f"{n}.jpg", MAX_BYTES),
+                                  (1920, 1080, f"{n}-1080p.jpg", None)):
+            p = a.out / name
+            q = save_jpeg(render(pal, n, dark, w, h, a.seed), p, a.quality, cap)
+            print(p, p.stat().st_size // 1024, "KB", f"q{q}")
+        if dark:   # GRUB: the same drape, no hairline, gentler grain
+            (a.out / "grub").mkdir(exist_ok=True)
+            p = a.out / "grub" / f"{n}.png"
+            render(pal, n, dark, 1024, 768, a.seed, plain=True).save(p, optimize=True)
+            print(p, p.stat().st_size // 1024, "KB")
 
 
 if __name__ == "__main__":
