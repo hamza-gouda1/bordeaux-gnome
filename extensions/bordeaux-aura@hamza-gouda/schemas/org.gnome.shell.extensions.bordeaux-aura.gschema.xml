@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<schemalist gettext-domain="bordeaux-aura">
+  <enum id="org.gnome.shell.extensions.bordeaux-aura.ThemeMode">
+    <value nick="auto" value="0"/>
+    <value nick="dark" value="1"/>
+    <value nick="light" value="2"/>
+  </enum>
+
+  <schema id="org.gnome.shell.extensions.bordeaux-aura"
+          path="/org/gnome/shell/extensions/bordeaux-aura/">
+    <key name="enabled" type="b">
+      <default>true</default>
+      <summary>Show the aura</summary>
+    </key>
+    <key name="intensity" type="i">
+      <range min="0" max="100"/>
+      <default>38</default>
+      <summary>Aura intensity</summary>
+      <description>38 gives the design-spec alphas; 0 hides the aura.</description>
+    </key>
+    <key name="hover-boost" type="d">
+      <range min="1.0" max="3.0"/>
+      <default>1.6</default>
+      <summary>Alpha multiplier while the pointer is over an icon</summary>
+    </key>
+    <key name="only-on-hover" type="b">
+      <default>false</default>
+      <summary>Show the aura only on hover</summary>
+    </key>
+    <key name="blur-radius" type="i">
+      <range min="0" max="48"/>
+      <default>22</default>
+      <summary>Halo blur radius in pixels (at 48px icons)</summary>
+    </key>
+    <key name="accent" type="s">
+      <default>'#8E2A44'</default>
+      <summary>Theme accent, #RRGGBB</summary>
+      <description>The aura hue is pulled 15% toward it. Bordeaux #8E2A44, Oxblood Noir #A3283A, Merlot Day #7A1C34.</description>
+    </key>
+    <key name="theme-mode" enum="org.gnome.shell.extensions.bordeaux-aura.ThemeMode">
+      <default>'auto'</default>
+      <summary>Dark or light clamps</summary>
+      <description>auto follows org.gnome.desktop.interface color-scheme.</description>
+    </key>
+  </schema>
+</schemalist>

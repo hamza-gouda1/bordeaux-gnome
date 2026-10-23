@@ -1,0 +1,9 @@
+{
+  "uuid": "bordeaux-aura@hamza-gouda",
+  "name": "Bordeaux Aura",
+  "description": "A faint glow in each app's own colour behind the Ubuntu Dock icons. Part of the Bordeaux GNOME theme.",
+  "shell-version": ["46"],
+  "settings-schema": "org.gnome.shell.extensions.bordeaux-aura",
+  "url": "https://github.com/hamza-gouda1/bordeaux-gnome",
+  "version": 1
+}

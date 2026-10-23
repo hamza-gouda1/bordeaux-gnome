@@ -6,6 +6,8 @@ First public version.
 
 Dock and performance pass:
 
+- Dock aura: new optional `bordeaux-aura@hamza-gouda` extension, a faint glow in each app's own colour behind the dock icons (icons untouched), with tests for its colour maths.
+
 - Dock slab: equal 12px left/right margins (was 12/8), so the icons are centred in the slab.
 
 - Dock: `dock-fixed` false, `autohide` and `intellihide` true (mode ALL_WINDOWS),
