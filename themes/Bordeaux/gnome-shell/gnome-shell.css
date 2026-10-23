@@ -399,7 +399,10 @@ stage {
 /* Yaru and the extension both style `#dashtodockContainer.left[.fixed][.shrink] #dash
    .dash-background` with more specificity than this rule, and they set margin 4px.
    !important on every property is what makes the float margin and the glass stick.
-   The extension reserves the margin in the work area, so windows keep a real gap. */
+   The extension reserves the margin in the work area, so windows keep a real gap.
+   Left and right margins MUST be equal: the icons are laid out centred in the whole
+   dash box while this background shrinks by its margins, so unequal margins shift
+   the slab relative to the icons (12/8 left them 2px left of centre). */
 #dashtodockContainer.left #dash .dash-background {
     background-color: transparent !important;
     background-gradient-direction: vertical !important;
@@ -413,7 +416,7 @@ stage {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
     margin-left: 12px !important;
-    margin-right: 8px !important;
+    margin-right: 12px !important;
     padding: 16px 0 !important;
 }
 
