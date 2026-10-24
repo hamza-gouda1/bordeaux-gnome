@@ -1,5 +1,5 @@
 /* Bordeaux Design System - ${variant} GTK4 / Libadwaita (${description}) */
-@define-color accent_color ${accent-text};
+@define-color accent_color mix(@accent_bg_color, @window_fg_color, 0.5);
 @define-color accent_bg_color ${accent};
 @define-color accent_fg_color ${on-accent};
 @define-color destructive_color ${danger};
@@ -15,44 +15,16 @@
 @define-color error_bg_color ${danger};
 @define-color error_fg_color ${on-status};
 
-@define-color window_bg_color ${bg-1};
-@define-color window_fg_color ${fg-0};
-@define-color view_bg_color ${bg-2};
-@define-color view_fg_color ${fg-0};
-@define-color headerbar_bg_color ${bg-1};
-@define-color headerbar_fg_color ${fg-0};
-@define-color headerbar_border_color ${border};
-@define-color headerbar_backdrop_color ${bg-1};
-@define-color sidebar_bg_color ${sidebar};
-@define-color sidebar_fg_color ${fg-0};
-@define-color sidebar_border_color ${border};
-@define-color sidebar_backdrop_color ${sidebar};
-
-@define-color card_bg_color ${bg-2};
-@define-color card_fg_color ${fg-0};
-@define-color card_border_color ${border};
-@define-color popover_bg_color ${bg-2};
-@define-color popover_fg_color ${fg-0};
-@define-color dialog_bg_color ${bg-1};
-@define-color dialog_fg_color ${fg-0};
+/* Surfaces are left to libadwaita so apps follow light/dark live; only the accent is ours. */
 
 /* Custom Bordeaux Refinements */
 * {
     font-family: ${font-sans};
 }
 
-window, window.background {
-    background-color: @window_bg_color;
-    color: @window_fg_color;
-}
-
 headerbar {
     min-height: ${header-h};
     font-weight: ${fw-semibold};
-    background-color: @headerbar_bg_color;
-    color: @headerbar_fg_color;
-    border-bottom: 1px solid @headerbar_border_color;
-    box-shadow: none;
 }
 
 button {
@@ -61,11 +33,7 @@ button {
 }
 
 .card, card {
-    background-color: @card_bg_color;
-    color: @card_fg_color;
-    border: 1px solid @card_border_color;
     border-radius: ${r-md};
-    box-shadow: ${elev-1};
 }
 
 button.suggested-action, .suggested-action button {
@@ -84,9 +52,6 @@ button.suggested-action:active {
 }
 
 entry, textview {
-    background-color: @view_bg_color;
-    color: @view_fg_color;
-    border-color: @card_border_color;
     border-radius: ${r-sm};
 }
 
@@ -103,6 +68,5 @@ switch:focus-visible {
 /* Sidebar location: tile fill only, no gold strip, no burgundy. */
 .navigation-sidebar row:selected,
 .sidebar-pane row:selected {
-    background-color: ${tile};
-    color: @sidebar_fg_color;
+    background-color: alpha(currentColor, 0.1);
 }
