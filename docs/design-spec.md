@@ -37,7 +37,7 @@ Reference scenes are in `v2-previews/`:
    - the workspace switcher popup shows round dots, the active one gold;
    - the top-bar workspace indicator stays neutral light, because the shell stretches the active dot into a pill that no CSS can prevent, and a stretched gold dot reads as a strip;
    - the GTK sidebar location is a tile fill only, with no gold bar.
-4. **Islands top bar:** the bar itself is transparent. It holds three capsules: workspace dots, a Geist Mono clock (`THU 23 OCT │ 14:07` with tabular numerals and a gold divider), and the tray. Each capsule has the same uniform 1px hairline as the slabs.
+4. **Islands top bar:** the bar itself is transparent. It holds three capsules: workspace dots, a proportional Geist clock (17px semibold, tabular numerals, no tracking), and the tray with 22px icons and 16px text. Capsules are 40px tall with the same uniform 1px hairline as the slabs.
 5. **Type character:**
    - Eyebrow labels are Geist Mono 10.5px, weight 500, tracking .14em, small caps. They're used for section headers, notification source and time, chips, QS captions and the lock-screen date.
    - Numerals are always Geist Mono with `tnum`.
@@ -58,7 +58,7 @@ Reference scenes are in `v2-previews/`:
 | Element | How it's built |
 |---|---|
 | Slab, cut corner, edge, sheen | User-theme CSS: per-corner `border-radius`, a uniform `border`, 2-stop `background-gradient`. St draws **one `box-shadow` per node**, so the drop shadow sits on the outer node and the edge is the border. The slabs are 0.96-opaque glass; blur-my-shell popup blur is off (see risks). |
-| Islands top bar, mono clock | CSS: transparent `#panel`, styled `.panel-button` capsules and `.clock` font. Just Perfection handles panel size and spacing. |
+| Islands top bar, Geist clock | CSS: transparent `#panel`, styled `.panel-button` capsules and `.clock` font. Just Perfection handles panel size and spacing. |
 | Workspace dots | CSS: `.workspace-dot` set to 6px round, neutral. The JS already does the 3.25× active stretch and 50% fade. |
 | Dock dots (running, focused) | CSS on `.app-well-app-running-dot` and `.focused`, using ubuntu-dock's DEFAULT indicator style. |
 | Eyebrows | CSS gives `font-family`, `letter-spacing` and `font-variant: small-caps`. **St has no `text-transform`**, so true all-caps needs an **extension**; GTK4 labels get it from `font-variant-caps: all-small-caps`. |
@@ -71,8 +71,8 @@ Reference scenes are in `v2-previews/`:
 | Wallpaper | A generated SVG/PNG asset set via gsettings. |
 
 ## Shape, space, depth, motion
-- **Radii:** 4 chips · 8 buttons and entries · 12 cards and lists · 14 windows · 16 tiles and cells · 6/22 slabs · 15 islands.
-- **Spacing:** 4-pt scale `4 8 12 16 24 32 48`. List rows are at least 56px, sidebar rows 38px, the header bar 46px, islands 30px with an 8px top margin.
+- **Radii:** 4 chips · 8 buttons and entries · 12 cards and lists · 14 windows · 16 tiles and cells · 6/22 slabs · 26/28 app-grid folders · 20 islands.
+- **Spacing:** 4-pt scale `4 8 12 16 24 32 48`. List rows are at least 56px, sidebar rows 38px, the header bar 46px, islands 40px with an 8px top margin (panel 56px).
 - **Elevation:**
   - e1 cards: `0 1 2`.
   - e2 tooltips: `+0 6 16`.
@@ -134,6 +134,7 @@ README). What the renders fixed, and what `tests/test_shell_css.py` now pins:
   (white with a soft shadow, 3:1 or better on the lightest backdrop); the lock
   screen uses blur-my-shell's `pipeline_default` (dim 0.6) because the lock
   screen is unthemed and its white clock was unreadable over the light dim.
+- **App-grid folders:** the tile (26px radius) and opened dialog (28px) have no cut corner: a light translucent tint (`folder-fill`, alpha 0.30 to 0.48 per variant) with a hairline `folder-edge`, so the wallpaper shows through. St has no backdrop blur, so the opened dialog gets blur-my-shell's folder blur with a brightness-1.0 pipeline. The preset turns off blur-my-shell's own overview and folder styling (`style-components 0`, `style-dialogs 0`), whose `!important` rules otherwise override the theme.
 - **Aura:** the preset sets the aura accent per variant. With the pointer
   sweeping the dock the aura costs about 0.1 to 0.3 s of shell CPU per 4 s
   (software rendering), nothing when idle.

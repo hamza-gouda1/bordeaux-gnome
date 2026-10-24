@@ -89,6 +89,65 @@ if [ -f "$STATE/backup/preset.txt" ]; then
     done < "$STATE/backup/preset.txt"
 fi
 
+# remove_enabled UUID STATEDIR: drop UUID from enabled-extensions if install.sh added it.
+remove_enabled() {
+    local exts
+    [ -f "$2/enabled-by-us" ] || return 0
+    gsettings writable org.gnome.shell enabled-extensions >/dev/null 2>&1 || return 0
+    exts=$(python3 - "$(gsettings get org.gnome.shell enabled-extensions)" "$1" <<'PY'
+import sys
+
+from gi.repository import GLib
+
+cur = GLib.Variant.parse(GLib.VariantType("as"), sys.argv[1]).unpack()
+print(GLib.Variant("as", [e for e in cur if e != sys.argv[2]]).print_(False))
+PY
+)
+    if [ "$exts" != "$(gsettings get org.gnome.shell enabled-extensions)" ]; then
+        run gsettings set org.gnome.shell enabled-extensions "$exts"
+    fi
+}
+
+# Focus Keys: take out only the shortcuts and the enable that install.sh added
+# (other tools, e.g. tuf-control, may have added their own entries).
+FOCUS_UUID=focus-keys@hamza-gouda
+FOCUS_SCHEMA=org.gnome.shell.extensions.focus-keys
+FSTATE=$STATE/focus-keys
+if [ -d "$FSTATE" ]; then
+    say "Removing the Focus Keys shortcuts added by install.sh"
+    if [ -s "$FSTATE/bindings-added" ] && gs writable "$FOCUS_SCHEMA" bindings >/dev/null 2>&1; then
+        left=$(python3 - "$(gs get "$FOCUS_SCHEMA" bindings)" "$FSTATE/bindings-added" <<'PY'
+import sys
+
+from gi.repository import GLib
+
+cur = GLib.Variant.parse(GLib.VariantType("as"), sys.argv[1]).unpack()
+ours = set(open(sys.argv[2]).read().splitlines())
+left = [e for e in cur if e not in ours]
+print(GLib.Variant("as", left).print_(False) if left else "RESET")
+PY
+)
+        if [ "$left" = RESET ]; then
+            gs_run reset "$FOCUS_SCHEMA" bindings
+        else
+            gs_run set "$FOCUS_SCHEMA" bindings "$left"
+        fi
+    fi
+    remove_enabled "$FOCUS_UUID" "$FSTATE"
+    run rm -rf "${DATA:?}/gnome-shell/extensions/$FOCUS_UUID"
+fi
+
+# Bordeaux Aura (light/dark following): its keys came back with preset.txt above.
+AURA_UUID=bordeaux-aura@hamza-gouda
+ASTATE=$STATE/aura
+if [ -d "$ASTATE" ]; then
+    remove_enabled "$AURA_UUID" "$ASTATE"
+    if [ -f "$ASTATE/installed-by-us" ] && [ ! -f "$ASTATE/preexisting" ]; then
+        say "Removing the Bordeaux Aura extension"
+        run rm -rf "${DATA:?}/gnome-shell/extensions/$AURA_UUID"
+    fi
+fi
+
 say "Restoring GTK 3 and GTK 4 styles"
 for v in 3 4; do
     css="$CONF/gtk-$v.0/gtk.css"

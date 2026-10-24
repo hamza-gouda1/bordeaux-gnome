@@ -1,0 +1,53 @@
+{
+ "variant": "Bordeaux",
+ "scheme": "dark",
+ "shellTheme": "Bordeaux",
+ "gtkTheme": "Yaru-dark",
+ "terminalProfile": "9b0d3a10-0b0e-4d11-9a01-000000000001",
+ "terminalProfiles": [
+  "9b0d3a10-0b0e-4d11-9a01-000000000001",
+  "9b0d3a10-0b0e-4d11-9a01-000000000002",
+  "9b0d3a10-0b0e-4d11-9a01-000000000003"
+ ],
+ "wallpaper": "Bordeaux.jpg",
+ "keys": [
+  {
+   "schema": "org.gnome.desktop.interface",
+   "key": "cursor-theme",
+   "value": "'DMZ-Black'",
+   "merge": false,
+   "ifOneOf": [
+    "'DMZ-Black'",
+    "'DMZ-White'"
+   ]
+  },
+  {
+   "schema": "org.gnome.desktop.interface",
+   "key": "icon-theme",
+   "value": "'Papirus-Dark'",
+   "merge": false,
+   "ifOneOf": [
+    "'Papirus'",
+    "'Papirus-Dark'"
+   ]
+  },
+  {
+   "schema": "org.gnome.shell.extensions.blur-my-shell",
+   "key": "pipelines",
+   "value": "{'pipeline_bordeaux_slab': {'name': <'Bordeaux slab'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_slab'>, 'params': <{'unscaled_radius': <28>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_island': {'name': <'Bordeaux island'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_island'>, 'params': <{'unscaled_radius': <22>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_overview': {'name': <'Bordeaux overview'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_overview'>, 'params': <{'unscaled_radius': <0>, 'brightness': <0.8>}>}>]>}, 'pipeline_bordeaux_folder': {'name': <'Bordeaux folder'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_folder'>, 'params': <{'unscaled_radius': <28>, 'brightness': <1.0>}>}>]>}}",
+   "merge": true
+  },
+  {
+   "schema": "org.gnome.shell.extensions.blur-my-shell.lockscreen",
+   "key": "pipeline",
+   "value": "'pipeline_bordeaux_slab'",
+   "merge": false
+  },
+  {
+   "schema": "org.gnome.shell.extensions.bordeaux-aura",
+   "key": "accent",
+   "value": "'#8E2A44'",
+   "merge": false
+  }
+ ]
+}

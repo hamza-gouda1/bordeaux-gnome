@@ -4,6 +4,28 @@
 
 First public version.
 
+Light and dark follow the Dark Style switch:
+
+- Toggling Dark Style used to change nothing: one variant was applied statically. Now `install.sh` sets `picture-uri` to Merlot Day and `picture-uri-dark` to the dark variant (with `--wallpaper`), installs both the light and the dark GNOME Terminal profile, and installs and enables `bordeaux-aura@hamza-gouda` with `follow-color-scheme` on and `dark-variant` from `--variant`. `--static` keeps the old single-variant install.
+- Bordeaux Aura follows `color-scheme` (250 ms debounce, applied once at enable too): User Themes name, `gtk-theme` Yaru/Yaru-dark, the preset keys that differ between variants (blur pipelines merged, lock screen pipeline, aura accent, icon/cursor themes while ours), the dark wallpaper, the Terminal default profile (when it already is a Bordeaux one) and `~/.config/gtk-{3,4}.0/gtk.css` (when unedited). Values the user chose are never overwritten. Preferences: follow switch, dark variant. Its glow's `auto` mode now uses light clamps unless Dark Style is on.
+- GTK reads only `~/.config/gtk-N.0/gtk.css`, at app start (GTK 3.24, 4.14 and libadwaita 1.5 never load a `gtk-dark.css` from there): apps take the new colours when restarted.
+- `tools/build.py` writes `extensions/bordeaux-aura@hamza-gouda/variants/<Variant>.json`. Tests: `tests/test_theme_follow.js`, `tests/test_follow_json.py`, install tests (dry run, wallpapers, profiles, idempotence, uninstall, a hand-installed aura kept, `--static`), and the `color-scheme` shell QA scene with dark and light screenshots.
+
+App shortcuts that raise the open window:
+
+- New `focus-keys@hamza-gouda` extension (GNOME Shell 46). Shortcuts from one `bindings` key (`ACCELERATOR=desktop-id`) bring the app's most recent window to the front on any workspace, cycle its windows on a second press, and start it when it is not running, so the "*App* is ready" notification a `gtk-launch` custom shortcut gets on Wayland is gone. Keys are grabbed like the shell grabs custom shortcuts (`grab_accelerator`), all released on disable. Preferences: list, add (app chooser + key capture or typed name), change, remove; cycle switch.
+- `install.sh` installs, compiles and enables it and merges `<Control>F9=spotify.desktop` into its shortcuts (skipped when a GNOME custom shortcut uses the key); `--no-shortcuts` leaves it out; dry run shows each step; `uninstall.sh` removes only what was added.
+- `tests/test_focus_keys.js` (parsing, window choice, lifecycle with fakes), install tests for install, idempotence, dry run, conflict, `--no-shortcuts` and uninstall.
+- Shell QA: `focus-keys` scene (real Ctrl+F9/F10/F11 presses through a virtual keyboard: raise across workspaces, launch with focus, missing app, disable/enable, preferences window) and `profile-osd` scene (TUF Control profile OSD after a burst of asusd changes). `tools/qa/mockbus.js` writable properties now emit PropertiesChanged. The harness no longer restarts when an extension before it is cycled.
+
+Top bar and app-grid folders, from a look at the real desktop:
+
+- Top bar: status and indicator icons are 22px (was 18) with 6px padding either side; indicator text (battery %, input source, media title) is 16px. Capsules are 40px tall in a 56px panel (Just Perfection `panel-size` 56, was 52). The ubuntu-appindicators tray icons follow the same size through the `icon-size` key the preset now sets.
+- Clock: proportional Geist semibold at 17px with tabular figures and wider padding, replacing the tracked Geist Mono. The shell draws date and time in one label, so they cannot take different weights from CSS alone.
+- App-grid folders: all four corners round (26px tile, 28px opened folder) and light translucent glass (alpha 0.30 to 0.48 tile, per-variant tint, hairline `folder-edge`); the search pill uses the same glass. Merlot Day is frosted ivory with dark names (`folder-fg`). New contrast pairs check the names and search text on the glass over the lightest overview backdrop.
+- Why the folders looked dim: blur-my-shell was painting over the theme. Its automatic overview style (`style-components` 4) repaints tiles, search pill and labels with `!important` rules, and its folder dialog blur used a dark style at 0.6 brightness. The preset now sets overview `style-components 0`, appfolder `style-dialogs 0` and a `pipeline_bordeaux_folder` (blur 28, brightness 1.0).
+- `tools/shell_qa.py` gives the private session two app folders, so the folder tile and the opened dialog are rendered. `tests/test_shell_css.py` asserts uniform folder radii, folder fill alpha below 0.6, panel font and icon sizes, clock face, and the preset keys.
+
 Headless visual QA (`tools/shell_qa.py`) and the fixes it found:
 
 - New `tools/shell_qa.py`: renders all three variants in a real `gnome-shell --headless` (private HOME, session and system bus, fake services from `tools/qa/mockbus.js`, memory-capped scope) and checks top-bar font size, dock margins and cut-off labels. Screenshots in `screenshots/` are now these renders; the old photo of a real desktop is gone.

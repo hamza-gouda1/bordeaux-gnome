@@ -20,17 +20,22 @@ core org.gnome.shell.extensions.dash-to-dock custom-background-color false
 core org.gnome.shell.extensions.dash-to-dock apply-custom-theme false
 core org.gnome.shell.extensions.dash-to-dock running-indicator-style 'DEFAULT'
 core org.gnome.desktop.interface clock-show-weekday true
-core org.gnome.shell.extensions.blur-my-shell pipelines merge:{'pipeline_bordeaux_slab': {'name': <'Bordeaux slab'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_slab'>, 'params': <{'unscaled_radius': <28>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_island': {'name': <'Bordeaux island'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_island'>, 'params': <{'unscaled_radius': <22>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_overview': {'name': <'Bordeaux overview'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_overview'>, 'params': <{'unscaled_radius': <0>, 'brightness': <0.8>}>}>]>}}
+core org.gnome.shell.extensions.blur-my-shell pipelines merge:{'pipeline_bordeaux_slab': {'name': <'Bordeaux slab'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_slab'>, 'params': <{'unscaled_radius': <28>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_island': {'name': <'Bordeaux island'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_island'>, 'params': <{'unscaled_radius': <22>, 'brightness': <0.75>}>}>]>}, 'pipeline_bordeaux_overview': {'name': <'Bordeaux overview'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_overview'>, 'params': <{'unscaled_radius': <0>, 'brightness': <0.8>}>}>]>}, 'pipeline_bordeaux_folder': {'name': <'Bordeaux folder'>, 'effects': <[<{'type': <'dual_kawase_blur'>, 'id': <'effect_bordeaux_folder'>, 'params': <{'unscaled_radius': <28>, 'brightness': <1.0>}>}>]>}}
 core org.gnome.shell.extensions.blur-my-shell.panel blur false
 core org.gnome.shell.extensions.blur-my-shell.dash-to-dock blur false
 core org.gnome.shell.extensions.blur-my-shell.popup override-background false
 core org.gnome.shell.extensions.blur-my-shell.popup blur false
 core org.gnome.shell.extensions.blur-my-shell.overview blur true
 core org.gnome.shell.extensions.blur-my-shell.overview pipeline 'pipeline_bordeaux_overview'
+core org.gnome.shell.extensions.blur-my-shell.overview style-components 0
+core org.gnome.shell.extensions.blur-my-shell.appfolder blur true
+core org.gnome.shell.extensions.blur-my-shell.appfolder pipeline 'pipeline_bordeaux_folder'
+core org.gnome.shell.extensions.blur-my-shell.appfolder style-dialogs 0
 core org.gnome.shell.extensions.blur-my-shell.lockscreen blur true
 core org.gnome.shell.extensions.blur-my-shell.lockscreen pipeline 'pipeline_bordeaux_slab'
 core org.gnome.shell.extensions.bordeaux-aura accent '#A3283A'
-core org.gnome.shell.extensions.just-perfection panel-size 52
+core org.gnome.shell.extensions.just-perfection panel-size 56
+core org.gnome.shell.extensions.appindicator icon-size 22
 core org.gnome.shell.extensions.just-perfection animation 4
 core org.gnome.shell.extensions.just-perfection workspace-peek false
 icons org.gnome.desktop.interface icon-theme 'Papirus-Dark'

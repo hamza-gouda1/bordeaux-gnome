@@ -43,5 +43,25 @@
       <summary>Dark or light clamps</summary>
       <description>auto follows org.gnome.desktop.interface color-scheme.</description>
     </key>
+    <key name="follow-color-scheme" type="b">
+      <default>false</default>
+      <summary>Follow the Dark Style setting</summary>
+      <description>Switch the shell theme, GTK theme, preset keys, dark wallpaper, Terminal default profile and GTK colours between the light and the dark variant when org.gnome.desktop.interface color-scheme changes. install.sh turns it on.</description>
+    </key>
+    <key name="dark-variant" type="s">
+      <choices>
+        <choice value="Bordeaux"/>
+        <choice value="Oxblood-Noir"/>
+      </choices>
+      <default>'Bordeaux'</default>
+      <summary>Variant used with Dark Style on</summary>
+    </key>
+    <key name="light-variant" type="s">
+      <choices>
+        <choice value="Merlot-Day"/>
+      </choices>
+      <default>'Merlot-Day'</default>
+      <summary>Variant used with Dark Style off</summary>
+    </key>
   </schema>
 </schemalist>

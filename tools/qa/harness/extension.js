@@ -27,6 +27,8 @@ const WANT = new Set((GLib.getenv('BXQA_SCENES') || 'all').split(','));
 const APPS = (GLib.getenv('BXQA_APPS') || '').split(',').filter(Boolean);
 const DOCK_UUID = 'ubuntu-dock@ubuntu.com';
 const AURA_UUID = 'bordeaux-aura@hamza-gouda';
+const FOCUS_UUID = 'focus-keys@hamza-gouda';
+const TUF_UUID = 'tuf-control-quick@hamza-gouda';
 
 const sleep = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => {
     r();
@@ -81,6 +83,11 @@ export default class QaHarness {
     enable() {
         if (GLib.getenv('BXQA_PRIVATE') !== '1' || !OUT)
             return;
+        // The shell re-enables extensions after one enabled before them is cycled;
+        // the run must not start over (it would truncate the log and the metrics).
+        if (this._started)
+            return;
+        this._started = true;
         this.metrics = {scenes: [], errors: []};
         this._logf = Gio.File.new_for_path(`${OUT}/harness.log`)
             .replace(null, false, Gio.FileCreateFlags.NONE, null);
@@ -151,6 +158,21 @@ export default class QaHarness {
         this._kbd.notify_keyval(GLib.get_monotonic_time(), keyval, Clutter.KeyState.PRESSED);
         await sleep(30);
         this._kbd.notify_keyval(GLib.get_monotonic_time(), keyval, Clutter.KeyState.RELEASED);
+        await sleep(200);
+    }
+
+    // A real key combination through the virtual keyboard, e.g. Control+F9.
+    async combo(mods, keyval) {
+        void this.pointer;
+        const t = () => GLib.get_monotonic_time();
+        for (const m of mods)
+            this._kbd.notify_keyval(t(), m, Clutter.KeyState.PRESSED);
+        await sleep(30);
+        this._kbd.notify_keyval(t(), keyval, Clutter.KeyState.PRESSED);
+        await sleep(30);
+        this._kbd.notify_keyval(t(), keyval, Clutter.KeyState.RELEASED);
+        for (const m of [...mods].reverse())
+            this._kbd.notify_keyval(t(), m, Clutter.KeyState.RELEASED);
         await sleep(200);
     }
 
@@ -450,6 +472,10 @@ export default class QaHarness {
             await sleep(900);
         });
 
+        await this.scene('profile-osd', () => this.profileOsd());
+        await this.scene('focus-keys', () => this.focusKeys());
+        await this.scene('color-scheme', () => this.colorScheme());
+
         await this.scene('lock', async () => {
             Main.screenShield.lock(false);
             await sleep(2000);
@@ -464,6 +490,229 @@ export default class QaHarness {
             await sleep(2200);
             await this.shot('unlock', Main.screenShield.actor);
         });
+    }
+
+    // ---- Light/dark following (Bordeaux Aura): flip color-scheme, check the theme --
+    async colorScheme() {
+        const aura = Main.extensionManager.lookup(AURA_UUID)?.stateObj;
+        if (!aura?._follower)
+            throw new Error('bordeaux-aura is not running or has no follower');
+        const own = aura._settings;
+        const iface = new Gio.Settings({schema_id: 'org.gnome.desktop.interface'});
+        const ut = aura._writer.settings('org.gnome.shell.extensions.user-theme');
+        const home = GLib.get_home_dir();
+        const read = p => {
+            try {
+                return new TextDecoder().decode(GLib.file_get_contents(p)[1]);
+            } catch {
+                return null;
+            }
+        };
+        const gtkVariant = v => {
+            const cur = read(`${home}/.config/gtk-${v}.0/gtk.css`);
+            return ['Bordeaux', 'Oxblood-Noir', 'Merlot-Day'].find(n =>
+                read(`${GLib.get_user_data_dir()}/themes/${n}/gtk-${v}.0/gtk.css`) === cur) ?? null;
+        };
+        const snap = () => ({
+            scheme: iface.get_string('color-scheme'), userTheme: ut?.get_string('name') ?? null,
+            gtkTheme: iface.get_string('gtk-theme'), accent: own.get_string('accent'),
+            stylesheet: Main.getThemeStylesheet?.()?.get_path?.() ?? null,
+            gtk4: gtkVariant('4'), gtk3: gtkVariant('3'), applied: aura.lastFollow?.variant ?? null,
+        });
+        const qsShot = async name => {
+            const qs = Main.panel.statusArea.quickSettings;
+            qs.menu.open(false);
+            await sleep(1300);
+            const e = await this.shot(name, qs.menu.box);
+            e.box = rect(qs.menu.box);
+            qs.menu.close(false);
+            await sleep(500);
+        };
+        const r = {start: snap()};
+        const startScheme = r.start.scheme, startDark = own.get_string('dark-variant');
+        own.set_boolean('follow-color-scheme', true);
+        iface.set_string('color-scheme', 'prefer-dark');
+        await sleep(1800);
+        r.dark = snap();
+        await qsShot('scheme-dark');
+        // Three quick toggles: one apply, for the last state.
+        const before = aura._follower.applied.length;
+        for (const s of ['default', 'prefer-dark', 'default']) {
+            iface.set_string('color-scheme', s);
+            await sleep(40);
+        }
+        await sleep(1800);
+        r.light = {...snap(), appliesForBurst: aura._follower.applied.length - before};
+        await qsShot('scheme-light');
+        own.set_string('dark-variant', 'Oxblood-Noir');
+        iface.set_string('color-scheme', 'prefer-dark');
+        await sleep(1800);
+        r.noir = snap();
+        own.set_string('dark-variant', startDark);
+        iface.set_string('color-scheme', startScheme);
+        await sleep(1800);
+        r.restored = snap();
+        own.set_boolean('follow-color-scheme', false);
+        await sleep(300);
+        this.metrics.colorScheme = r;
+    }
+
+    // ---- TUF Control profile OSD: asusd PlatformProfile changes (Fn+F5) ------
+    osdState() {
+        const w = Main.osdWindowManager._osdWindows?.[0];
+        return w ? {visible: w.visible, label: w._label?.visible ? w._label.text : null,
+            icon: w._icon?.gicon?.to_string?.() ?? null, box: rect(w._hbox)} : null;
+    }
+
+    setAsusdProfile(id) {
+        // Same as asusd itself switching: the mock emits PropertiesChanged.
+        return new Promise(resolve => Gio.DBus.system.call('xyz.ljones.Asusd', '/xyz/ljones',
+            'org.freedesktop.DBus.Properties', 'Set',
+            new GLib.Variant('(ssv)', ['xyz.ljones.Platform', 'PlatformProfile', new GLib.Variant('u', id)]),
+            null, Gio.DBusCallFlags.NONE, 3000, null, () => resolve()));
+    }
+
+    async profileOsd() {
+        const ann = Main.extensionManager.lookup(TUF_UUID)?.stateObj?._announcer;
+        if (!ann)
+            throw new Error('tuf-control-quick is not running or has no profile announcer');
+        Main.osdWindowManager.hideAll();
+        await sleep(400);
+        const r = {shownAtStart: ann.shown, atStart: this.osdState()};
+        // Three quick presses (asusd ids: 0 Balanced, 1 Performance, 2 Quiet).
+        for (const id of [1, 2, 1]) {
+            await this.setAsusdProfile(id);
+            await sleep(60);
+        }
+        r.duringBurst = {shown: ann.shown - r.shownAtStart, osd: this.osdState()};
+        await sleep(500);
+        r.afterBurst = {shown: ann.shown - r.shownAtStart, osd: this.osdState()};
+        const e = await this.shot('osd-profile-performance');
+        e.box = r.afterBurst.osd?.box ?? null;
+        Main.osdWindowManager.hideAll();
+        await sleep(400);
+        await this.setAsusdProfile(2);
+        await sleep(600);
+        r.single = {shown: ann.shown - r.shownAtStart, osd: this.osdState()};
+        const q = await this.shot('osd-profile-quiet');
+        q.box = r.single.osd?.box ?? null;
+        Main.osdWindowManager.hideAll();
+        await this.setAsusdProfile(0);
+        await sleep(600);
+        Main.osdWindowManager.hideAll();
+        this.metrics.profileOsd = r;
+        await sleep(300);
+    }
+
+    // ---- Focus Keys: raise-or-launch on real key presses ---------------------
+    async focusKeys() {
+        const ext = () => Main.extensionManager.lookup(FOCUS_UUID)?.stateObj;
+        if (!ext()?._core)
+            throw new Error('focus-keys is not running');
+        const r = {};
+        const wins = () => global.get_window_actors().map(a => a.meta_window)
+            .filter(w => w.get_window_type() === Meta.WindowType.NORMAL);
+        const find = re => wins().find(w => re.test(w.get_wm_class() ?? ''));
+        const state = () => ({focus: global.display.focus_window?.get_wm_class() ?? null,
+            workspace: global.workspace_manager.get_active_workspace_index()});
+        const ctrl = [Clutter.KEY_Control_L];
+
+        ext()._settings.set_strv('bindings', ['<Control>F9=org.gnome.Calculator.desktop',
+            '<Control>F10=org.gnome.Characters.desktop', '<Control>F11=not-installed.desktop',
+            'Bogus=org.gnome.Calculator.desktop']);
+        await sleep(300);
+        r.grabbed = ext()._core.grabbed.map(g => g.accel);
+
+        // Calculator on the second workspace, Terminal focused on the first.
+        const wm = global.workspace_manager;
+        if (wm.n_workspaces < 2)
+            wm.append_new_workspace(false, global.get_current_time());
+        const calc = find(/calculator/i), term = find(/terminal/i);
+        if (!calc || !term)
+            throw new Error(`need Calculator and Terminal windows, have ${wins().map(w => w.get_wm_class())}`);
+        calc.change_workspace_by_index(1, false);
+        Main.activateWindow(term);
+        await sleep(900);
+        r.before = state();
+        await this.combo(ctrl, Clutter.KEY_F9);
+        await sleep(1200);
+        r.raised = state();
+        await this.shot('focus-keys-raised');
+        await this.combo(ctrl, Clutter.KEY_F9);
+        await sleep(600);
+        r.again = state();
+
+        // Not running: the shell starts it and it gets the focus (no "is ready").
+        await this.combo(ctrl, Clutter.KEY_F10);
+        for (let i = 0; i < 30 && !find(/characters/i); i++)
+            await sleep(500);
+        await sleep(1500);
+        r.launched = {...state(), window: !!find(/characters/i),
+            notifications: Main.messageTray.getSources?.()
+                .flatMap(s => (s.notifications ?? []).map(n => `${s.title}: ${n.title}`)) ?? null};
+        // Pressed again while it is focused: stays (one window).
+        await this.combo(ctrl, Clutter.KEY_F10);
+        await sleep(600);
+        r.launchedAgain = state();
+
+        Main.osdWindowManager.hideAll();
+        await this.combo(ctrl, Clutter.KEY_F11);
+        await sleep(500);
+        r.missing = this.osdState();
+        Main.osdWindowManager.hideAll();
+
+        // Lifecycle in the real shell: disable releases every grab, enable takes them back.
+        // The extension's own disable()/enable() are called directly: going through
+        // extensionManager.disableExtension() would also cycle every extension enabled
+        // after it, this harness included.
+        const fk = ext();
+        const names = [...fk._core._grabs.keys()].map(a => Meta.external_binding_name_for_action(a));
+        fk.disable();
+        await sleep(400);
+        r.disabled = {coreGone: fk._core === null, allowed: names.map(n => Main.wm._allowedKeybindings[n] ?? null)};
+        Main.activateWindow(term);
+        await sleep(600);
+        await this.combo(ctrl, Clutter.KEY_F9);
+        await sleep(600);
+        r.pressWhileDisabled = state();
+        fk.enable();
+        await sleep(400);
+        r.reenabled = {state: Main.extensionManager.lookup(FOCUS_UUID)?.state,
+            grabbed: fk._core?.grabbed.map(g => g.accel) ?? null};
+        this.metrics.focusKeys = r;
+        r.prefs = await this.prefsWindow(FOCUS_UUID, 'focus-keys-prefs');
+    }
+
+    // The extension's preferences window, opened like the Extensions app does.
+    async prefsWindow(uuid, shotName) {
+        const ext = Main.extensionManager.lookup(uuid);
+        const script = GLib.build_filenamev([GLib.path_get_dirname(
+            GLib.filename_from_uri(import.meta.url)[0]), 'prefs_smoke.js']);
+        const report = `${OUT}/${shotName}.json`;
+        // The prefs runtime (like gnome-extensions-app) needs the shell's private Shew library.
+        const launcher = new Gio.SubprocessLauncher({flags: Gio.SubprocessFlags.STDERR_MERGE});
+        launcher.set_stdout_file_path(`${OUT}/${shotName}.log`);
+        launcher.setenv('GI_TYPELIB_PATH', '/usr/lib/gnome-shell/girepository-1.0', true);
+        launcher.setenv('LD_LIBRARY_PATH', '/usr/lib/gnome-shell', true);
+        const proc = launcher.spawnv(['gjs', '-m', script, ext.path, report]);
+        let res = null;
+        for (let i = 0; i < 40 && !res; i++) {
+            await sleep(250);
+            if (GLib.file_test(report, GLib.FileTest.EXISTS))
+                res = JSON.parse(new TextDecoder().decode(GLib.file_get_contents(report)[1]));
+        }
+        const win = global.get_window_actors().map(a => a.meta_window)
+            .find(w => w.get_title() === ext.metadata.name);
+        if (win) {
+            win.move_resize_frame(true, 560, 140, 800, 860);
+            win.activate(global.get_current_time());
+            await sleep(900);
+            const e = await this.shot(shotName);
+            e.box = rect(global.get_window_actors().find(a => a.meta_window === win));
+        }
+        proc.force_exit();
+        await sleep(300);
+        return {...res ?? {ok: false, error: 'no report'}, window: !!win};
     }
 
     cpu() {

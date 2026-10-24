@@ -17,20 +17,37 @@ PRESET=1
 ICONS=0
 CURSOR=0
 TERM_DEFAULT=0
+SHORTCUTS=1
+FOCUS_UUID=focus-keys@hamza-gouda
+FOCUS_SCHEMA=org.gnome.shell.extensions.focus-keys
+# App shortcuts the Focus Keys extension gets by default (ACCELERATOR=desktop id).
+FOCUS_DEFAULTS=("<Control>F9=spotify.desktop")
+FOLLOW=1
+AURA_UUID=bordeaux-aura@hamza-gouda
+AURA_SCHEMA=org.gnome.shell.extensions.bordeaux-aura
+LIGHT_THEME=Merlot-Day
 
 usage() {
     cat <<EOF
 usage: $(basename "$0") [--variant NAME] [--wallpaper] [--dry-run]
-       [--no-preset] [--icons] [--cursor] [--terminal-default]
+       [--no-preset] [--icons] [--cursor] [--terminal-default] [--no-shortcuts] [--static]
 
-  -v, --variant NAME   bordeaux (default), oxblood-noir, merlot-day
-      --wallpaper      also set the variant's wallpaper (wallpapers/<Variant>.jpg)
+  -v, --variant NAME   bordeaux (default), oxblood-noir, merlot-day: the one shown
+                       now. The desktop then follows the Dark Style switch: Merlot
+                       Day when it is off, the dark variant (bordeaux unless you
+                       chose oxblood-noir) when it is on
+      --static         one variant only, no following (no Bordeaux Aura extension)
+      --wallpaper      also set the wallpapers: Merlot Day for light, the dark
+                       variant's for dark (with --static, the variant's for both)
   -n, --dry-run        print what would change, change nothing
       --no-preset      skip the desktop preset (fonts, Ubuntu Dock, Blur my Shell,
                        Just Perfection) and the GNOME Terminal profile
       --icons          also set the recommended icon theme, if installed
       --cursor         also set the recommended cursor theme, if installed
       --terminal-default  make the Bordeaux Terminal profile the default one
+      --no-shortcuts   skip the Focus Keys extension (app shortcuts that bring an
+                       open window to the front instead of an "is ready"
+                       notification) and its default Control+F9 = Spotify
 EOF
 }
 
@@ -44,6 +61,8 @@ while [ $# -gt 0 ]; do
         --icons) ICONS=1; shift ;;
         --cursor) CURSOR=1; shift ;;
         --terminal-default) TERM_DEFAULT=1; shift ;;
+        --no-shortcuts) SHORTCUTS=0; shift ;;
+        --static) FOLLOW=0; shift ;;
         -h|--help) usage; exit 0 ;;
         *) usage >&2; exit 2 ;;
     esac
@@ -55,6 +74,7 @@ case $VARIANT in
     merlot-day|merlot) VARIANT=merlot-day; THEME=Merlot-Day; GTK_THEME=Yaru; SCHEME=prefer-light ;;
     *) echo "unknown variant: $VARIANT" >&2; usage >&2; exit 2 ;;
 esac
+if [ "$SCHEME" = prefer-dark ]; then DARK_THEME=$THEME; else DARK_THEME=Bordeaux; fi
 
 say() { printf '%s\n' "$*"; }
 warn() { printf 'note: %s\n' "$*" >&2; }
@@ -220,7 +240,8 @@ apply_preset() {
 }
 
 apply_terminal() {
-    local file="$ROOT/terminal/$THEME.dconf" uuid base list def new line key value
+    local theme=${1:-$THEME} file uuid base list def new line key value
+    file="$ROOT/terminal/$theme.dconf"
     [ -f "$file" ] || return
     uuid=$(sed -n 's/^\[:\(.*\)\]$/\1/p' "$file")
     base="org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$uuid/"
@@ -233,7 +254,7 @@ apply_terminal() {
         warn "GNOME Terminal has no profile list yet; open Terminal once, then run this again to add the profile"
         return
     fi
-    say "Adding the $THEME GNOME Terminal profile"
+    say "Adding the $theme GNOME Terminal profile"
     while IFS= read -r line; do
         case $line in ""|"#"*|"["*) continue ;; esac
         key=${line%%=*}; value=${line#*=}
@@ -246,10 +267,154 @@ apply_terminal() {
             new="${list%]}, '$uuid']"
             gs_run set org.gnome.Terminal.ProfilesList list "$new" ;;
     esac
-    if [ "$TERM_DEFAULT" = 1 ]; then
+    if [ "$TERM_DEFAULT" = 1 ] && [ "$theme" = "$THEME" ]; then
         def=default
         preset_backup org.gnome.Terminal.ProfilesList "$def"
         gs_run set org.gnome.Terminal.ProfilesList "$def" "'$uuid'"
+    fi
+}
+
+# ---- Focus Keys: app shortcuts handled by the shell ----
+FSTATE=$STATE/focus-keys
+
+# focus_merge CURRENT ENTRY...: CURRENT is the bindings value (GVariant text).
+# Prints the merged list on the first line, then "add<TAB>entry" or
+# "skip<TAB>entry<TAB>why" per entry. A key that already has an entry (the
+# user's own choice) or is used by a GNOME custom shortcut is skipped.
+focus_merge() {
+    python3 - "$@" <<'PY'
+import re
+import sys
+
+from gi.repository import Gio, GLib
+
+ALIAS = {"ctrl": "control", "ctl": "control", "primary": "control", "mod1": "alt", "mod4": "super"}
+
+
+def norm(a):
+    mods, rest = set(), a.strip()
+    while (m := re.match(r"<([^>]+)>", rest)):
+        n = m.group(1).lower()
+        mods.add(ALIAS.get(n, n))
+        rest = rest[m.end():]
+    k = rest.strip().lower()
+    return "".join(f"<{x}>" for x in sorted(mods)) + (k[4:] if k.startswith("xf86") else k)
+
+
+def custom():
+    mk = "org.gnome.settings-daemon.plugins.media-keys"
+    if not Gio.SettingsSchemaSource.get_default().lookup(mk, True):
+        return {}
+    out = {}
+    for p in Gio.Settings.new(mk).get_strv("custom-keybindings"):
+        c = Gio.Settings.new_with_path(mk + ".custom-keybinding", p)
+        if c.get_string("binding"):
+            out[norm(c.get_string("binding"))] = c.get_string("name")
+    return out
+
+
+cur = list(GLib.Variant.parse(GLib.VariantType("as"), sys.argv[1]).unpack())
+have = {norm(e.rpartition("=")[0]) for e in cur if "=" in e}
+taken = custom()
+lines = []
+for e in sys.argv[2:]:
+    k = norm(e.rpartition("=")[0])
+    if e in cur:
+        lines.append(f"have\t{e}")
+    elif k in have:
+        lines.append(f"skip\t{e}\tthat key already has a Focus Keys shortcut")
+    elif k in taken:
+        lines.append(f"skip\t{e}\tthe GNOME custom shortcut \"{taken[k]}\" uses that key")
+    else:
+        cur.append(e)
+        have.add(k)
+        lines.append(f"add\t{e}")
+print(GLib.Variant("as", cur).print_(False))
+print("\n".join(lines))
+PY
+}
+
+install_focus_keys() {
+    local src="$ROOT/extensions/$FOCUS_UUID" dest="$DATA/gnome-shell/extensions/$FOCUS_UUID"
+    local cur merged new verb entry why
+    say "Installing the Focus Keys extension (app shortcuts that bring an open window to the front)"
+    run rm -rf "$dest"
+    run mkdir -p "$dest"
+    run cp -r "$src/." "$dest/"
+    if command -v glib-compile-schemas >/dev/null 2>&1; then
+        run glib-compile-schemas "$dest/schemas"
+    else
+        warn "glib-compile-schemas is missing (Ubuntu: libglib2.0-bin); Focus Keys cannot load its settings"
+    fi
+    [ "$DRY" = 1 ] || mkdir -p "$FSTATE"
+
+    add_enabled "$FOCUS_UUID" "$FSTATE"
+
+    # In a dry run the schema may not be installed yet: start from an empty list.
+    if has_pkey "$FOCUS_SCHEMA" bindings; then
+        cur=$(gs get "$FOCUS_SCHEMA" bindings)
+    else
+        cur="@as []"
+    fi
+    if [ "$DRY" = 0 ] && [ ! -f "$FSTATE/bindings.orig" ]; then
+        printf '%s\n' "$cur" > "$FSTATE/bindings.orig"
+    fi
+    merged=$(focus_merge "$cur" "${FOCUS_DEFAULTS[@]}")
+    new=$(head -1 <<<"$merged")
+    while IFS=$'\t' read -r verb entry why; do
+        case $verb in
+            add)
+                say "  shortcut ${entry%=*} -> ${entry##*=}"
+                if [ "$DRY" = 0 ]; then printf '%s\n' "$entry" >> "$FSTATE/bindings-added"; fi ;;
+            skip) warn "not adding the shortcut $entry: $why" ;;
+        esac
+    done < <(sed 1d <<<"$merged")
+    if [ "$new" != "$cur" ]; then
+        gs_run set "$FOCUS_SCHEMA" bindings "$new"
+    fi
+    say "  Focus Keys starts after you log out and back in; change its shortcuts in the Extensions app."
+}
+
+# ---- Bordeaux Aura: dock glow and light/dark following ----
+ASTATE=$STATE/aura
+
+# add_enabled UUID STATEDIR: append to enabled-extensions; STATEDIR/enabled-by-us marks it.
+add_enabled() {
+    local uuid=$1 st=$2 exts
+    has_key org.gnome.shell enabled-extensions || return 0
+    exts=$(gsettings get org.gnome.shell enabled-extensions)
+    case $exts in
+        *"'$uuid'"*) return 0 ;;
+        "@as []"|"[]") exts="['$uuid']" ;;
+        *) exts="${exts%]}, '$uuid']" ;;
+    esac
+    run gsettings set org.gnome.shell enabled-extensions "$exts"
+    if [ "$DRY" = 0 ]; then mkdir -p "$st"; : > "$st/enabled-by-us"; fi
+}
+
+install_aura() {
+    local src="$ROOT/extensions/$AURA_UUID" dest="$DATA/gnome-shell/extensions/$AURA_UUID"
+    say "Installing the Bordeaux Aura extension: dock glow, and the desktop follows Dark Style ($LIGHT_THEME light, $DARK_THEME dark)"
+    if [ "$DRY" = 0 ]; then
+        mkdir -p "$ASTATE"
+        # A copy installed by hand before stays on uninstall (as our newer version).
+        if [ -e "$dest" ] && [ ! -e "$ASTATE/installed-by-us" ]; then : > "$ASTATE/preexisting"; fi
+        : > "$ASTATE/installed-by-us"
+    fi
+    run rm -rf "$dest"
+    run mkdir -p "$dest"
+    run cp -r "$src/." "$dest/"
+    if command -v glib-compile-schemas >/dev/null 2>&1; then
+        run glib-compile-schemas "$dest/schemas"
+    else
+        warn "glib-compile-schemas is missing (Ubuntu: libglib2.0-bin); Bordeaux Aura cannot load its settings"
+    fi
+    add_enabled "$AURA_UUID" "$ASTATE"
+    if [ "$DRY" = 1 ]; then
+        say "  would set $AURA_SCHEMA follow-color-scheme true, dark-variant '$DARK_THEME' (backed up first)"
+    else
+        preset_set "$AURA_SCHEMA" follow-color-scheme true
+        preset_set "$AURA_SCHEMA" dark-variant "'$DARK_THEME'"
     fi
 }
 
@@ -298,16 +463,29 @@ fi
 set_key org.gnome.shell.extensions.user-theme name "$THEME"
 
 if [ "$WALLPAPER" = 1 ]; then
-    src="$ROOT/wallpapers/$THEME.jpg"
-    if [ -f "$src" ]; then
-        dest="$DATA/backgrounds/bordeaux-gnome/$THEME.jpg"
-        run mkdir -p "$(dirname "$dest")"
-        run cp "$src" "$dest"
-        set_key org.gnome.desktop.background picture-uri "file://$dest"
-        set_key org.gnome.desktop.background picture-uri-dark "file://$dest"
+    bg="$DATA/backgrounds/bordeaux-gnome"
+    if [ "$FOLLOW" = 1 ]; then
+        # GNOME itself shows picture-uri in light style and picture-uri-dark in dark style.
+        # All three are copied so the aura extension can follow a change of dark variant.
+        light=$LIGHT_THEME dark=$DARK_THEME
     else
-        warn "no wallpaper at $src; skipping"
+        light=$THEME dark=$THEME
     fi
+    if [ -f "$ROOT/wallpapers/$light.jpg" ] && [ -f "$ROOT/wallpapers/$dark.jpg" ]; then
+        run mkdir -p "$bg"
+        for w in "$ROOT"/wallpapers/*.jpg; do
+            if [ "$FOLLOW" = 1 ] || [ "$(basename "$w")" = "$THEME.jpg" ]; then run cp "$w" "$bg/"; fi
+        done
+        say "Wallpapers: $light (light style), $dark (dark style)"
+        set_key org.gnome.desktop.background picture-uri "file://$bg/$light.jpg"
+        set_key org.gnome.desktop.background picture-uri-dark "file://$bg/$dark.jpg"
+    else
+        warn "no wallpaper in $ROOT/wallpapers; skipping"
+    fi
+fi
+
+if [ "$FOLLOW" = 1 ]; then
+    install_aura
 fi
 
 if [ "$PRESET" = 1 ] || [ "$ICONS" = 1 ] || [ "$CURSOR" = 1 ]; then
@@ -315,7 +493,17 @@ if [ "$PRESET" = 1 ] || [ "$ICONS" = 1 ] || [ "$CURSOR" = 1 ]; then
     apply_preset
 fi
 if [ "$PRESET" = 1 ]; then
-    apply_terminal
+    apply_terminal "$THEME"
+    # Following: the other style's profile too, so the extension can make it the default.
+    if [ "$FOLLOW" = 1 ]; then
+        for t in "$LIGHT_THEME" "$DARK_THEME"; do
+            if [ "$t" != "$THEME" ]; then apply_terminal "$t"; fi
+        done
+    fi
+fi
+
+if [ "$SHORTCUTS" = 1 ]; then
+    install_focus_keys
 fi
 
 if [ "$DRY" = 0 ]; then

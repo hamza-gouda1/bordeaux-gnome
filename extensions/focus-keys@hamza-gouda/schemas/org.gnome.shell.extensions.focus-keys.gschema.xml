@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<schemalist gettext-domain="focus-keys">
+  <schema id="org.gnome.shell.extensions.focus-keys"
+          path="/org/gnome/shell/extensions/focus-keys/">
+    <key name="bindings" type="as">
+      <default>[]</default>
+      <summary>Shortcuts, one "ACCELERATOR=desktop-id" per entry</summary>
+      <description>For example "&lt;Control&gt;F9=spotify.desktop". The accelerator uses the GTK syntax (as in Settings, e.g. &lt;Shift&gt;&lt;Super&gt;XF86TouchpadOff); the desktop id is the file name of the app's .desktop file. The first entry for a key wins.</description>
+    </key>
+    <key name="cycle-windows" type="b">
+      <default>true</default>
+      <summary>Cycle through the app's windows</summary>
+      <description>When the app already has the focus, pressing its shortcut again moves to its next window.</description>
+    </key>
+  </schema>
+</schemalist>

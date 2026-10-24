@@ -52,8 +52,47 @@ def px(v):
     return float(m.group(1)) if m else None
 
 
-def layout_checks(name, css):
+def alpha(v):
+    m = re.match(r"rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*([\d.]+)\s*\)$", (v or "").strip())
+    return float(m.group(1)) if m else 1.0
+
+
+def top_bar_and_folder_checks(name, css):
+    """Top bar type and icon sizes, and the fully rounded light-glass app-grid folders."""
     bad = []
+    btn = decls_for(css, "#panel .panel-button")
+    if (px(btn.get("font-size")) or 0) < 16:
+        bad.append(f"{name}: top-bar button text is {btn.get('font-size')} (< 16px)")
+    if (px(decls_for(css, "#panel .panel-button StLabel").get("font-size")) or 0) < 16:
+        bad.append(f"{name}: top-bar indicator labels are below 16px")
+    for sel in ("#panel .panel-button .system-status-icon", "#panel .panel-button StIcon"):
+        if (px(decls_for(css, sel).get("icon-size")) or 0) < 22:
+            bad.append(f"{name}: {sel} icon-size is below 22px")
+    for sel in ("#panel .clock-display", "#panel .panel-button.clock-display .clock"):
+        c = decls_for(css, sel)
+        if (px(c.get("font-size")) or 0) < 17:
+            bad.append(f"{name}: {sel} font-size {c.get('font-size')} (< 17px)")
+        if "Mono" in c.get("font-family", "Mono"):
+            bad.append(f"{name}: {sel} uses a mono face, the clock is proportional Geist")
+        if "letter-spacing" in c:
+            bad.append(f"{name}: {sel} has letter-spacing")
+    if "tnum" not in decls_for(css, "#panel .panel-button.clock-display .clock").get("font-feature-settings", ""):
+        bad.append(f"{name}: clock lacks tabular figures")
+    if (px(decls_for(css, "#panelCenter").get("margin", "").split()[0]) or 0) * 2 + 40 > \
+            (px(decls_for(css, "#panel").get("height")) or 0):
+        bad.append(f"{name}: the 40px capsules do not fit the panel height")
+    for sel, max_alpha in ((".app-folder", 0.6), (".app-folder-dialog", 0.7)):
+        d = decls_for(css, sel)
+        radii = d.get("border-radius", "").split()
+        if len(set(radii)) != 1 or (px(radii[0]) or 0) < 24:
+            bad.append(f"{sel} in {name}: border-radius {d.get('border-radius')!r} must be one value of 24px or more")
+        if alpha(d.get("background-color")) >= max_alpha:
+            bad.append(f"{name}: {sel} fill {d.get('background-color')} is not translucent glass (alpha < {max_alpha})")
+    return bad
+
+
+def layout_checks(name, css):
+    bad = top_bar_and_folder_checks(name, css)
     t = decls_for(css, ".quick-menu-toggle")
     if (px(t.get("min-width")) or 0) < 176 or t.get("min-width") != t.get("max-width"):
         bad.append(f"{name}: Quick Settings toggles need a fixed px width >= 176 (em width cut labels)")
@@ -92,6 +131,13 @@ def preset_checks():
                 bad.append(f"{variant}: preset does not set the aura accent to {acc}")
             if toks["scheme"] == "light" and "lockscreen pipeline 'pipeline_bordeaux_slab'" in pre:
                 bad.append(f"{variant}: light lock screen uses the light slab dim (white clock on pale grey)")
+        size = int(toks["panel-h"].removesuffix("px"))
+        if f"just-perfection panel-size {size}\n" not in pre or size < 56:
+            bad.append(f"{variant}: preset panel-size is not the {size}px panel (needs >= 56 for 40px capsules)")
+        for need in ("appindicator icon-size 22", "blur-my-shell.appfolder style-dialogs 0",
+                     "blur-my-shell.overview style-components 0"):
+            if need not in pre:
+                bad.append(f"{variant}: preset lacks: {need}")
     return bad
 
 

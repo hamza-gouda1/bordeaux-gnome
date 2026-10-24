@@ -19,13 +19,12 @@ fs-eyebrow = "10.5px"
 fs-caption = "11px"
 fs-body = "13px"
 fs-body-lg = "14px"
-fs-panel = "15px"           # top bar buttons, status text
-fs-clock = "15px"           # top bar clock (mono)
+fs-panel = "16px"           # top bar buttons, status text, indicator labels
+fs-clock = "17px"           # top bar clock (proportional Geist, tabular figures)
 fs-title = "15px"
 fs-heading = "20px"
 fs-display = "30px"
 ls-eyebrow = "1.5px"        # .14em of 10.5px; St has no em tracking guarantee
-ls-clock = "0.5px"
 ls-display = "-0.75px"      # -.025em of 30px
 
 [shared.radius]
@@ -35,11 +34,13 @@ r-md = "12px"               # cards, lists
 r-lg = "16px"               # tiles, cells
 r-xl = "22px"
 r-window = "14px"
-r-island = "18px"          # half of island-h: a pill
+r-island = "20px"          # half of island-h: a pill
 r-pill = "9999px"
 r-cut = "6px"               # the cut corner
 r-dock = "30px"            # the dock slab: near-pill
 r-slab = "6px 22px 22px 22px"   # cut top-left, then clockwise
+r-folder = "26px"           # app-grid folder tile: all four corners round
+r-folder-dialog = "28px"    # opened folder
 
 [shared.space]              # 4-pt scale
 sp-1 = "4px"
@@ -52,10 +53,10 @@ sp-7 = "48px"
 row-min = "56px"
 row-sidebar = "38px"
 header-h = "46px"
-island-h = "36px"
+island-h = "40px"
 island-mt = "8px"
-panel-h = "52px"            # island-h + 2 * island-mt
-icon-panel = "18px"
+panel-h = "56px"            # island-h + 2 * island-mt
+icon-panel = "22px"           # status and indicator icons in the top bar
 
 [shared.elevation]          # single layer only: St draws one box-shadow
 e1-geom = "0 1px 2px"
@@ -125,6 +126,13 @@ sheen = "rgba(238, 231, 228, 0.035)"
 overview-fg = "#EEE7E4"
 overview-dim = "#4F1826"
 overview-text-shadow = "none"
+# app-grid folders and the search pill: translucent glass, the wallpaper shows through
+folder-fill = "rgba(176, 84, 108, 0.34)"
+folder-fill-hover = "rgba(176, 84, 108, 0.46)"
+folder-dialog-fill = "rgba(158, 70, 94, 0.50)"
+folder-edge = "rgba(238, 231, 228, 0.24)"
+folder-fg = "#EEE7E4"
+folder-text-shadow = "none"
 lip = "rgba(0, 0, 0, 0.55)"
 shadow = "#000000"
 shadow-a1 = "30"
@@ -197,6 +205,13 @@ sheen = "rgba(236, 230, 228, 0.03)"
 overview-fg = "#ECE6E4"
 overview-dim = "#3D141A"
 overview-text-shadow = "none"
+# app-grid folders and the search pill: translucent glass, the wallpaper shows through
+folder-fill = "rgba(206, 190, 188, 0.30)"
+folder-fill-hover = "rgba(206, 190, 188, 0.40)"
+folder-dialog-fill = "rgba(120, 100, 104, 0.52)"
+folder-edge = "rgba(236, 230, 228, 0.22)"
+folder-fg = "#ECE6E4"
+folder-text-shadow = "none"
 lip = "rgba(0, 0, 0, 0.60)"
 shadow = "#000000"
 shadow-a1 = "34"
@@ -268,6 +283,13 @@ sheen = "rgba(255, 255, 255, 0.55)"
 overview-fg = "#FFFFFF"
 overview-dim = "#8C8880"
 overview-text-shadow = "0 1px 3px rgba(0, 0, 0, 0.45)"
+# app-grid folders and the search pill: translucent glass, the wallpaper shows through
+folder-fill = "rgba(252, 249, 244, 0.48)"
+folder-fill-hover = "rgba(252, 249, 244, 0.60)"
+folder-dialog-fill = "rgba(252, 249, 244, 0.66)"
+folder-edge = "rgba(255, 255, 255, 0.75)"
+folder-fg = "#2B1A1E"
+folder-text-shadow = "none"
 lip = "rgba(60, 30, 35, 0.16)"
 shadow = "#3C1E23"
 shadow-a1 = "10"
@@ -574,3 +596,23 @@ min = 4.5
 fg = "overview-fg"          # app names on the dimmed wallpaper (light: plus a text shadow)
 bg = "overview-dim"
 min = 3.0
+[[contrast.pair]]
+fg = "folder-fg"            # folder names on the glass tile, over the lightest overview backdrop
+bg = "folder-fill"
+over = "overview-dim"
+min = 4.5
+[[contrast.pair]]
+fg = "folder-fg"
+bg = "folder-fill-hover"
+over = "overview-dim"
+min = 4.5
+[[contrast.pair]]
+fg = "folder-fg"
+bg = "folder-dialog-fill"
+over = "overview-dim"
+min = 4.5
+[[contrast.pair]]
+fg = "fg-0"                 # typed text in the search pill (same glass as the folders)
+bg = "folder-fill"
+over = "overview-dim"
+min = 4.5

@@ -3,7 +3,7 @@
 /* ==============================================================================
  * Bordeaux Design System - GNOME Shell stylesheet, Bordeaux (Quiet Wine)
  * "Hallmark": glass slabs with a uniform 1px hairline, a cut top-left
- * corner and one box-shadow. Gold only marks focus and place, never an edge. Tested target: GNOME 46 (Wayland), Ubuntu 24.04.
+ * corner and one box-shadow (app-grid folders are fully rounded glass). Gold only marks focus and place, never an edge. Tested target: GNOME 46 (Wayland), Ubuntu 24.04.
  * St notes: one box-shadow per node, no text-transform, no CSS variables.
  * ============================================================================== */
 
@@ -23,9 +23,9 @@ stage {
     box-shadow: none !important;
     color: #EEE7E4;
     font-family: "Geist", sans-serif;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600 !important;
-    height: 52px !important;
+    height: 56px !important;
     transition-duration: 200ms;
 }
 
@@ -35,7 +35,7 @@ stage {
 #panelRight {
     background-color: rgba(22, 17, 18, 0.74);
     border: 1px solid #332A2C;
-    border-radius: 18px;
+    border-radius: 20px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     margin: 8px 0;
     padding: 0 8px;
@@ -52,7 +52,7 @@ stage {
 #panel .panel-button {
     color: #EEE7E4;
     font-family: "Geist", sans-serif;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600 !important;
     padding: 0 12px;
     margin: 0 1px;
@@ -60,10 +60,24 @@ stage {
     transition-duration: 150ms;
 }
 
-#panel .panel-button .system-status-icon {
-    icon-size: 18px;
-    padding: 0 4px;
+/* Status icons (wifi, bluetooth, volume, battery) and extension indicators: 22px with
+   generous spacing. Indicator labels (battery %, input source, media title) inherit
+   fs-panel from the button. */
+#panel .panel-button .system-status-icon,
+#panel .panel-button .app-menu-icon,
+#panel .panel-button .appindicator-icon {
+    icon-size: 22px;
+    padding: 0 6px;
     margin: 0 1px;
+}
+
+#panel .panel-button StIcon {
+    icon-size: 22px;
+}
+
+#panel .panel-button StLabel {
+    font-size: 16px;
+    font-weight: 600;
 }
 
 #panel .panel-button:hover {
@@ -83,25 +97,26 @@ stage {
     box-shadow: none;
 }
 
-/* Clock Display: Geist Mono with a wide tracking, like the eyebrow labels. */
+/* Clock Display: proportional Geist at 17px with tabular figures, so the digits do
+   not jump each minute. No tracking (St ellipsizes a tracked label's last letter);
+   wider padding gives the capsule room. */
 #panel .clock-display {
-    font-family: "Geist Mono", monospace;
-    font-weight: 500;
-    font-size: 15px;
-    letter-spacing: 0.5px;
-    color: #C3B8B5;
+    font-family: "Geist", sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    color: #EEE7E4;
+    padding: 0 24px;
     border-radius: 9999px !important;
 }
 
 /* The label itself: Yaru styles `.panel-button.clock-display .clock`, so name the
-   leaf too. Geist Mono is fixed-width; "tnum" keeps it so if the font falls back. */
+   leaf too. */
 #panel .panel-button.clock-display .clock {
-    font-family: "Geist Mono", monospace;
-    font-weight: 500;
-    font-size: 15px;
-    letter-spacing: 0.5px;
+    font-family: "Geist", sans-serif;
+    font-weight: 600;
+    font-size: 17px;
     font-feature-settings: "tnum";
-    color: #C3B8B5;
+    color: #EEE7E4;
 }
 
 #panel .clock-display:hover,
@@ -654,6 +669,14 @@ stage {
     text-shadow: none;
 }
 
+/* Folder names sit on the glass tile, not on the bare wallpaper (the id selector is
+   there to outrank `#appDisplay StLabel` above). */
+#appDisplay .app-folder StLabel,
+.app-folder StLabel {
+    color: #EEE7E4;
+    text-shadow: none;
+}
+
 /* Hover & Active States */
 #appDisplay .overview-tile:hover,
 #appDisplay .app-well-app:hover,
@@ -681,27 +704,29 @@ stage {
     border-radius: 16px !important;
 }
 
-/* Folders: a smaller slab */
+/* Folders: light glass, all four corners round. St has no backdrop blur, so the
+   fill is a translucent tint and the wallpaper shows straight through. */
 .app-folder {
-    background-color: #181314 !important;
-    border: 1px solid #332A2C !important;
+    background-color: rgba(176, 84, 108, 0.34) !important;
+    border: 1px solid rgba(238, 231, 228, 0.24) !important;
     box-shadow: none !important;
-    border-radius: 6px 22px 22px 22px !important;
+    border-radius: 26px !important;
     min-width: 120px;
     max-width: 175px;
 }
 
 .app-folder:hover {
-    background-color: #181314 !important;
-    border-color: rgba(238, 231, 228, 0.09) !important;
+    background-color: rgba(176, 84, 108, 0.46) !important;
+    border-color: rgba(238, 231, 228, 0.24) !important;
     box-shadow: none !important;
 }
 
 /* App Folder Dialog */
 .app-folder-dialog {
-    background-color: rgba(22, 17, 18, 0.96) !important;
-    border: 1px solid #332A2C !important;
-    border-radius: 6px 22px 22px 22px !important;
+    color: #EEE7E4;
+    background-color: rgba(158, 70, 94, 0.50) !important;
+    border: 1px solid rgba(238, 231, 228, 0.24) !important;
+    border-radius: 28px !important;
     box-shadow: none !important;
 }
 
@@ -717,15 +742,20 @@ stage {
 
 /* Search Entry */
 .search-entry {
-    background-color: rgba(22, 17, 18, 0.74) !important;
+    background-color: rgba(176, 84, 108, 0.34) !important;
     color: #EEE7E4;
     font-family: "Geist", sans-serif;
-    border: 1px solid #332A2C !important;
+    border: 1px solid rgba(238, 231, 228, 0.24) !important;
     border-radius: 9999px !important;
     padding: 8px 18px;
     font-size: 14px;
     font-weight: 600;
     box-shadow: none !important;
+}
+
+.search-entry StLabel.hint-text,
+.search-entry .search-entry-icon {
+    color: #EEE7E4;
 }
 
 .search-entry:focus {
@@ -783,8 +813,9 @@ stage {
     border-radius: 6px 22px 22px 22px;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
     padding: 12px 24px;
-    font-family: "Geist Mono", monospace;
-    font-weight: 500;
+    font-family: "Geist", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .osd-window .level {
@@ -802,8 +833,9 @@ stage {
     color: #EEE7E4;
     border: 1px solid #332A2C;
     border-radius: 6px 22px 22px 22px;
-    font-family: "Geist Mono", monospace;
-    font-weight: 500;
+    font-family: "Geist", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 /* ---- Alt-Tab: slab list, the current item gets a thin gold full outline ---- */

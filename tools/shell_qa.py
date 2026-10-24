@@ -51,7 +51,7 @@ VARIANTS = {
     "Merlot-Day": ("prefer-light", "Yaru", "Yaru"),
 }
 SCENES = ["desktop", "dock", "aura-cpu", "quick-settings", "notifications", "osd", "overview",
-          "alt-tab", "workspace-switcher", "run-dialog", "end-session", "lock"]
+          "alt-tab", "workspace-switcher", "run-dialog", "end-session", "profile-osd", "focus-keys", "color-scheme", "lock"]
 FAVOURITES = ["org.gnome.Nautilus.desktop", "org.gnome.Terminal.desktop", "org.gnome.TextEditor.desktop",
               "com.microsoft.VSCode.desktop", "org.gnome.Loupe.desktop",
               "org.gnome.Calendar.desktop", "org.gnome.Settings.desktop", "org.gnome.Software.desktop"]
@@ -71,10 +71,11 @@ SEARCH_PROVIDERS = ["org.gnome.Nautilus.search-provider.ini", "org.gnome.Calcula
                     "org.gnome.Settings.search-provider.ini", "gnome-terminal-search-provider.ini"]
 USER_THEME = "user-theme@gnome-shell-extensions.gcampax.github.com"
 AURA = "bordeaux-aura@hamza-gouda"
+FOCUS = "focus-keys@hamza-gouda"
 TUF = "tuf-control-quick@hamza-gouda"
 HARNESS = "bordeaux-qa@harness"
 ENABLED = [USER_THEME, "ubuntu-dock@ubuntu.com", "ubuntu-appindicators@ubuntu.com",
-           "blur-my-shell@aunetx", "just-perfection-desktop@just-perfection", AURA, TUF, HARNESS]
+           "blur-my-shell@aunetx", "just-perfection-desktop@just-perfection", AURA, FOCUS, TUF, HARNESS]
 EXT_DIRS = [pathlib.Path.home() / ".local/share/gnome-shell/extensions",
             pathlib.Path("/usr/local/share/gnome-shell/extensions"),
             pathlib.Path("/usr/share/gnome-shell/extensions")]
@@ -140,6 +141,17 @@ def build_keyfile(variant, home, ext_schema_dirs, text_scale, wallpaper):
     put("org.gnome.shell", "disable-user-extensions", "false")
     put("org.gnome.shell", "favorite-apps", ql(FAVOURITES))
     put("org.gnome.shell", "welcome-dialog-last-shown-version", q("999"))
+    # Two app-grid folders, so the folder tile and the opened folder dialog can be checked.
+    folders = {"System": ["org.gnome.SystemMonitor.desktop", "org.gnome.Logs.desktop",
+                          "org.gnome.DiskUtility.desktop", "org.gnome.baobab.desktop"],
+               "Utilities": ["org.gnome.Characters.desktop", "org.gnome.clocks.desktop",
+                             "org.gnome.font-viewer.desktop", "org.gnome.Evince.desktop"]}
+    put("org.gnome.desktop.app-folders", "folder-children", ql(folders))
+    for fname, fapps in folders.items():
+        fpath = f"/org/gnome/desktop/app-folders/folders/{fname}/"
+        put("org.gnome.desktop.app-folders.folder", "name", q(fname), fpath)
+        put("org.gnome.desktop.app-folders.folder", "apps", ql(fapps), fpath)
+        put("org.gnome.desktop.app-folders.folder", "translate", "false", fpath)
     put("org.gnome.shell.extensions.user-theme", "name", q(variant))
     put("org.gnome.desktop.interface", "color-scheme", q(scheme))
     put("org.gnome.desktop.interface", "gtk-theme", q(gtk))
@@ -235,7 +247,8 @@ def build_tree(variant, base, args):
                     shutil.copy(xml, sd)
                     subprocess.run(["glib-compile-schemas", str(sd)], check=True)
             schema_dirs.append(sd)
-    for uuid, src in ((AURA, ROOT / "extensions" / AURA), (TUF, args.tuf_ext), (HARNESS, QA / "harness")):
+    for uuid, src in ((AURA, ROOT / "extensions" / AURA), (FOCUS, ROOT / "extensions" / FOCUS),
+                      (TUF, args.tuf_ext), (HARNESS, QA / "harness")):
         if not src or not (src / "metadata.json").is_file():
             print(f"  warning: {uuid} not found at {src}; skipped")
             continue
@@ -450,6 +463,63 @@ def run_variant(variant, args):
     return out
 
 
+def check_keys_and_osd(variant, m):
+    """Focus Keys raise/launch/lifecycle and the TUF profile OSD (scenes focus-keys, profile-osd)."""
+    bad = []
+    o = m.get("profileOsd")
+    if o:
+        if o["shownAtStart"] != 0:
+            bad.append(f"{variant}: profile OSD shown {o['shownAtStart']}x at startup (want 0)")
+        if o["duringBurst"]["shown"] != 0:
+            bad.append(f"{variant}: profile OSD shown during a burst, before the 300 ms settle")
+        a = o["afterBurst"]
+        if a["shown"] != 1 or not (a["osd"] or {}).get("visible") or a["osd"]["label"] != "Performance":
+            bad.append(f"{variant}: three quick profile changes did not give one 'Performance' OSD: {a}")
+        s = o["single"]
+        if s["shown"] != 2 or (s["osd"] or {}).get("label") != "Quiet":
+            bad.append(f"{variant}: single change to Quiet not shown: {s}")
+    c = m.get("colorScheme")
+    if c:
+        want = {"dark": ("Bordeaux", "Yaru-dark"), "light": ("Merlot-Day", "Yaru"), "noir": ("Oxblood-Noir", "Yaru-dark")}
+        for step, (theme, gtk) in want.items():
+            got = c[step]
+            if (got["userTheme"], got["gtkTheme"], got["gtk4"], got["gtk3"]) != (theme, gtk, theme, theme):
+                bad.append(f"{variant}: color-scheme {step}: want {theme}/{gtk}, got {got}")
+            if not (got["stylesheet"] or "").endswith(f"/{theme}/gnome-shell/gnome-shell.css"):
+                bad.append(f"{variant}: color-scheme {step}: shell stylesheet {got['stylesheet']}")
+        if c["light"]["appliesForBurst"] != 1:
+            bad.append(f"{variant}: three quick Dark Style toggles applied {c['light']['appliesForBurst']}x (want 1)")
+        if c["restored"]["userTheme"] != c["start"]["userTheme"]:
+            bad.append(f"{variant}: theme not restored after the color-scheme scene: {c['restored']}")
+    f = m.get("focusKeys")
+    if f:
+        if f["grabbed"] != ["<Control>F9", "<Control>F10", "<Control>F11"]:
+            bad.append(f"{variant}: focus-keys grabbed {f['grabbed']}")
+        if not (f["raised"]["focus"] or "").lower().endswith("calculator") or f["raised"]["workspace"] != 1:
+            bad.append(f"{variant}: Ctrl+F9 did not raise Calculator on workspace 2: {f['before']} -> {f['raised']}")
+        if f["again"] != f["raised"]:
+            bad.append(f"{variant}: second Ctrl+F9 moved focus: {f['again']}")
+        L = f["launched"]
+        if not L["window"] or "characters" not in (L["focus"] or "").lower():
+            bad.append(f"{variant}: Ctrl+F10 did not start and focus Characters: {L}")
+        if any("ready" in (n or "").lower() for n in L.get("notifications") or []):
+            bad.append(f"{variant}: an 'is ready' notification appeared: {L['notifications']}")
+        if (f["missing"] or {}).get("label") != "not-installed is not installed":
+            bad.append(f"{variant}: missing app gave no OSD: {f['missing']}")
+        if not f["disabled"]["coreGone"] or any(v not in (0, None) for v in f["disabled"]["allowed"]):
+            bad.append(f"{variant}: focus-keys disable left bindings allowed: {f['disabled']}")
+        if f["pressWhileDisabled"]["focus"] == f["raised"]["focus"]:
+            bad.append(f"{variant}: Ctrl+F9 still worked with focus-keys disabled")
+        pr = f.get("prefs") or {}
+        titles = [r.get("title") for r in pr.get("rows", [])]
+        if not pr.get("ok") or not pr.get("window") or "Calculator" not in titles:
+            bad.append(f"{variant}: Focus Keys preferences did not open with the shortcut list: "
+                       f"{pr.get('error') or titles}")
+        if f["reenabled"]["state"] != 1 or len(f["reenabled"]["grabbed"] or []) != 3:
+            bad.append(f"{variant}: focus-keys did not come back after re-enable: {f['reenabled']}")
+    return bad
+
+
 def check(variant, out):
     """Returns a list of failures from metrics.json and shell.log."""
     bad, notes = [], []
@@ -483,6 +553,7 @@ def check(variant, out):
             if c.get("grid"):  # app names in the grid: the shell ellipsizes those itself
                 continue
             bad.append(f"{variant}: {s['name']}: label cut off: {c['text']!r} ({c['cls']})")
+    bad += check_keys_and_osd(variant, m)
     a = m.get("auraCpu")
     if a:
         notes.append(f"{variant}: CPU ticks (1/100 s) over 4 s: idle aura on {a['idleOn']}, "

@@ -178,6 +178,122 @@ out=$(PATH="$T/bin:$PATH" "$ROOT/install.sh" --no-preset 2>&1)
 grep -q "Geist font is not installed" <<<"$out" && fail "installed Geist reported missing"
 "$ROOT/uninstall.sh" >/dev/null 2>&1
 
+# ---- Focus Keys extension: copied, enabled, default shortcut merged; undone exactly ----
+FK=org.gnome.shell.extensions.focus-keys
+FKDIR=$XDG_DATA_HOME/gnome-shell/extensions/focus-keys@hamza-gouda
+MK=org.gnome.settings-daemon.plugins.media-keys
+MKP=/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings
+fkget() { GSETTINGS_SCHEMA_DIR=$FKDIR/schemas gsettings get $FK "$@"; }
+fkset() { GSETTINGS_SCHEMA_DIR=$FKDIR/schemas gsettings set $FK "$@"; }
+# The keyfile line for the bindings key (readable after the extension is gone).
+kfbind() { awk '/^\[/{s=($0=="[org/gnome/shell/extensions/focus-keys]")} s&&/^bindings=/{sub(/^bindings=/,"");print}' "$KF"; }
+gsettings set org.gnome.shell enabled-extensions "['mine@example.org']"
+[ ! -e "$FKDIR" ] || fail "focus-keys left over from the earlier runs"
+before=$(cat "$KF")
+out=$("$ROOT/install.sh" --dry-run --no-preset --static 2>&1)
+[ "$(cat "$KF")" = "$before" ] || fail "focus-keys dry run changed settings"
+[ ! -e "$FKDIR" ] || fail "focus-keys dry run copied the extension"
+grep -q "would run: gsettings set org.gnome.shell enabled-extensions" <<<"$out" || fail "dry run lacks the enable"
+grep -q "shortcut <Control>F9 -> spotify.desktop" <<<"$out" || fail "dry run lacks the default shortcut"
+grep -q "would run: gsettings set $FK bindings" <<<"$out" || fail "dry run lacks the bindings write"
+
+"$ROOT/install.sh" --no-preset --static >/dev/null 2>&1
+[ -f "$FKDIR/extension.js" ] && [ -f "$FKDIR/schemas/gschemas.compiled" ] || fail "focus-keys not installed with compiled schema"
+[ "$(fkget bindings)" = "['<Control>F9=spotify.desktop']" ] || fail "default shortcut not written: $(fkget bindings)"
+[ "$(gsettings get org.gnome.shell enabled-extensions)" = "['mine@example.org', 'focus-keys@hamza-gouda']" ] \
+    || fail "focus-keys not appended to enabled-extensions"
+# The user's own shortcut is kept on re-install, which changes nothing.
+fkset bindings "['<Control>F9=spotify.desktop', 'F12=org.gnome.Calculator.desktop']"
+cp "$KF" "$T/kf.fk"
+"$ROOT/install.sh" --no-preset --static >/dev/null 2>&1
+cmp -s "$KF" "$T/kf.fk" || fail "focus-keys re-install changed settings"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+[ ! -e "$FKDIR" ] || fail "focus-keys extension left behind"
+[ "$(kfbind)" = "['F12=org.gnome.Calculator.desktop']" ] || fail "uninstall did not keep only the user's shortcut: $(kfbind)"
+[ "$(gsettings get org.gnome.shell enabled-extensions)" = "['mine@example.org']" ] || fail "enabled-extensions not restored"
+
+# Nothing left of ours -> the key is reset, not left as an empty list.
+mkdir -p "$FKDIR/schemas"; cp "$ROOT"/extensions/focus-keys@hamza-gouda/schemas/*.xml "$FKDIR/schemas/"
+glib-compile-schemas "$FKDIR/schemas"; GSETTINGS_SCHEMA_DIR=$FKDIR/schemas gsettings reset $FK bindings; rm -rf "$FKDIR"
+"$ROOT/install.sh" --no-preset --static >/dev/null 2>&1
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+[ -z "$(kfbind)" ] || fail "bindings key not reset: $(kfbind)"
+
+# A GNOME custom shortcut on the same key wins: ours is skipped with a note.
+gsettings set $MK custom-keybindings "['$MKP/custom9/']"
+gsettings set $MK.custom-keybinding:$MKP/custom9/ name 'My player'
+gsettings set $MK.custom-keybinding:$MKP/custom9/ binding '<Ctrl>F9'
+out=$("$ROOT/install.sh" --no-preset --static 2>&1)
+grep -q 'custom shortcut "My player" uses that key' <<<"$out" || fail "custom shortcut conflict not reported"
+[ "$(fkget bindings)" = "@as []" ] || fail "conflicting shortcut still added: $(fkget bindings)"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+gsettings reset $MK custom-keybindings
+
+# --no-shortcuts leaves the extension out entirely.
+"$ROOT/install.sh" --no-preset --no-shortcuts --static >/dev/null 2>&1
+[ ! -e "$FKDIR" ] || fail "--no-shortcuts installed focus-keys"
+[ "$(gsettings get org.gnome.shell enabled-extensions)" = "['mine@example.org']" ] || fail "--no-shortcuts enabled focus-keys"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+
+# ---- Light/dark following (default): Bordeaux Aura installed and told to follow ----
+AU=org.gnome.shell.extensions.bordeaux-aura
+AUDIR=$XDG_DATA_HOME/gnome-shell/extensions/bordeaux-aura@hamza-gouda
+auget() { GSETTINGS_SCHEMA_DIR=$AUDIR/schemas gsettings get $AU "$@"; }
+TL=org.gnome.Terminal.ProfilesList
+U_B=9b0d3a10-0b0e-4d11-9a01-000000000001 U_O=9b0d3a10-0b0e-4d11-9a01-000000000002 U_M=9b0d3a10-0b0e-4d11-9a01-000000000003
+BGD=$XDG_DATA_HOME/backgrounds/bordeaux-gnome
+[ ! -e "$AUDIR" ] || fail "aura left over from the earlier runs"
+before=$(cat "$KF")
+out=$("$ROOT/install.sh" --dry-run --wallpaper 2>&1)
+[ "$(cat "$KF")" = "$before" ] || fail "follow dry run changed settings"
+[ ! -e "$AUDIR" ] || fail "follow dry run copied the aura extension"
+grep -q "would set $AU follow-color-scheme true, dark-variant 'Bordeaux'" <<<"$out" || fail "dry run lacks following"
+grep -q "Wallpapers: Merlot-Day (light style), Bordeaux (dark style)" <<<"$out" || fail "dry run lacks light/dark wallpapers"
+
+"$ROOT/install.sh" --wallpaper >/dev/null 2>&1
+for v in Bordeaux Oxblood-Noir Merlot-Day; do
+    [ -f "$AUDIR/variants/$v.json" ] || fail "variant data $v.json not installed"
+    [ -f "$BGD/$v.jpg" ] || fail "wallpaper $v not copied"
+done
+[ -f "$AUDIR/schemas/gschemas.compiled" ] || fail "aura schema not compiled"
+gsettings get org.gnome.shell enabled-extensions | grep -q "'bordeaux-aura@hamza-gouda'" || fail "aura not enabled"
+[ "$(auget follow-color-scheme)" = "true" ] || fail "following not turned on"
+[ "$(auget dark-variant)" = "'Bordeaux'" ] || fail "dark variant not Bordeaux"
+[ "$(auget accent)" = "'#8E2A44'" ] || fail "aura accent from the preset not set"
+[ "$(gsettings get org.gnome.desktop.background picture-uri)" = "'file://$BGD/Merlot-Day.jpg'" ] || fail "light wallpaper"
+[ "$(gsettings get org.gnome.desktop.background picture-uri-dark)" = "'file://$BGD/Bordeaux.jpg'" ] || fail "dark wallpaper"
+tl=$(gsettings get $TL list)
+grep -q $U_B <<<"$tl" && grep -q $U_M <<<"$tl" || fail "both Terminal profiles (dark and light) not added: $tl"
+grep -q $U_O <<<"$tl" && fail "unrelated Oxblood profile added"
+[ "$(gsettings get $TL default)" = "'aaaaaaaa-0000-4000-8000-000000000000'" ] || fail "terminal default changed without flag"
+cp "$KF" "$T/kf.follow"
+"$ROOT/install.sh" --wallpaper >/dev/null 2>&1
+cmp -s "$KF" "$T/kf.follow" || fail "follow re-install changed settings"
+"$ROOT/install.sh" --wallpaper --variant oxblood-noir >/dev/null 2>&1
+[ "$(auget dark-variant)" = "'Oxblood-Noir'" ] || fail "oxblood-noir not the dark variant"
+[ "$(gsettings get org.gnome.desktop.background picture-uri-dark)" = "'file://$BGD/Oxblood-Noir.jpg'" ] || fail "dark wallpaper not Oxblood"
+"$ROOT/install.sh" --variant merlot-day >/dev/null 2>&1
+[ "$(auget dark-variant)" = "'Bordeaux'" ] || fail "merlot-day: dark variant should be Bordeaux"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+[ ! -e "$AUDIR" ] || fail "aura extension left behind"
+[ ! -e "$BGD" ] || fail "wallpapers left behind"
+gsettings get org.gnome.shell enabled-extensions | grep -q bordeaux-aura && fail "aura still enabled"
+[ "$(gsettings get $TL list)" = "$OLD_LIST" ] || fail "profile list not restored after following"
+grep -q "\[org/gnome/shell/extensions/bordeaux-aura\]" "$KF" && \
+    awk '/^\[org\/gnome\/shell\/extensions\/bordeaux-aura\]/{s=1;next} /^\[/{s=0} s&&/=/{f=1} END{exit !f}' "$KF" && \
+    fail "aura keys not reset: $(grep -A4 'bordeaux-aura]' "$KF")"
+# An aura copy that was there before stays (updated) on uninstall.
+mkdir -p "$AUDIR"; cp -r "$ROOT/extensions/bordeaux-aura@hamza-gouda/." "$AUDIR/"
+"$ROOT/install.sh" --no-preset >/dev/null 2>&1
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+[ -f "$AUDIR/extension.js" ] || fail "pre-existing aura copy removed"
+rm -rf "$AUDIR"
+# --static: one variant, no following.
+"$ROOT/install.sh" --static --wallpaper >/dev/null 2>&1
+[ ! -e "$AUDIR" ] || fail "--static installed the aura extension"
+[ "$(gsettings get org.gnome.desktop.background picture-uri)" = "'file://$BGD/Bordeaux.jpg'" ] || fail "--static light wallpaper"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+
 # Bad input is refused.
 if "$ROOT/install.sh" --variant nope >/dev/null 2>&1; then fail "accepted a bad variant"; fi
 

@@ -51,6 +51,24 @@ function makeImpl(iface, props = {}, methods = {}, signals = {}) {
             obj[n] = fn ?? (() => {});
     }
     const impl = Gio.DBusExportedObject.wrapJSObject(xmlFor(iface, props, methods, signals), obj);
+    // Writable properties announce changes like the real daemons do, e.g. a
+    // Properties.Set of asusd PlatformProfile emits PropertiesChanged (what
+    // Fn+F5 looks like to the shell).
+    for (const [n, [sig, value, access]] of Object.entries(props)) {
+        if (access !== 'readwrite')
+            continue;
+        let current = value;
+        Object.defineProperty(obj, n, {
+            enumerable: true,
+            get: () => current,
+            set: v => {
+                if (v === current)
+                    return;
+                current = v;
+                impl.emit_property_changed(n, new GLib.Variant(sig, v));
+            },
+        });
+    }
     impl._js = obj;
     return impl;
 }

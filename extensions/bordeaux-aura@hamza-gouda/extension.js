@@ -16,6 +16,8 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import {ExtensionState} from 'resource:///org/gnome/shell/misc/extensionUtils.js';
 
 import * as Colour from './colour.js';
+import {ThemeFollower} from './follow.js';
+import {SettingsWriter, applyVariant, loadDocs} from './followApply.js';
 
 // Both export `dockManager` from extension.js. Ubuntu Dock steps aside when
 // Dash to Dock is enabled, so the first active one with a manager wins.
@@ -177,9 +179,39 @@ export default class BordeauxAuraExtension extends Extension {
                     this._sync();
             });
         this._sync();
+
+        // Light/dark following (off unless install.sh turned it on).
+        this._writer = new SettingsWriter({log: m => console.warn(`[bordeaux-aura] ${m}`)});
+        this._follower = new ThemeFollower({
+            iface: this._iface,
+            own: this._settings,
+            schedule: (ms, fn) => {
+                const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => {
+                    fn();
+                    return GLib.SOURCE_REMOVE;
+                });
+                GLib.Source.set_name_by_id(id, '[bordeaux-aura] follow color-scheme');
+                return id;
+            },
+            cancel: id => GLib.source_remove(id),
+            apply: name => {
+                this.lastFollow = applyVariant(name, {
+                    docs: loadDocs(this.dir.get_child('variants').get_path()),
+                    writer: this._writer,
+                    log: m => console.warn(`[bordeaux-aura] ${m}`),
+                });
+                this.lastFollow.variant = name;
+            },
+            log: m => console.warn(`[bordeaux-aura] ${m}`),
+        });
+        this._follower.enable();
     }
 
     disable() {
+        this._follower?.disable();
+        this._follower = null;
+        this._writer?.destroy();
+        this._writer = null;
         this._token++;
         safeDisconnect(Main.extensionManager, this._extStateId);
         safeDisconnect(this._settings, this._settingsId);
@@ -198,7 +230,7 @@ export default class BordeauxAuraExtension extends Extension {
         const s = this._settings;
         let mode = s.get_string('theme-mode');
         if (mode === 'auto')
-            mode = this._iface.get_string('color-scheme') === 'prefer-light' ? 'light' : 'dark';
+            mode = this._iface.get_string('color-scheme') === 'prefer-dark' ? 'dark' : 'light'; // as Dark Style
         this._cfg = {
             enabled: s.get_boolean('enabled'),
             intensity: s.get_int('intensity'),

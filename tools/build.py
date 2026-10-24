@@ -94,7 +94,8 @@ def render_preset(toks):
     # The overview pipeline has radius 0: no blur, only a dim, so the wallpaper fills the
     # overview without the per-frame blur that made Super laggy.
     pipelines = ("{" + pipe("slab", toks["blur-slab"]) + ", " + pipe("island", toks["blur-island"])
-                 + ", " + pipe("overview", 0, OVERVIEW_BRIGHTNESS[scheme]) + "}")
+                 + ", " + pipe("overview", 0, OVERVIEW_BRIGHTNESS[scheme])
+                 + ", " + pipe("folder", toks["blur-slab"], 1.0) + "}")
     rows = [
         ("core", ui, "font-name", gv_str("Geist 11")),
         ("core", ui, "monospace-font-name", gv_str("Geist Mono 11")),
@@ -150,6 +151,17 @@ def render_preset(toks):
         # image (no blur passes), drawn once and cached while the overview animates.
         ("core", blur + ".overview", "blur", "true"),
         ("core", blur + ".overview", "pipeline", gv_str("pipeline_bordeaux_overview")),
+        # Style 0: blur-my-shell leaves the overview's search pill, tiles and labels to the
+        # theme. Its automatic style (default 4) repaints them with !important rules, which
+        # beat the folder glass and made folder names white on the light Merlot Day tiles.
+        ("core", blur + ".overview", "style-components", "0"),
+        # The opened app-grid folder: blur-my-shell blurs it and, with its default style
+        # (a dark tint) and 0.6 brightness, painted a dim grey block over the wallpaper.
+        # Style 0 leaves the fill to the theme (a light glass tint), brightness 1.0 keeps
+        # the wallpaper at full strength behind a plain blur.
+        ("core", blur + ".appfolder", "blur", "true"),
+        ("core", blur + ".appfolder", "pipeline", gv_str("pipeline_bordeaux_folder")),
+        ("core", blur + ".appfolder", "style-dialogs", "0"),
         ("core", blur + ".lockscreen", "blur", "true"),
         # The lock screen runs without the user theme (extensions are off while locked),
         # so its clock is Yaru's near-white: the light slab dim (0.95) left it white on
@@ -159,8 +171,10 @@ def render_preset(toks):
         # Bordeaux Aura pulls each glow 15% toward the variant's accent.
         ("core", "org.gnome.shell.extensions.bordeaux-aura", "accent",
          gv_str(hexc(tl.parse_color(toks["accent"])).upper())),
-        # Just Perfection: bar height is the island row, animation speed 4 (1 = stock, 8 = fastest).
+        # Just Perfection: bar height is the island row (island-h plus its margins), animation speed 4 (1 = stock, 8 = fastest).
         ("core", "org.gnome.shell.extensions.just-perfection", "panel-size", toks["panel-h"].removesuffix("px")),
+        # Tray indicators (media title, clipboard, ...) drawn at the same 22px as the status icons.
+        ("core", "org.gnome.shell.extensions.appindicator", "icon-size", toks["icon-panel"].removesuffix("px")),
         ("core", "org.gnome.shell.extensions.just-perfection", "animation", "4"),
         # No half-visible neighbouring workspace at the right edge of the overview.
         ("core", "org.gnome.shell.extensions.just-perfection", "workspace-peek", "false"),
@@ -200,17 +214,67 @@ def render_terminal(toks, uuid):
     return out
 
 
+GTK_THEME = {"dark": "Yaru-dark", "light": "Yaru"}  # as install.sh sets it
+FOLLOW_DIR = pathlib.Path("extensions") / "bordeaux-aura@hamza-gouda" / "variants"
+
+
+def render_follow_json(presets, schemes):
+    """Per-variant JSON for the aura extension's light/dark following.
+
+    Only the preset keys whose value differs between the variants go in (the
+    rest is the same everywhere and stays as install.sh set it). Opt-in keys
+    (icons, cursor) carry `ifOneOf`: switched only while the current value is
+    one of ours, so a theme the user picked is left alone.
+    """
+    import json
+
+    parsed = {}
+    for variant, text in presets.items():
+        rows = {}
+        for line in text.splitlines():
+            if not line.strip() or line.startswith("#"):
+                continue
+            group, schema, key, value = line.split(None, 3)
+            rows[(schema, key)] = (group, value)
+        parsed[variant] = rows
+    keys = sorted({k for rows in parsed.values() for k in rows})
+    out = {}
+    for variant, rows in parsed.items():
+        entries = []
+        for k in keys:
+            values = {parsed[v][k][1] for v in parsed if k in parsed[v]}
+            if k not in rows or len(values) < 2:
+                continue
+            group, value = rows[k]
+            e = {"schema": k[0], "key": k[1], "value": value.removeprefix("merge:"),
+                 "merge": value.startswith("merge:")}
+            if group != "core":
+                e["ifOneOf"] = sorted(values)
+            entries.append(e)
+        doc = {
+            "variant": variant, "scheme": schemes[variant], "shellTheme": variant,
+            "gtkTheme": GTK_THEME[schemes[variant]], "terminalProfile": TERMINAL_UUIDS[variant],
+            "terminalProfiles": sorted(TERMINAL_UUIDS.values()), "wallpaper": f"{variant}.jpg",
+            "keys": entries,
+        }
+        out[FOLLOW_DIR / f"{variant}.json"] = json.dumps(doc, indent=1) + "\n"
+    return out
+
+
 def render_all():
     data = tl.load()
     files = {}
+    presets, schemes = {}, {}
     for variant in data["variant"]:
         toks = tl.variant_tokens(data, variant)
         for tmpl, out in OUTPUTS.items():
             src = TEMPLATES / tmpl
             body = render(src.read_text(), toks, f"{tmpl} [{variant}]")
             files[pathlib.Path("themes") / variant / out] = HEADER + body
-        files[pathlib.Path("presets") / f"{variant}.preset"] = render_preset(toks)
+        files[pathlib.Path("presets") / f"{variant}.preset"] = presets[variant] = render_preset(toks)
+        schemes[variant] = toks["scheme"]
         files[pathlib.Path("terminal") / f"{variant}.dconf"] = render_terminal(toks, TERMINAL_UUIDS[variant])
+    files.update(render_follow_json(presets, schemes))
     return files
 
 

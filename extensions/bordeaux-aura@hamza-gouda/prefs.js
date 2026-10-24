@@ -138,6 +138,32 @@ export default class BordeauxAuraPreferences extends ExtensionPreferences {
         });
         colourGroup.add(mode);
 
+        const followGroup = new Adw.PreferencesGroup({
+            title: 'Light and dark',
+            description: 'Follow the Dark Style switch: Merlot Day when it is off, the dark variant below when it is on.',
+        });
+        page.add(followGroup);
+        const follow = new Adw.SwitchRow({
+            title: 'Follow Dark Style',
+            subtitle: 'Shell and GTK theme, blur, accent, dark wallpaper, Terminal profile',
+        });
+        settings.bind('follow-color-scheme', follow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        followGroup.add(follow);
+        const DARKS = ['Bordeaux', 'Oxblood-Noir'];
+        const dark = new Adw.ComboRow({
+            title: 'Dark variant',
+            model: Gtk.StringList.new(['Bordeaux', 'Oxblood Noir']),
+        });
+        const syncDark = () => dark.set_selected(Math.max(0, DARKS.indexOf(settings.get_string('dark-variant'))));
+        syncDark();
+        ids.push(settings.connect('changed::dark-variant', syncDark));
+        dark.connect('notify::selected', () => {
+            const v = DARKS[dark.get_selected()];
+            if (v && v !== settings.get_string('dark-variant'))
+                settings.set_string('dark-variant', v);
+        });
+        followGroup.add(dark);
+
         window.connect('close-request', () => {
             ids.forEach(id => settings.disconnect(id));
             window._settings = null;
