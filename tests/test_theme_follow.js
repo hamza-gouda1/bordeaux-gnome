@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) Hamza Gouda
 // Light/dark following of the aura extension: mapping, ops, debounce/lifecycle,
 // and the GSettings/file side on an in-memory settings backend.
 // Run: gjs -m tests/test_theme_follow.js
@@ -134,6 +135,10 @@ fol.disable();
 eq([timers.size, iface.h.size, own.h.size], [0, 0, 0], 'disable: no timer, no handler');
 fire();
 eq(applied.length, 3, 'nothing after disable');
+for (let i = 0; i < 100; i++)
+    fol.run();
+ok(fol.applied.length === 32 && fol.applied.every(n => n === 'Merlot-Day'),
+    'diagnostic history stays bounded after repeated theme changes');
 
 // --- GSettings side (memory backend) and dict merge
 const w = new A.SettingsWriter({extDirs: []});

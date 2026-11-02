@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) Hamza Gouda
 # Install a Bordeaux variant for the current user. No root needed.
 # The first run saves your current settings; uninstall.sh puts them back.
 set -euo pipefail
@@ -8,6 +9,10 @@ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 DATA=${XDG_DATA_HOME:-$HOME/.local/share}
 CONF=${XDG_CONFIG_HOME:-$HOME/.config}
 STATE=${XDG_STATE_HOME:-$HOME/.local/state}/bordeaux-gnome
+LEGACY_BACKUP=0
+if [ -d "$STATE/backup" ] && [ ! -d "$STATE/backup/assets" ]; then
+    LEGACY_BACKUP=1
+fi
 USER_THEME_EXT=user-theme@gnome-shell-extensions.gcampax.github.com
 
 VARIANT=bordeaux
@@ -142,6 +147,7 @@ backup() {
     say "Saving your current settings to $STATE/backup"
     [ "$DRY" = 1 ] && return
     mkdir -p "$STATE/backup"
+    chmod 0700 "$STATE" "$STATE/backup"
     : > "$STATE/backup/gsettings.txt"
     local entry schema key
     for entry in "${BACKUP_KEYS[@]}"; do
@@ -156,6 +162,42 @@ backup() {
             cp "$CONF/gtk-$v.0/gtk.css" "$STATE/backup/gtk-$v.0.css"
         fi
     done
+}
+
+# Preserve the first state of every destination we own, including symlinks.
+# A marker also records absence, so reinstalling never backs up our own copy.
+snapshot_asset() {
+    local key=$1 dest=$2 saved="$STATE/backup/assets/$1"
+    [ ! -f "$saved.recorded" ] || return 0
+    if [ "$DRY" = 1 ]; then
+        say "  would preserve $dest for uninstall"
+        return
+    fi
+    mkdir -p "$STATE/backup/assets"
+    chmod 0700 "$STATE/backup/assets"
+    if [ "$LEGACY_BACKUP" = 1 ]; then
+        case "$key" in
+            gtk-*.css)
+                local version=${key#gtk-}
+                version=${version%.css}
+                if [ -e "$STATE/backup/gtk-$version.0.css" ]; then
+                    cp -a -- "$STATE/backup/gtk-$version.0.css" "$saved"
+                fi
+                : > "$saved.recorded"
+                return
+                ;;
+            theme-*)
+                if grep -q 'Bordeaux Design System' "$dest/gnome-shell/gnome-shell.css" 2>/dev/null; then
+                    : > "$saved.recorded"
+                    return
+                fi
+                ;;
+        esac
+    fi
+    if [ -e "$dest" ] || [ -L "$dest" ]; then
+        cp -a -- "$dest" "$saved"
+    fi
+    : > "$saved.recorded"
 }
 
 # ---- preset: every key changed here is backed up first (first value wins) ----
@@ -338,6 +380,7 @@ install_focus_keys() {
     local src="$ROOT/extensions/$FOCUS_UUID" dest="$DATA/gnome-shell/extensions/$FOCUS_UUID"
     local cur merged new verb entry why
     say "Installing the Focus Keys extension (app shortcuts that bring an open window to the front)"
+    snapshot_asset "extension-$FOCUS_UUID" "$dest"
     run rm -rf "$dest"
     run mkdir -p "$dest"
     run cp -r "$src/." "$dest/"
@@ -397,10 +440,11 @@ install_aura() {
     say "Installing the Bordeaux Aura extension: dock glow, and the desktop follows Dark Style ($LIGHT_THEME light, $DARK_THEME dark)"
     if [ "$DRY" = 0 ]; then
         mkdir -p "$ASTATE"
-        # A copy installed by hand before stays on uninstall (as our newer version).
+        # Remember whether a copy existed; the asset snapshot restores it exactly.
         if [ -e "$dest" ] && [ ! -e "$ASTATE/installed-by-us" ]; then : > "$ASTATE/preexisting"; fi
         : > "$ASTATE/installed-by-us"
     fi
+    snapshot_asset "extension-$AURA_UUID" "$dest"
     run rm -rf "$dest"
     run mkdir -p "$dest"
     run cp -r "$src/." "$dest/"
@@ -425,6 +469,7 @@ say "Copying the three themes to $DATA/themes"
 run mkdir -p "$DATA/themes"
 for dir in "$ROOT"/themes/*/; do
     name=$(basename "$dir")
+    snapshot_asset "theme-$name" "$DATA/themes/$name"
     run rm -rf "${DATA:?}/themes/$name"
     run cp -r "$dir" "$DATA/themes/$name"
 done
@@ -449,6 +494,8 @@ done
 say "Applying $THEME colors to GTK 3 and GTK 4 apps"
 for v in 3 4; do
     run mkdir -p "$CONF/gtk-$v.0"
+    snapshot_asset "gtk-$v.css" "$CONF/gtk-$v.0/gtk.css"
+    run rm -f "$CONF/gtk-$v.0/gtk.css"
     run cp "$ROOT/themes/$THEME/gtk-$v.0/gtk.css" "$CONF/gtk-$v.0/gtk.css"
 done
 set_key org.gnome.desktop.interface gtk-theme "$GTK_THEME"
@@ -472,6 +519,7 @@ if [ "$WALLPAPER" = 1 ]; then
         light=$THEME dark=$THEME
     fi
     if [ -f "$ROOT/wallpapers/$light.jpg" ] && [ -f "$ROOT/wallpapers/$dark.jpg" ]; then
+        snapshot_asset wallpapers "$bg"
         run mkdir -p "$bg"
         for w in "$ROOT"/wallpapers/*.jpg; do
             if [ "$FOLLOW" = 1 ] || [ "$(basename "$w")" = "$THEME.jpg" ]; then run cp "$w" "$bg/"; fi

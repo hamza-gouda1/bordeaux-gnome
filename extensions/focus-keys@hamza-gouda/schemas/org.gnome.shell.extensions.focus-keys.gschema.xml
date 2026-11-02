@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) Hamza Gouda -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <schemalist gettext-domain="focus-keys">
   <schema id="org.gnome.shell.extensions.focus-keys"
           path="/org/gnome/shell/extensions/focus-keys/">
@@ -7,6 +9,11 @@
       <default>[]</default>
       <summary>Shortcuts, one "ACCELERATOR=desktop-id" per entry</summary>
       <description>For example "&lt;Control&gt;F9=spotify.desktop". The accelerator uses the GTK syntax (as in Settings, e.g. &lt;Shift&gt;&lt;Super&gt;XF86TouchpadOff); the desktop id is the file name of the app's .desktop file. The first entry for a key wins.</description>
+    </key>
+    <key name="show-desktop-shortcut" type="as">
+      <default>[]</default>
+      <summary>Show desktop and restore windows</summary>
+      <description>Off by default. Fades and minimizes visible windows on this workspace; press again to restore them. Native three-finger gestures stay with GNOME.</description>
     </key>
     <key name="cycle-windows" type="b">
       <default>true</default>

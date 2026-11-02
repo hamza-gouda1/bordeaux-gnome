@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) Hamza Gouda
 """Regression checks on the generated shell sheets.
 
 Popup wrappers must not paint a rectangle. St clips a blurred box-shadow on a BoxPointer

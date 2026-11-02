@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) Hamza Gouda
 # Remove Bordeaux GNOME and restore the settings saved by install.sh.
 set -euo pipefail
 
@@ -26,6 +27,30 @@ run() {
     fi
 }
 
+
+if [ ! -d "$STATE/backup" ]; then
+    say "No Bordeaux installation backup found; leaving settings and files unchanged."
+    exit 0
+fi
+
+restore_asset() {
+    local key=$1 dest=$2 saved="$STATE/backup/assets/$1"
+    [ -f "$saved.recorded" ] || return 1
+    if [[ "$key" == gtk-*.css ]] && [ ! -e "$saved" ] && [ ! -L "$saved" ] &&
+       { [ -e "$dest" ] || [ -L "$dest" ]; }; then
+        local version=${key#gtk-}
+        version=${version%.css}
+        if ! is_ours "$dest" "$version"; then
+            warn "$dest was changed after install; leaving it"
+            return 0
+        fi
+    fi
+    run rm -rf -- "$dest"
+    if [ -e "$saved" ] || [ -L "$saved" ]; then
+        run mkdir -p "$(dirname "$dest")"
+        run cp -a -- "$saved" "$dest"
+    fi
+}
 
 # GNOME extensions ship their schemas inside the extension, not in the system
 # schema dir. Find the dir that defines a schema (user dir first).
@@ -134,7 +159,9 @@ PY
         fi
     fi
     remove_enabled "$FOCUS_UUID" "$FSTATE"
-    run rm -rf "${DATA:?}/gnome-shell/extensions/$FOCUS_UUID"
+    if ! restore_asset "extension-$FOCUS_UUID" "$DATA/gnome-shell/extensions/$FOCUS_UUID"; then
+        run rm -rf "${DATA:?}/gnome-shell/extensions/$FOCUS_UUID"
+    fi
 fi
 
 # Bordeaux Aura (light/dark following): its keys came back with preset.txt above.
@@ -142,7 +169,9 @@ AURA_UUID=bordeaux-aura@hamza-gouda
 ASTATE=$STATE/aura
 if [ -d "$ASTATE" ]; then
     remove_enabled "$AURA_UUID" "$ASTATE"
-    if [ -f "$ASTATE/installed-by-us" ] && [ ! -f "$ASTATE/preexisting" ]; then
+    if restore_asset "extension-$AURA_UUID" "$DATA/gnome-shell/extensions/$AURA_UUID"; then
+        :
+    elif [ -f "$ASTATE/installed-by-us" ] && [ ! -f "$ASTATE/preexisting" ]; then
         say "Removing the Bordeaux Aura extension"
         run rm -rf "${DATA:?}/gnome-shell/extensions/$AURA_UUID"
     fi
@@ -151,7 +180,9 @@ fi
 say "Restoring GTK 3 and GTK 4 styles"
 for v in 3 4; do
     css="$CONF/gtk-$v.0/gtk.css"
-    if [ -f "$STATE/backup/gtk-$v.0.css" ]; then
+    if restore_asset "gtk-$v.css" "$css"; then
+        :
+    elif [ -f "$STATE/backup/gtk-$v.0.css" ]; then
         run cp "$STATE/backup/gtk-$v.0.css" "$css"
     elif [ -f "$css" ] && is_ours "$css" "$v"; then
         run rm -f "$css"
@@ -162,7 +193,10 @@ done
 
 say "Removing installed files"
 for dir in "$ROOT"/themes/*/; do
-    run rm -rf "${DATA:?}/themes/$(basename "$dir")"
+    name=$(basename "$dir")
+    if ! restore_asset "theme-$name" "$DATA/themes/$name"; then
+        run rm -rf "${DATA:?}/themes/$name"
+    fi
 done
 # Put back any older ~/.themes copies that install.sh moved aside.
 if [ -d "$STATE/backup/legacy-themes" ]; then
@@ -177,7 +211,10 @@ if [ -d "$STATE/backup/legacy-themes" ]; then
     done
 fi
 # The sounds dir came from an older version that shipped a sound theme.
-run rm -rf "${DATA:?}/backgrounds/bordeaux-gnome" "${DATA:?}/sounds/bordeaux-velvet"
+if ! restore_asset wallpapers "$DATA/backgrounds/bordeaux-gnome"; then
+    run rm -rf "${DATA:?}/backgrounds/bordeaux-gnome"
+fi
+run rm -rf "${DATA:?}/sounds/bordeaux-velvet"
 run rm -rf "$STATE"
 
 say "Done."

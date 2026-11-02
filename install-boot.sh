@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) Hamza Gouda
 # Optional: install (or remove) the Bordeaux GRUB menu and Plymouth boot splash.
 # Needs root. Tested on Ubuntu 24.04. Try --dry-run first.
 set -euo pipefail
@@ -10,6 +11,7 @@ GRUB_CFG=/etc/default/grub.d/90-bordeaux-gnome.cfg
 PLY_DIR=/usr/share/plymouth/themes/bordeaux
 PLY_FILE=$PLY_DIR/bordeaux.plymouth
 PLY_LINK=/usr/share/plymouth/themes/default.plymouth
+BACKUP_DIR=/var/lib/bordeaux-gnome/boot-backup
 
 DRY=0
 REMOVE=0
@@ -55,8 +57,36 @@ run() {
     fi
 }
 
+# Root-owned first-install snapshots. Reinstalling keeps the original assets;
+# removing without a snapshot never deletes a coincidentally named theme.
+backup_asset() {
+    local path=$2 slot=$BACKUP_DIR/$1
+    [ ! -f "$slot/recorded" ] || return 0
+    say "Saving original $path in $slot"
+    [ "$DRY" = 0 ] || return 0
+    install -d -m0700 "$BACKUP_DIR" "$slot"
+    if [ -e "$path" ] || [ -L "$path" ]; then cp -a -- "$path" "$slot/original"; fi
+    : > "$slot/recorded"
+}
+
+restore_asset() {
+    local path=$2 slot=$BACKUP_DIR/$1
+    if [ ! -f "$slot/recorded" ]; then
+        say "No saved original for $path; leaving it unchanged"
+        return 0
+    fi
+    run rm -rf -- "$path"
+    if [ -e "$slot/original" ] || [ -L "$slot/original" ]; then
+        run mkdir -p "$(dirname "$path")"
+        run cp -a -- "$slot/original" "$path"
+    fi
+    run rm -rf -- "$slot"
+}
+
 grub_install() {
     say "Installing the GRUB theme to $GRUB_DIR"
+    backup_asset grub-theme "$GRUB_DIR"
+    backup_asset grub-config "$GRUB_CFG"
     run mkdir -p "$GRUB_DIR"
     run cp "$ROOT"/boot/grub/bordeaux/* "$GRUB_DIR/"
     if [ -f "$ROOT/wallpapers/grub/$VARIANT.png" ]; then
@@ -76,24 +106,56 @@ grub_install() {
 
 grub_remove() {
     say "Removing the GRUB theme"
-    run rm -f "$GRUB_CFG"
-    run rm -rf "$GRUB_DIR"
+    restore_asset grub-config "$GRUB_CFG"
+    restore_asset grub-theme "$GRUB_DIR"
     run update-grub
 }
 
 plymouth_install() {
     say "Installing the Plymouth splash to $PLY_DIR"
+    backup_asset plymouth-theme "$PLY_DIR"
+    if [ ! -f "$BACKUP_DIR/plymouth-selection" ]; then
+        if [ "$DRY" = 1 ]; then
+            say "  would save original Plymouth selection and registration"
+        else
+            if update-alternatives --query default.plymouth > "$BACKUP_DIR/plymouth-selection.tmp"; then
+                mv "$BACKUP_DIR/plymouth-selection.tmp" "$BACKUP_DIR/plymouth-selection"
+            else
+                rm -f "$BACKUP_DIR/plymouth-selection.tmp"
+                : > "$BACKUP_DIR/plymouth-selection"
+            fi
+        fi
+    fi
     run mkdir -p "$PLY_DIR"
     run cp "$ROOT"/boot/plymouth/bordeaux/* "$PLY_DIR/"
-    run update-alternatives --install "$PLY_LINK" default.plymouth "$PLY_FILE" 100
+    if ! grep -qxF "Alternative: $PLY_FILE" "$BACKUP_DIR/plymouth-selection" 2>/dev/null; then
+        run update-alternatives --install "$PLY_LINK" default.plymouth "$PLY_FILE" 100
+    fi
     run update-alternatives --set default.plymouth "$PLY_FILE"
     run update-initramfs -u
 }
 
 plymouth_remove() {
     say "Removing the Plymouth splash"
-    run update-alternatives --remove default.plymouth "$PLY_FILE"
-    run rm -rf "$PLY_DIR"
+    local selection=$BACKUP_DIR/plymouth-selection original status
+    if [ ! -f "$selection" ]; then
+        say "No saved Plymouth selection; leaving the splash unchanged"
+        return 0
+    fi
+    if ! grep -qxF "Alternative: $PLY_FILE" "$selection"; then
+        run update-alternatives --remove default.plymouth "$PLY_FILE"
+    fi
+    restore_asset plymouth-theme "$PLY_DIR"
+    original=$(sed -n 's/^Value: //p' "$selection")
+    status=$(sed -n 's/^Status: //p' "$selection")
+    if [ "$status" = auto ]; then
+        run update-alternatives --auto default.plymouth
+    elif [ -n "$original" ] && [ -e "$original" ]; then
+        run update-alternatives --set default.plymouth "$original"
+    else
+        say "Original Plymouth selection unavailable; inspect update-alternatives before rebooting"
+    fi
+    run rm -f "$selection"
     run update-initramfs -u
 }
 

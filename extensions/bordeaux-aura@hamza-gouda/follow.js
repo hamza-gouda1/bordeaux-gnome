@@ -1,3 +1,4 @@
+// Copyright (C) Hamza Gouda
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Hamza Gouda
 //
@@ -124,6 +125,8 @@ export class ThemeFollower {
         try {
             this._d.apply(name);
             this.applied.push(name);
+            if (this.applied.length > 32)
+                this.applied.shift();
         } catch (e) {
             this._d.log(`could not switch to ${name}: ${e.message}`);
         }

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) Hamza Gouda
 // Pure-logic and lifecycle tests for the Focus Keys extension.
 // Run: gjs -m tests/test_focus_keys.js
 

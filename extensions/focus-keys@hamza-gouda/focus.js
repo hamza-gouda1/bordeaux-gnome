@@ -1,3 +1,4 @@
+// Copyright (C) Hamza Gouda
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Hamza Gouda
 //
@@ -58,6 +59,7 @@ export class FocusKeys {
         for (const [obj, id] of this._ids)
             obj.disconnect(id);
         this._ids = [];
+        this._warned.clear();
     }
 
     /** Accelerator -> desktop id of every key currently grabbed (for tests and QA). */
@@ -104,6 +106,8 @@ export class FocusKeys {
     _warnOnce(key, msg) {
         if (this._warned.has(key))
             return;
+        if (this._warned.size >= 128)
+            this._warned.delete(this._warned.values().next().value);
         this._warned.add(key);
         this._d.log(msg);
     }

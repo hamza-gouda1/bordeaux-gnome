@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) Hamza Gouda
 // Unit tests for the dock aura colour maths. Run: gjs -m tests/test_aura_colour.js
 
 import System from 'system';

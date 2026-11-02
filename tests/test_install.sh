@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) Hamza Gouda
 # Install, switch variant and uninstall inside a throwaway home folder.
 # GSETTINGS_BACKEND=memory keeps the real desktop settings untouched.
 set -euo pipefail
@@ -11,6 +12,12 @@ export HOME=$T/home XDG_DATA_HOME=$T/home/.local/share XDG_CONFIG_HOME=$T/home/.
 export XDG_STATE_HOME=$T/home/.local/state GSETTINGS_BACKEND=memory
 # Keep gnome-extensions away from the running desktop session.
 unset DBUS_SESSION_BUS_ADDRESS
+# Unsetting the address alone still permits GDBus X11 autolaunch. A stub keeps
+# CLI extension queries away from the real Shell and avoids starting GTK helpers.
+mkdir -p "$T/bin"
+printf '#!/bin/sh\nexit 1\n' > "$T/bin/gnome-extensions"
+chmod +x "$T/bin/gnome-extensions"
+export PATH="$T/bin:$PATH"
 mkdir -p "$XDG_CONFIG_HOME/gtk-4.0"
 echo "/* my own css */" > "$XDG_CONFIG_HOME/gtk-4.0/gtk.css"
 
@@ -282,17 +289,63 @@ gsettings get org.gnome.shell enabled-extensions | grep -q bordeaux-aura && fail
 grep -q "\[org/gnome/shell/extensions/bordeaux-aura\]" "$KF" && \
     awk '/^\[org\/gnome\/shell\/extensions\/bordeaux-aura\]/{s=1;next} /^\[/{s=0} s&&/=/{f=1} END{exit !f}' "$KF" && \
     fail "aura keys not reset: $(grep -A4 'bordeaux-aura]' "$KF")"
-# An aura copy that was there before stays (updated) on uninstall.
+# A preexisting aura copy is restored byte-for-byte on uninstall.
 mkdir -p "$AUDIR"; cp -r "$ROOT/extensions/bordeaux-aura@hamza-gouda/." "$AUDIR/"
+echo "// original aura copy" >> "$AUDIR/extension.js"
 "$ROOT/install.sh" --no-preset >/dev/null 2>&1
 "$ROOT/uninstall.sh" >/dev/null 2>&1
-[ -f "$AUDIR/extension.js" ] || fail "pre-existing aura copy removed"
+grep -q "original aura copy" "$AUDIR/extension.js" || fail "pre-existing aura copy not restored"
 rm -rf "$AUDIR"
 # --static: one variant, no following.
 "$ROOT/install.sh" --static --wallpaper >/dev/null 2>&1
 [ ! -e "$AUDIR" ] || fail "--static installed the aura extension"
 [ "$(gsettings get org.gnome.desktop.background picture-uri)" = "'file://$BGD/Bordeaux.jpg'" ] || fail "--static light wallpaper"
 "$ROOT/uninstall.sh" >/dev/null 2>&1
+
+# Existing themes, shortcuts, wallpaper files and a linked GTK stylesheet survive.
+mkdir -p "$XDG_DATA_HOME/themes/Bordeaux" "$FKDIR" "$BGD"
+printf 'original theme\n' > "$XDG_DATA_HOME/themes/Bordeaux/original"
+printf 'original shortcut extension\n' > "$FKDIR/original"
+printf 'original wallpaper\n' > "$BGD/original"
+printf 'linked css\n' > "$T/linked.css"
+rm -f "$XDG_CONFIG_HOME/gtk-4.0/gtk.css"
+ln -s "$T/linked.css" "$XDG_CONFIG_HOME/gtk-4.0/gtk.css"
+"$ROOT/install.sh" --wallpaper >/dev/null 2>&1
+"$ROOT/install.sh" --wallpaper >/dev/null 2>&1
+[ "$(cat "$T/linked.css")" = 'linked css' ] || fail "install followed the GTK symlink"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+[ -f "$XDG_DATA_HOME/themes/Bordeaux/original" ] || fail "original theme not restored"
+[ -f "$FKDIR/original" ] || fail "original Focus Keys not restored"
+[ -f "$BGD/original" ] || fail "original wallpaper not restored"
+[ -L "$XDG_CONFIG_HOME/gtk-4.0/gtk.css" ] || fail "original GTK symlink not restored"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+[ -f "$XDG_DATA_HOME/themes/Bordeaux/original" ] || fail "no-state uninstall deleted a theme"
+[ -f "$FKDIR/original" ] || fail "no-state uninstall deleted an extension"
+
+# An older installer already kept the original GTK backup. Migrating must not
+# replace it with the currently installed Bordeaux copy.
+rm -rf "$XDG_DATA_HOME/themes/Bordeaux" "$FKDIR" "$BGD"
+rm -f "$XDG_CONFIG_HOME/gtk-4.0/gtk.css" "$XDG_CONFIG_HOME/gtk-3.0/gtk.css"
+mkdir -p "$XDG_STATE_HOME/bordeaux-gnome/backup"
+printf '/* original before old installer */\n' > "$XDG_STATE_HOME/bordeaux-gnome/backup/gtk-4.0.css"
+for v in 3 4; do
+    mkdir -p "$XDG_CONFIG_HOME/gtk-$v.0"
+    cp "$ROOT/themes/Bordeaux/gtk-$v.0/gtk.css" "$XDG_CONFIG_HOME/gtk-$v.0/gtk.css"
+done
+mkdir -p "$XDG_DATA_HOME/themes/Bordeaux/gnome-shell"
+cp "$ROOT/themes/Bordeaux/gnome-shell/gnome-shell.css" "$XDG_DATA_HOME/themes/Bordeaux/gnome-shell/gnome-shell.css"
+"$ROOT/install.sh" --static --no-preset --no-shortcuts >/dev/null 2>&1
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+grep -q 'original before old installer' "$XDG_CONFIG_HOME/gtk-4.0/gtk.css" || fail "legacy original GTK backup lost"
+[ ! -e "$XDG_CONFIG_HOME/gtk-3.0/gtk.css" ] || fail "legacy managed GTK3 copy restored instead of absence"
+[ ! -e "$XDG_DATA_HOME/themes/Bordeaux" ] || fail "legacy installed theme restored instead of removed"
+
+# If GTK CSS was originally absent, preserve a later customization on uninstall.
+rm -f "$XDG_CONFIG_HOME/gtk-4.0/gtk.css"
+"$ROOT/install.sh" --static --no-preset --no-shortcuts >/dev/null 2>&1
+printf '/* user customization after install */\n' > "$XDG_CONFIG_HOME/gtk-4.0/gtk.css"
+"$ROOT/uninstall.sh" >/dev/null 2>&1
+grep -q 'user customization after install' "$XDG_CONFIG_HOME/gtk-4.0/gtk.css" || fail "uninstall deleted user-edited CSS"
 
 # Bad input is refused.
 if "$ROOT/install.sh" --variant nope >/dev/null 2>&1; then fail "accepted a bad variant"; fi

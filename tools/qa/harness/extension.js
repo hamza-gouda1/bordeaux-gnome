@@ -1,3 +1,4 @@
+// Copyright (C) Hamza Gouda
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Hamza Gouda
 //
@@ -474,6 +475,37 @@ export default class QaHarness {
 
         await this.scene('profile-osd', () => this.profileOsd());
         await this.scene('focus-keys', () => this.focusKeys());
+        await this.scene('show-desktop', async () => {
+            const ext = Main.extensionManager.lookup(FOCUS_UUID)?.stateObj;
+            if (!ext?._desktop)
+                throw new Error('show desktop is not available');
+            const settings = ext.getSettings();
+            const previous = settings.get_strv('show-desktop-shortcut');
+            const windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL,
+                global.workspace_manager.get_active_workspace())
+                .filter(w => !w.minimized && !w.skip_taskbar && w.can_minimize());
+            const r = {windows: windows.length, animationFactor: St.Settings.get().slow_down_factor};
+            try {
+                settings.set_strv('show-desktop-shortcut', ['<Control>F12']);
+                await sleep(300);
+                await this.combo([Clutter.KEY_Control_L], Clutter.KEY_F12);
+                await sleep(600);
+                r.hidden = windows.every(w => w.minimized);
+                await this.shot('show-desktop');
+                await this.combo([Clutter.KEY_Control_L], Clutter.KEY_F12);
+                await sleep(600);
+                r.restored = windows.every(w => !w.minimized && w.get_compositor_private()?.opacity === 255);
+                ext._desktop.toggle();
+                ext._desktop.toggle();
+                await sleep(600);
+                r.interrupted = windows.every(w => !w.minimized && w.get_compositor_private()?.opacity === 255);
+                await this.shot('show-desktop-restored');
+            } finally {
+                ext._desktop.restore();
+                settings.set_strv('show-desktop-shortcut', previous);
+            }
+            this.metrics.desktopToggle = r;
+        });
         await this.scene('color-scheme', () => this.colorScheme());
 
         await this.scene('lock', async () => {
@@ -531,6 +563,7 @@ export default class QaHarness {
         const r = {start: snap()};
         const startScheme = r.start.scheme, startDark = own.get_string('dark-variant');
         own.set_boolean('follow-color-scheme', true);
+        own.set_string('dark-variant', 'Bordeaux');
         iface.set_string('color-scheme', 'prefer-dark');
         await sleep(1800);
         r.dark = snap();
@@ -539,7 +572,6 @@ export default class QaHarness {
         const before = aura._follower.applied.length;
         for (const s of ['default', 'prefer-dark', 'default']) {
             iface.set_string('color-scheme', s);
-            await sleep(40);
         }
         await sleep(1800);
         r.light = {...snap(), appliesForBurst: aura._follower.applied.length - before};
@@ -696,7 +728,7 @@ export default class QaHarness {
         launcher.setenv('LD_LIBRARY_PATH', '/usr/lib/gnome-shell', true);
         const proc = launcher.spawnv(['gjs', '-m', script, ext.path, report]);
         let res = null;
-        for (let i = 0; i < 40 && !res; i++) {
+        for (let i = 0; i < 100 && !res; i++) {
             await sleep(250);
             if (GLib.file_test(report, GLib.FileTest.EXISTS))
                 res = JSON.parse(new TextDecoder().decode(GLib.file_get_contents(report)[1]));

@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Draw docs/palette.svg from the colors in each variant's GTK 4 CSS."""
+# Copyright (C) Hamza Gouda
+"""Draw docs/palette.svg from tokens/tokens.toml."""
 import pathlib
-import re
+import tokenlib as tl
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 VARIANTS = [("Bordeaux", "dark"), ("Oxblood-Noir", "dark"), ("Merlot-Day", "light")]
-SWATCHES = [("window", "window_bg_color"), ("view", "view_bg_color"),
-            ("header", "headerbar_bg_color"), ("sidebar", "sidebar_bg_color"),
-            ("accent", "accent_bg_color"), ("text", "window_fg_color")]
-DEFINE = re.compile(r"@define-color\s+([a-z0-9_]+)\s+(#[0-9a-fA-F]{6});")
+SWATCHES = [("window", "bg-1"), ("view", "bg-0"),
+            ("header", "bg-2"), ("sidebar", "sidebar"),
+            ("accent", "accent"), ("text", "fg-0")]
 
 W, ROW, SW, X0 = 760, 96, 96, 150
-out = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {40 + ROW * len(VARIANTS)}" '
+data = tl.load()
+out = ['<!-- SPDX-License-Identifier: GPL-3.0-or-later -->',
+       '<!-- Copyright (C) Hamza Gouda -->', f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {40 + ROW * len(VARIANTS)}" '
        f'font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">',
        f'<rect width="{W}" height="{40 + ROW * len(VARIANTS)}" rx="12" fill="#ffffff"/>']
 for i, (name, mode) in enumerate(VARIANTS):
-    css = (ROOT / "themes" / name / "gtk-4.0" / "gtk.css").read_text()
-    colors = dict(DEFINE.findall(css))
+    colors = tl.variant_tokens(data, name)
     y = 24 + i * ROW
     out.append(f'<text x="20" y="{y + 34}" font-size="15" font-weight="700" fill="#1f2328">{name.replace("-", " ")}</text>')
     out.append(f'<text x="20" y="{y + 54}" font-size="12" fill="#59636e">{mode}</text>')

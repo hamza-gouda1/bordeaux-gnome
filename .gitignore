@@ -1,1 +1,4 @@
+*.pyc
+.mimosa/
 __pycache__/
+schemas/gschemas.compiled

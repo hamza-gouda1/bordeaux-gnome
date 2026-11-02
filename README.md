@@ -5,9 +5,9 @@
 ![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 
 A burgundy theme family for the GNOME desktop: two dark variants and one
-light one, styled from the top bar down to the boot screen. Every text and
-background color pair passes WCAG AA contrast, and CI checks it on every
-change.
+light one, styled from the top bar down to the boot screen. The 210 declared
+contrast pairs meet their text or non-text thresholds, and CI checks them on
+every change; translucent runtime surfaces still need visual review.
 
 ![Bordeaux desktop](screenshots/bordeaux-desktop.jpg)
 
@@ -33,7 +33,7 @@ Design previews of the dark and light schemes (rendered from the design tokens):
 
 | Variant | Mode | Accent | Character |
 |---|---|---|---|
-| **Bordeaux** | dark | `#9B1F40` | wine-black surfaces, champagne-gold hairlines |
+| **Bordeaux** | dark | `#8E2A44` | wine-black surfaces, champagne-gold hairlines |
 | **Oxblood Noir** | dark | `#A3283A` | near-black neutrals, a sharper red |
 | **Merlot Day** | light | `#7A1C34` | warm paper whites, deep merlot accents |
 
@@ -42,12 +42,12 @@ Design previews of the dark and light schemes (rendered from the design tokens):
 - **GNOME Shell:** top bar, Activities overview, app grid, dock (Ubuntu Dock /
   Dash to Dock), Quick Settings, calendar and notifications, popup menus,
   search.
-- **GTK 4 / Libadwaita and GTK 3 apps:** window, view, header bar, sidebar,
-  card, popover and dialog colors, plus the accent.
+- **GTK 4 / Libadwaita and GTK 3 apps:** accent and status colors. Yaru supplies
+  the surfaces and widget shapes, which follow the desktop light/dark preference live.
 - **Boot (optional):** a GRUB menu theme and a Plymouth splash.
 
-The GTK colors sit on top of Ubuntu's Yaru theme, so widgets keep Yaru's
-shapes and only the colors change. Typography is set for
+The GTK accent colors sit on top of Ubuntu's Yaru theme. Applications read the
+user color file at startup, so restart them after changing the accent. Typography is set for
 [Geist](https://vercel.com/font) and falls back to your system font.
 
 ## Install
@@ -81,9 +81,10 @@ By default the installer also applies a per-variant preset from
 `presets/<Variant>.preset`: Geist 11 and Geist Mono as interface fonts,
 Ubuntu Dock on the left as a floating slab with 48px icons, set to intellihide
 (it slides away when a window overlaps it and returns when the pointer touches
-the screen edge, so apps get the full width), Blur my Shell (only lock screen
-and popups; panel, dock and overview blur are off to keep Super smooth) and
-Just Perfection (animation speed 4, 46px bar). To keep the dock always visible:
+the screen edge, so apps get the full width), Blur my Shell (the lock screen
+and app folders get Bordeaux pipelines and the overview a brightness-only
+pipeline, blur radius 0; panel, dock and popup blur are off to keep Super
+smooth) and Just Perfection (animation 4 = 0.6× duration, 56px bar). To keep the dock always visible:
 `gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true`. Keys whose
 schema is not installed are skipped. It also adds a GNOME Terminal profile
 from `terminal/<Variant>.dconf` (the variant's ANSI palette), which is not
@@ -193,10 +194,13 @@ python3 tests/test_shell_css.py   # shell sheet regressions found in real render
 python3 tools/shell_qa.py --variant all --out /tmp/qa   # visual QA, see below
 ```
 
-`check_contrast.py` reads the `@define-color` values straight from each
-variant's CSS, so it always tests the colors that ship rather than a separate
-list. Translucent colors are blended over their background first. All 33
-theme pairs pass AA (4.5:1), and most pass AAA (7:1). The install test runs
+`check_contrast.py` checks the pairs declared in `tokens/tokens.toml`
+against each variant's palette there, and CI's `tools/build.py --check`
+keeps the shipped CSS identical to those tokens. Translucent colors are
+blended over their background first. All 210 checked pairs (70 per variant)
+pass their minimum: 154 reach AAA (7:1), 52 pass AA (4.5:1), and 4
+UI-component pairs (focus ring, gold hairline, dimmed overview labels) are
+held to the 3.0 non-text minimum. The install test runs
 with an in-memory settings backend, so it never touches the desktop it runs
 on. CI also runs shellcheck on every script.
 
@@ -230,7 +234,7 @@ Nothing reaches your session: the shell gets its own HOME, a keyfile settings
 backend, a private session bus and a private *system* bus on which
 `tools/qa/mockbus.js` plays logind, NetworkManager, BlueZ, UPower,
 power-profiles-daemon, asusd and GDM with fake devices. The whole run sits in a
-`systemd-run --user --scope` with `MemoryMax=2000M` and no swap, under a
+`systemd-run --user --scope` with `MemoryMax=1500M` and no swap, under a
 timeout, and the scope is stopped afterwards. `--publish screenshots` rewrites
 the images in this repo.
 
@@ -240,6 +244,19 @@ python3 tools/shell_qa.py --variant Merlot-Day --scene desktop,quick-settings --
 
 The lock screen is not themed: GNOME turns extensions off while locked, User
 Themes included, so it shows Yaru with the blur-my-shell lock blur.
+
+## Limitations
+
+- Restart GTK apps once after installation so they load the accent stylesheet.
+  Surface colours then follow the Dark Style preference where the application
+  supports it; changing the custom accent still requires restarting GTK apps.
+- The lock screen cannot be themed: GNOME turns extensions off while locked,
+  User Themes included, so it shows Yaru (with the blur-my-shell lock blur).
+- Built for a Wayland GNOME 46 session on Ubuntu 24.04; X11 sessions are
+  untested.
+- Tested on one machine.
+- Electron apps, including desktop chat clients and VS Code-based editors, use their
+  own application theme setting; the user GTK accent file does not control them.
 
 ## Layout
 
@@ -260,3 +277,29 @@ tools/  tests/  docs/  screenshots/
 ## License
 
 GPL-3.0-or-later. See [`LICENSE`](LICENSE).
+
+### Native touchpad gestures and Show desktop
+
+GNOME Shell 46 retains its three-finger overview and workspace swipe trackers and
+native easing. Just Perfection's animation value 4 uses 0.6× normal duration;
+higher values are not uniformly faster. This short settling animation avoids
+extra frame callbacks and is suitable for evaluation on a 165 Hz display.
+Physical touchpad feel still needs a live-session check.
+
+Focus Keys provides an optional **Show desktop** shortcut in its preferences;
+it is unbound by default. It fades eligible windows on the active workspace
+with a short stagger, minimises them, and restores exactly those windows on the
+next press. Previously minimised windows stay minimised. Interrupted fades and
+extension disable restore opacity and surviving windows; reduced-motion settings
+are respected. The headless harness calls the action directly for verification.
+
+A downward-only touchpad consumer cannot reliably arbitrate BEGIN/UPDATE with
+GNOME 46's captured-event swipe trackers without replacing private tracker
+internals. This theme therefore ships the keybinding fallback and leaves the
+native three-finger gestures with GNOME. Experimental gestures from other
+extensions must be evaluated independently in a real session.
+
+The optional boot installer snapshots replaced GRUB/Plymouth assets and the
+Plymouth selection under `/var/lib/bordeaux-gnome/boot-backup`; `--remove` restores
+the saved assets. Its privileged operations and actual boot result have not been
+exercised in this audit; only dry-run and isolated restore logic were checked.

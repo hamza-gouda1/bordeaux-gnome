@@ -1,3 +1,4 @@
+// Copyright (C) Hamza Gouda
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Hamza Gouda
 //
@@ -243,9 +244,9 @@ function systemServices(conn) {
             Discovering: ['b', false], UUIDs: ['as', []], Modalias: ['s', 'usb:v1D6Bp0246d0540'],
         }, {StartDiscovery: [[], []], StopDiscovery: [[], []], RemoveDevice: [['o'], []],
             SetDiscoveryFilter: [['a{sv}'], []]}]]],
-        dev('3C:A1:0F:22:41:7E', 'Studio Headphones', 'audio-headphones', 0x240418, A2DP, true, 80),
-        dev('F4:73:35:9B:0C:21', 'Wireless Mouse', 'input-mouse', 0x002580, HID, false, null),
-        dev('70:26:05:C3:9E:4A', 'Living Room Speaker', 'audio-speakers', 0x240414, A2DP, false, null),
+        dev('02:00:00:00:00:A1', 'Studio Headphones', 'audio-headphones', 0x240418, A2DP, true, 80),
+        dev('02:00:00:00:00:A3', 'Wireless Mouse', 'input-mouse', 0x002580, HID, false, null),
+        dev('02:00:00:00:00:A2', 'Living Room Speaker', 'audio-speakers', 0x240414, A2DP, false, null),
     ]);
 
     // NetworkManager: one Wi-Fi card connected to "Bordeaux-5G", a few networks around.

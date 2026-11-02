@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) Hamza Gouda
 """Check WCAG 2.1 contrast for the pairs listed in tokens/tokens.toml.
 
 Every [[contrast.pair]] (fg, bg, min) is checked against each variant's

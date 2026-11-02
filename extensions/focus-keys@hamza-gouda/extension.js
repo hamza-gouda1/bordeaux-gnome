@@ -1,3 +1,4 @@
+// Copyright (C) Hamza Gouda
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Hamza Gouda
 //
@@ -9,7 +10,9 @@
 // already-running app and shows a "<App> is ready" notification instead. The
 // shell itself may raise windows, so this extension does the raising.
 
+import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
+import St from 'gi://St';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 
@@ -17,6 +20,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import {FocusKeys} from './focus.js';
+import {ShowDesktop} from './desktop.js';
 
 const SWITCHABLE = new Set([Meta.WindowType.NORMAL, Meta.WindowType.DIALOG, Meta.WindowType.MODAL_DIALOG]);
 
@@ -53,9 +57,41 @@ export default class FocusKeysExtension extends Extension {
             log: msg => console.warn(`[focus-keys] ${msg}`),
         });
         this._core.enable();
+        this._desktop = new ShowDesktop({
+            focus: () => global.display.focus_window,
+            windows: () => global.display.get_tab_list(Meta.TabList.NORMAL_ALL,
+                global.workspace_manager.get_active_workspace()),
+            eligible: w => SWITCHABLE.has(w.get_window_type()) && !w.skip_taskbar && w.can_minimize(),
+            alive: w => !!w.get_compositor_private(),
+            fade: (w, delay, done) => {
+                const actor = w.get_compositor_private();
+                if (!actor || !St.Settings.get().enable_animations) {
+                    done();
+                    return;
+                }
+                actor.ease({opacity: 0, delay, duration: 160,
+                    mode: Clutter.AnimationMode.EASE_OUT_CUBIC, onComplete: done});
+            },
+            minimize: w => {
+                Main.wm.skipNextEffect(w.get_compositor_private());
+                w.minimize();
+            },
+            unminimize: w => {
+                Main.wm.skipNextEffect(w.get_compositor_private());
+                w.unminimize();
+            },
+            reset: w => { w.get_compositor_private().opacity = 255; },
+            cancel: w => w.get_compositor_private().remove_transition('opacity'),
+            activate: w => Main.activateWindow(w, global.get_current_time()),
+        });
+        Main.wm.addKeybinding('show-desktop-shortcut', this._settings,
+            Meta.KeyBindingFlags.NONE, Shell.ActionMode.NORMAL, () => this._desktop.toggle());
     }
 
     disable() {
+        Main.wm.removeKeybinding('show-desktop-shortcut');
+        this._desktop?.destroy();
+        this._desktop = null;
         this._core?.destroy();
         this._core = null;
         this._settings = null;

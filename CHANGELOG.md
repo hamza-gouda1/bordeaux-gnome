@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+- Added an optional animated Show desktop shortcut in Focus Keys, unbound by default;
+  native GNOME gestures and their easing remain unchanged.
+- Bounded theme-following and invalid-binding diagnostic caches; capped Shell QA at 1500 MiB.
+- Preserve pre-existing theme, extension, GTK and wallpaper assets across install/uninstall;
+  boot asset snapshots preserve the previous Plymouth selection.
+- Regenerated demo-only design previews and palette from current tokens; clarified GTK accent
+  behavior, gesture timing and live-session limitations.
+
+
 First public version.
 
 Light and dark follow the Dark Style switch:

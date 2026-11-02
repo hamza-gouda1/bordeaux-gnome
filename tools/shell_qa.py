@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) Hamza Gouda
 """Visual QA of the shell theme in a real, headless GNOME Shell 46.
 
     tools/shell_qa.py --variant Bordeaux --out /tmp/qa            # every scene
@@ -35,6 +36,7 @@ import configparser
 import json
 import os
 import pathlib
+import re
 import shutil
 import signal
 import subprocess
@@ -51,7 +53,7 @@ VARIANTS = {
     "Merlot-Day": ("prefer-light", "Yaru", "Yaru"),
 }
 SCENES = ["desktop", "dock", "aura-cpu", "quick-settings", "notifications", "osd", "overview",
-          "alt-tab", "workspace-switcher", "run-dialog", "end-session", "profile-osd", "focus-keys", "color-scheme", "lock"]
+          "alt-tab", "workspace-switcher", "run-dialog", "end-session", "profile-osd", "focus-keys", "show-desktop", "color-scheme", "lock"]
 FAVOURITES = ["org.gnome.Nautilus.desktop", "org.gnome.Terminal.desktop", "org.gnome.TextEditor.desktop",
               "com.microsoft.VSCode.desktop", "org.gnome.Loupe.desktop",
               "org.gnome.Calendar.desktop", "org.gnome.Settings.desktop", "org.gnome.Software.desktop"]
@@ -153,6 +155,7 @@ def build_keyfile(variant, home, ext_schema_dirs, text_scale, wallpaper):
         put("org.gnome.desktop.app-folders.folder", "apps", ql(fapps), fpath)
         put("org.gnome.desktop.app-folders.folder", "translate", "false", fpath)
     put("org.gnome.shell.extensions.user-theme", "name", q(variant))
+    put("org.gnome.shell.extensions.bordeaux-aura", "dark-variant", q(variant if variant != "Merlot-Day" else "Bordeaux"))
     put("org.gnome.desktop.interface", "color-scheme", q(scheme))
     put("org.gnome.desktop.interface", "gtk-theme", q(gtk))
     put("org.gnome.desktop.interface", "icon-theme", q(icons))
@@ -327,7 +330,7 @@ def private_env(base, home, share, fc, rt, out, args):
         "XDG_CURRENT_DESKTOP": "ubuntu:GNOME", "XDG_SESSION_DESKTOP": "ubuntu",
         "XDG_SESSION_TYPE": "wayland", "XDG_SESSION_CLASS": "user", "XDG_SESSION_ID": "c1",
         "GNOME_SHELL_SESSION_MODE": "ubuntu", "GSETTINGS_BACKEND": "keyfile",
-        "GVFS_DISABLE_FUSE": "1", "NO_AT_BRIDGE": "1", "GTK_A11Y": "none",
+        "GVFS_DISABLE_FUSE": "1", "GIO_USE_VFS": "local", "GTK_USE_PORTAL": "0", "NO_AT_BRIDGE": "1", "GTK_A11Y": "none",
         "FONTCONFIG_FILE": str(fc), "BXQA_PRIVATE": "1", "BXQA_OUT": str(out),
         "BXQA_SCENES": ",".join(args.scene), "BXQA_APPS": ",".join(OPEN_APPS),
         "BXQA_BASE": str(base), "BXQA_WAYLAND": "bxqa-0", "BXQA_SIZE": args.size, "BXQA_AUDIO": "0" if args.no_audio else "1",
@@ -466,6 +469,9 @@ def run_variant(variant, args):
 def check_keys_and_osd(variant, m):
     """Focus Keys raise/launch/lifecycle and the TUF profile OSD (scenes focus-keys, profile-osd)."""
     bad = []
+    desktop = m.get("desktopToggle")
+    if desktop and (not desktop["windows"] or not all(desktop.get(k) for k in ("hidden", "restored", "interrupted"))):
+        bad.append(f"{variant}: show desktop did not hide/restore cleanly: {desktop}")
     o = m.get("profileOsd")
     if o:
         if o["shownAtStart"] != 0:
@@ -641,12 +647,15 @@ def main():
     ap.add_argument("--publish", type=pathlib.Path, help="also write the curated, optimised set here")
     ap.add_argument("--size", default="1920x1200")
     ap.add_argument("--text-scale", type=float, default=1.0)
-    ap.add_argument("--mem", default="2000M", help="MemoryMax of the scope (default 2000M)")
+    ap.add_argument("--mem", default="1500M", help="MemoryMax of the scope (at most 1500M)")
     ap.add_argument("--timeout", type=int, default=420, help="seconds per variant")
     ap.add_argument("--tuf-ext", type=pathlib.Path, default=DEFAULT_TUF)
     ap.add_argument("--no-audio", action="store_true", help="skip the private pipewire (no volume slider)")
     ap.add_argument("--keep", action="store_true", help="keep the private HOME for inspection")
     args = ap.parse_args()
+    mem = re.fullmatch(r"([1-9][0-9]*)([MG])", args.mem)
+    if not mem or int(mem[1]) * (1024 if mem[2] == "G" else 1) > 1500:
+        ap.error("--mem must be a positive M/G value no greater than 1500M")
     if args.inner:
         inner(args.inner)
         return

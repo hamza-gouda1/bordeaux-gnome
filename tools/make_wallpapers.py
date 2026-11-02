@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) Hamza Gouda
 """Procedural wallpaper generator for the Bordeaux themes (Hallmark direction).
 
 Motif, "Drape": broad satin folds sweeping diagonally across the frame, lit

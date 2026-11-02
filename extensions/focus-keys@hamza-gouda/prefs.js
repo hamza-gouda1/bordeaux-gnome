@@ -1,3 +1,4 @@
+// Copyright (C) Hamza Gouda
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Hamza Gouda
 
@@ -148,6 +149,24 @@ export default class FocusKeysPreferences extends ExtensionPreferences {
         });
         settings.bind('cycle-windows', cycle, 'active', Gio.SettingsBindFlags.DEFAULT);
         behaviour.add(cycle);
+        const desktop = new Adw.ActionRow({title: 'Show desktop',
+            subtitle: 'Fade visible windows; press again to restore. Off until a shortcut is set.'});
+        const desktopLabel = new Gtk.ShortcutLabel({disabled_text: 'Not set'});
+        const desktopButton = new Gtk.Button({valign: Gtk.Align.CENTER, child: desktopLabel,
+            tooltip_text: 'Set the show desktop shortcut'});
+        desktopButton.connect('clicked', () => captureAccel(window, 'Show desktop',
+            accel => settings.set_strv('show-desktop-shortcut', [accel])));
+        const desktopClear = new Gtk.Button({valign: Gtk.Align.CENTER, icon_name: 'edit-clear-symbolic',
+            tooltip_text: 'Disable the show desktop shortcut'});
+        desktopClear.connect('clicked', () => settings.reset('show-desktop-shortcut'));
+        const desktopUpdate = () => {
+            desktopLabel.accelerator = settings.get_strv('show-desktop-shortcut')[0] ?? '';
+            desktopClear.sensitive = !!desktopLabel.accelerator;
+        };
+        desktopUpdate();
+        desktop.add_suffix(desktopButton);
+        desktop.add_suffix(desktopClear);
+        behaviour.add(desktop);
         page.add(behaviour);
 
         const list = () => settings.get_strv('bindings');
@@ -200,7 +219,8 @@ export default class FocusKeysPreferences extends ExtensionPreferences {
             }
         };
         rebuild();
-        const ids = [settings.connect('changed::bindings', rebuild)];
+        const ids = [settings.connect('changed::bindings', rebuild),
+            settings.connect('changed::show-desktop-shortcut', desktopUpdate)];
         add.connect('clicked', () => chooseApp(window, appId => edit(null, appId)));
 
         window.connect('close-request', () => {

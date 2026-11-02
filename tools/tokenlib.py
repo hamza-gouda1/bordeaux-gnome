@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) Hamza Gouda
 """Token loading and colour helpers shared by build.py and check_contrast.py."""
 
 import pathlib

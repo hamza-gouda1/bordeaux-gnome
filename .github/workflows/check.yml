@@ -1,3 +1,5 @@
+# Copyright (C) Hamza Gouda
+# SPDX-License-Identifier: GPL-3.0-or-later
 name: check
 
 on:
@@ -20,4 +22,21 @@ jobs:
       - name: WCAG contrast
         run: python3 tools/check_contrast.py
       - name: Install, switch and uninstall in a throwaway home
-        run: bash tests/test_install.sh
+        run: |
+          bash tests/test_install.sh
+          bash tests/test_boot.sh
+      - name: Theme and follow-data regression tests
+        run: |
+          python3 tests/test_shell_css.py
+          python3 tests/test_follow_json.py
+      - name: Extension syntax and logic
+        run: |
+          for f in extensions/*/*.js tests/*.js; do node --input-type=module --check < "$f"; done
+          if command -v gjs >/dev/null 2>&1; then
+            for f in tests/*.js; do gjs -m "$f"; done
+          else
+            echo "::warning::GJS unavailable on runner; extension logic must pass locally before release"
+          fi
+      - name: Validate extension schemas
+        run: |
+          for d in extensions/*/schemas; do glib-compile-schemas --strict --dry-run "$d"; done
