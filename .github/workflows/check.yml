@@ -15,6 +15,11 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Install tools and GNOME settings schemas
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends shellcheck nodejs gjs libglib2.0-bin \
+            gsettings-desktop-schemas gnome-shell-extensions gnome-settings-daemon-common gnome-terminal dconf-gsettings-backend
       - name: shellcheck
         run: shellcheck -S warning install.sh uninstall.sh install-boot.sh tests/*.sh
       - name: Generated themes are up to date
