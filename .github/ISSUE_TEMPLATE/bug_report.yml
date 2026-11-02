@@ -1,0 +1,33 @@
+name: Bug report
+description: Something looks wrong or broke after installing the theme
+labels: [bug]
+body:
+  - type: input
+    id: system
+    attributes:
+      label: System
+      description: Distribution, GNOME Shell version (`gnome-shell --version`), session (Wayland or X11)
+      placeholder: Ubuntu 24.04, GNOME Shell 46.0, Wayland
+    validations: {required: true}
+  - type: dropdown
+    id: variant
+    attributes:
+      label: Variant
+      options: [Bordeaux, Oxblood-Noir, Merlot-Day]
+    validations: {required: true}
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include a screenshot if it is visual, and what you expected instead
+    validations: {required: true}
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+  - type: textarea
+    id: logs
+    attributes:
+      label: Shell errors
+      description: Output of `journalctl --user -b | grep -i gnome-shell | tail -30`
+      render: text

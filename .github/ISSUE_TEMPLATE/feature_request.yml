@@ -1,0 +1,10 @@
+name: Suggestion
+description: A surface that is not themed, or an idea for the design
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to see
+      description: Name the surface or app, and attach a screenshot of the current state
+    validations: {required: true}
