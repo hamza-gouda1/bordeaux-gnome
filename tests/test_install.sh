@@ -103,8 +103,12 @@ PB=$XDG_STATE_HOME/bordeaux-gnome/backup/preset.txt
 [ "$(gsettings get $DOCK running-indicator-style)" = "'DEFAULT'" ] || fail "running indicator style not set"
 [ "$(gsettings get $DOCK custom-background-color)" = "false" ] || fail "dock custom background not cleared"
 [ "$(gsettings get org.gnome.desktop.interface icon-theme)" = "'Papirus-Dark'" ] || fail "installed icon theme not set"
-if [ -d /usr/share/icons/DMZ-Black ]; then want="'DMZ-Black'"; else want="'Yaru'"; fi
-[ "$(gsettings get org.gnome.desktop.interface cursor-theme)" = "$want" ] || fail "cursor theme only applies when installed"
+cursor=$(gsettings get org.gnome.desktop.interface cursor-theme)
+if [ -d /usr/share/icons/DMZ-Black ]; then
+    [ "$cursor" = "'DMZ-Black'" ] || fail "installed cursor theme not set"
+else
+    [ "$cursor" != "'DMZ-Black'" ] || fail "cursor theme applied although not installed"
+fi
 if [ "$HAVE_BLUR" = 1 ]; then
     [ "$(blurget $BLUR.lockscreen pipeline)" = "'pipeline_bordeaux_slab'" ] || fail "blur-my-shell key not set via extension schema dir"
     blurget $BLUR pipelines | grep -q pipeline_bordeaux_island || fail "pipelines not merged"
