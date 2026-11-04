@@ -505,6 +505,47 @@ export default class QaHarness {
                 settings.set_strv('show-desktop-shortcut', previous);
             }
             this.metrics.desktopToggle = r;
+            const actions = Main.extensionManager.lookup(TUF_UUID)?.stateObj?._gestures?._actions;
+            if (!actions)
+                throw new Error('TUF desktop gesture actions unavailable');
+            const clean = () => windows.every(w => !w.minimized && w.get_compositor_private()?.opacity === 255);
+            const gesture = {windows: windows.length, actorsBefore: global.window_group.get_n_children()};
+            actions['show-desktop']();
+            await sleep(70);
+            gesture.actorsDuring = global.window_group.get_n_children();
+            await this.shot('tuf-desktop-fading');
+            await sleep(250);
+            gesture.hidden = windows.every(w => w.minimized);
+            actions['show-desktop']();
+            await sleep(300);
+            gesture.restored = clean();
+            actions['show-desktop']();
+            actions['show-desktop']();
+            await sleep(300);
+            gesture.interrupted = clean();
+            Main.overview.show();
+            await sleep(500);
+            actions['show-desktop']();
+            gesture.waitedForOverview = windows.every(w => !w.minimized);
+            await sleep(800);
+            gesture.deferred = windows.every(w => w.minimized) && !Main.overview.visible;
+            actions['show-desktop']();
+            await sleep(300);
+            gesture.finalRestored = clean();
+            await this.shot('tuf-desktop-restored');
+            const iface = new Gio.Settings({schema_id: 'org.gnome.desktop.interface'});
+            const animated = iface.get_boolean('enable-animations');
+            try {
+                iface.set_boolean('enable-animations', false);
+                await sleep(100);
+                actions['show-desktop']();
+                gesture.reducedMotionHide = windows.every(w => w.minimized);
+                actions['show-desktop']();
+                gesture.reducedMotionRestore = clean();
+            } finally {
+                iface.set_boolean('enable-animations', animated);
+            }
+            this.metrics.tufDesktopToggle = gesture;
         });
         await this.scene('color-scheme', () => this.colorScheme());
 

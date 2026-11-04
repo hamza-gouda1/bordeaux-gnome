@@ -472,6 +472,14 @@ def check_keys_and_osd(variant, m):
     desktop = m.get("desktopToggle")
     if desktop and (not desktop["windows"] or not all(desktop.get(k) for k in ("hidden", "restored", "interrupted"))):
         bad.append(f"{variant}: show desktop did not hide/restore cleanly: {desktop}")
+    gesture = m.get("tufDesktopToggle")
+    if gesture:
+        expected = ("hidden", "restored", "interrupted", "waitedForOverview", "deferred",
+                    "finalRestored", "reducedMotionHide", "reducedMotionRestore")
+        if not gesture["windows"] or not all(gesture.get(k) for k in expected):
+            bad.append(f"{variant}: TUF desktop gesture did not settle cleanly: {gesture}")
+        if gesture["actorsDuring"] != gesture["actorsBefore"]:
+            bad.append(f"{variant}: TUF desktop gesture added actors: {gesture}")
     o = m.get("profileOsd")
     if o:
         if o["shownAtStart"] != 0:
