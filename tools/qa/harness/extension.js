@@ -510,8 +510,12 @@ export default class QaHarness {
                 throw new Error('TUF desktop gesture actions unavailable');
             const clean = () => windows.every(w => !w.minimized && w.get_compositor_private()?.opacity === 255);
             const gesture = {windows: windows.length, actorsBefore: global.window_group.get_n_children()};
+            gesture.animationsEnabled = St.Settings.get().enable_animations;
             actions['show-desktop']();
+            gesture.transitionCount = windows.filter(w =>
+                !!w.get_compositor_private()?.get_transition('opacity')).length;
             await sleep(70);
+            gesture.opacityDuring = windows.map(w => w.get_compositor_private()?.opacity);
             gesture.actorsDuring = global.window_group.get_n_children();
             await this.shot('tuf-desktop-fading');
             await sleep(250);

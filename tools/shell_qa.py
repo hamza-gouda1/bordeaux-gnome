@@ -478,6 +478,8 @@ def check_keys_and_osd(variant, m):
                     "finalRestored", "reducedMotionHide", "reducedMotionRestore")
         if not gesture["windows"] or not all(gesture.get(k) for k in expected):
             bad.append(f"{variant}: TUF desktop gesture did not settle cleanly: {gesture}")
+        if gesture["animationsEnabled"] and gesture["transitionCount"] != gesture["windows"]:
+            bad.append(f"{variant}: TUF fade did not start compositor transitions: {gesture}")
         if gesture["actorsDuring"] != gesture["actorsBefore"]:
             bad.append(f"{variant}: TUF desktop gesture added actors: {gesture}")
     o = m.get("profileOsd")
