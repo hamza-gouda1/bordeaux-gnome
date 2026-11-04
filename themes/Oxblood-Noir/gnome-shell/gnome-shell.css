@@ -8,6 +8,17 @@
  * St notes: one box-shadow per node, no text-transform, no CSS variables.
  * ============================================================================== */
 
+/* Fixed GNOME 46 layout metrics, intentionally shared by all variants:
+ * - Quick Settings tiles are 58px high (round system actions use their own 40px).
+ * - App-grid spacing is 20px columns, 36/44px maximum row/column spacing and
+ *   28px horizontal page padding; these align the native paginated grid.
+ * - The search entry has an 18px horizontal inset for its rounded shape.
+ * - The future-only unlock clock uses 96px, weight 200 and -4px tracking.
+ * Recheck the corresponding QA scenes when changing these fixed metrics.
+ * Reusable shape, type, spacing and colour roles otherwise come from tokens.
+ * A 9999px max-width is an unrestricted-width sentinel, not a pill radius.
+ */
+
 /* Stage Root & Base Typography */
 stage {
     font-family: "Geist", sans-serif;
@@ -131,7 +142,7 @@ stage {
 #panel .panel-button#panelActivities .workspace-dot,
 #panel:overview .panel-button#panelActivities .workspace-dot {
     background-color: #ECE6E4;
-    border-radius: 999px;
+    border-radius: 9999px;
     min-width: 6px;
     min-height: 6px;
 }
@@ -829,9 +840,10 @@ stage {
     -barlevel-overdrive-separator-width: 2px;
 }
 
+/* Monitor identifiers use the accent fill; keep their slab edge and typography. */
 .osd-monitor-label {
-    background-color: rgba(14, 12, 12, 0.96);
-    color: #ECE6E4;
+    background-color: #A3283A;
+    color: #FFFFFF;
     border: 1px solid #2E2829;
     border-radius: 6px 22px 22px 22px;
     font-family: "Geist", sans-serif;
@@ -908,8 +920,9 @@ stage {
     color: #ECE6E4;
 }
 
+/* Window cycling marks the selected window with a wider gold outline. */
 .cycler-highlight {
-    border: 2px solid #C6A06E;
+    border: 5px solid #C6A06E;
 }
 
 .resize-popup {
@@ -933,7 +946,7 @@ stage {
 
 .ws-switcher-indicator {
     background-color: #9A908E;
-    border-radius: 999px;
+    border-radius: 9999px;
     padding: 3px;
     margin: 12px 4px;
 }
@@ -1422,7 +1435,11 @@ StScrollBar StButton#hhandle:active {
 }
 
 /* ==============================================================================
- * 6. LOCK SCREEN & LOGIN
+ * 6. LOCK SCREEN & LOGIN (future-only compatibility rules)
+ * GNOME 46 disables User Themes while locked, so these rules do not theme the
+ * installed lock screen or GDM login. They apply only in a custom theme loader
+ * with unlock-dialog session support, or if User Themes gains that support.
+ * The preset's Blur my Shell lockscreen settings are independent of this CSS.
  * ============================================================================== */
 #lockDialogGroup {
     background-color: #0A0909;
@@ -1688,7 +1705,6 @@ StScrollBar StButton#hhandle:active {
 .calendar .calendar-month-header .default.pager-button:focus,
 .button.default:focus {
     box-shadow: inset 0 0 0 2px #C6A06E !important;
-    box-shadow: inset 0 0 0 2px #C6A06E !important;
     background-color: #A3283A;
     color: #FFFFFF;
 }
@@ -1796,19 +1812,12 @@ StEntry:focus {
     background-color: #A3283A;
     color: #FFFFFF;
 }
-.osd-monitor-label {
-    background-color: #A3283A;
-    color: #FFFFFF;
-}
 .switcher-list .item-box:focus {
     box-shadow: inset 0 0 0 2px #C6A06E !important;
 }
 .switcher-list .item-box:drop {
     background-color: rgba(163, 40, 58, 0.2);
     box-shadow: inset 0 0 0 2px #B83348;
-}
-.cycler-highlight {
-    border: 5px solid #C6A06E;
 }
 .screenshot-ui-window-selector-window:checked .screenshot-ui-window-selector-window-border {
     border-color: #C6A06E;
@@ -1903,6 +1912,7 @@ StEntry:focus {
 .lg-dialog .shell-link {
     color: #D6B787;
 }
+/* Future-only lock/login accent rules; see the session-mode note in section 6. */
 .login-dialog-not-listed-button:focus {
     box-shadow: inset 0 0 0 2px #C6A06E !important;
 }

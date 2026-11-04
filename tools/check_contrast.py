@@ -58,6 +58,9 @@ def main():
 
     data = tl.load()
     pairs = data["contrast"]["pair"]
+    identities = [tuple(sorted(pair.items())) for pair in pairs]
+    if len(set(identities)) != len(identities):
+        sys.exit("contrast table contains duplicate pairs")
     failed = checked = 0
     for name, var in data["variant"].items():
         palette = var["palette"]

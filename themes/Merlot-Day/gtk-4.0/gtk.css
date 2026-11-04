@@ -2,7 +2,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /* Copyright (C) Hamza Gouda */
 /* Bordeaux Design System - Merlot-Day GTK4 / Libadwaita (Ivory Merlot) */
-@define-color accent_color mix(@accent_bg_color, @window_fg_color, 0.5);
+@define-color accent_color #7A1C34;
 @define-color accent_bg_color #7A1C34;
 @define-color accent_fg_color #FFF7F2;
 @define-color destructive_color #A3232E;

@@ -2,7 +2,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /* Copyright (C) Hamza Gouda */
 /* Bordeaux Design System - Bordeaux GTK4 / Libadwaita (Quiet Wine) */
-@define-color accent_color mix(@accent_bg_color, @window_fg_color, 0.5);
+@define-color accent_color #E09AAE;
 @define-color accent_bg_color #8E2A44;
 @define-color accent_fg_color #FFF3F1;
 @define-color destructive_color #EC7D86;

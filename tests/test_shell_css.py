@@ -118,6 +118,36 @@ def layout_checks(name, css):
     return bad
 
 
+def structure_checks(name, css):
+    """Consolidated selectors retain the effective accent styling without dead overrides."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import tokenlib as tl
+
+    toks = tl.variant_tokens(tl.load(), name)
+    bad = []
+    for selector in (".osd-monitor-label", ".cycler-highlight"):
+        if sum(selector in selectors for selectors, _body in rules(css)) != 1:
+            bad.append(f"{name}: {selector} must have one consolidated rule")
+    for selectors, body in rules(css):
+        declarations = [re.sub(r"\s+", " ", declaration.strip())
+                        for declaration in body.split(";") if declaration.strip()]
+        if len(declarations) != len(set(declarations)):
+            bad.append(f"{name}: duplicate declaration in {', '.join(selectors)}")
+    if decls_for(css, ".cycler-highlight").get("border") != f"5px solid {toks['gold']}":
+        bad.append(f"{name}: window cycling lost its gold outline")
+    monitor = decls_for(css, ".osd-monitor-label")
+    for property_name, expected in (("background-color", toks["accent"]),
+                                    ("color", toks["on-accent"]),
+                                    ("border", f"1px solid {toks['border']}"),
+                                    ("border-radius", toks["r-slab"])):
+        if monitor.get(property_name) != expected:
+            bad.append(f"{name}: monitor identifier {property_name} lost its accent/slab styling")
+    for selector in ("#panel .panel-button#panelActivities .workspace-dot", ".ws-switcher-indicator"):
+        if decls_for(css, selector).get("border-radius") != toks["r-pill"]:
+            bad.append(f"{name}: {selector} must use the shared pill radius")
+    return bad
+
+
 def preset_checks():
     sys.path.insert(0, str(ROOT / "tools"))
     import tokenlib as tl
@@ -176,6 +206,14 @@ def backdrop_checks():
 def main():
     backdrop_checks()
     bad = []
+    import tokenlib as tl
+    data = tl.load()
+    pairs = [tuple(sorted(pair.items())) for pair in data["contrast"]["pair"]]
+    assert len(pairs) == len(set(pairs)), "contrast coverage must not count duplicate pairs"
+    for name in data["variant"]:
+        gtk = (ROOT / "themes" / name / "gtk-4.0/gtk.css").read_text()
+        accent = tl.variant_tokens(data, name)["accent-text"]
+        assert f"@define-color accent_color {accent};" in gtk, "GTK accent must use the checked accent-text role"
     for sheet in sorted((ROOT / "themes").glob("*/gnome-shell/gnome-shell.css")):
         name = sheet.parent.parent.name
         overview = False
@@ -197,6 +235,7 @@ def main():
         if not overview:
             bad.append(f"{name}: no #overviewGroup rule")
         bad += layout_checks(name, sheet.read_text())
+        bad += structure_checks(name, sheet.read_text())
     for sheet in sorted((ROOT / "themes").glob("*/gtk-*.0/gtk.css")):
         for selectors, body in rules(sheet.read_text()):
             if "*" in selectors and re.search(r"(?:^|;)\s*font-family\s*:", body):

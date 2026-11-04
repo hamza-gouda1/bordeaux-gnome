@@ -517,20 +517,12 @@ fg = "on-status"
 bg = "warning"
 min = 4.5
 [[contrast.pair]]
-fg = "fg-0"
-bg = "matte"
-min = 4.5
-[[contrast.pair]]
 fg = "fg-1"
 bg = "matte"
 min = 4.5
 [[contrast.pair]]
 fg = "fg-2"
 bg = "matte"
-min = 4.5
-[[contrast.pair]]
-fg = "fg-0"
-bg = "tile"
 min = 4.5
 [[contrast.pair]]
 fg = "fg-2"
@@ -574,10 +566,6 @@ fg = "gold-text"
 bg = "tile"
 min = 4.5
 [[contrast.pair]]
-fg = "fg-0"
-bg = "bg-0"
-min = 4.5
-[[contrast.pair]]
 fg = "fg-1"
 bg = "bg-0"
 min = 4.5
@@ -590,10 +578,6 @@ min = 3.0
 fg = "focus"
 bg = "matte"
 min = 3.0
-[[contrast.pair]]
-fg = "on-accent"
-bg = "accent"
-min = 4.5
 [[contrast.pair]]
 fg = "overview-fg"          # app names on the dimmed wallpaper (light: plus a text shadow)
 bg = "overview-dim"
