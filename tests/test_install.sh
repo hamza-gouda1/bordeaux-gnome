@@ -23,6 +23,64 @@ echo "/* my own css */" > "$XDG_CONFIG_HOME/gtk-4.0/gtk.css"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
+# Exercise schema_dir with a large fake gsettings producer: the old grep -q
+# exited after the first match, causing the producer's SIGPIPE to mask it under
+# pipefail. Extract the real helper so this stays a focused, display-free test.
+FAKE_SCHEMA=org.example.StreamingSchema
+mkdir -p "$T/stubbin"
+cat > "$T/stubbin/gsettings" <<'SH'
+#!/usr/bin/env bash
+case $1 in
+    list-schemas)
+        printf '%s\n' "$FAKE_SCHEMA"
+        for ((i = 0; i < 20000; i++)); do printf 'org.example.Unused%d\n' "$i"; done
+        ;;
+    list-relocatable-schemas) printf '%s\n' org.example.Unrelated ;;
+    *) exit 1 ;;
+esac
+SH
+chmod +x "$T/stubbin/gsettings"
+export DATA=$XDG_DATA_HOME
+eval "$(sed -n '/^schema_dir() {$/,/^}/p' "$ROOT/install.sh")"
+PATH="$T/stubbin:$PATH"
+export PATH FAKE_SCHEMA
+if gsettings list-schemas 2>/dev/null | grep -qxF "$FAKE_SCHEMA" >/dev/null; then
+    fail "streaming fake did not reproduce early grep -q failure under pipefail"
+fi
+if ! schema_dir "$FAKE_SCHEMA" >"$T/schema-dir.out"; then
+    fail "schema_dir missed a matching schema in a long listing"
+fi
+[ ! -s "$T/schema-dir.out" ] || fail "system schema unexpectedly returned an extension directory"
+PATH=${PATH#"$T/stubbin:"}
+export PATH
+if grep -Eq 'list-(schemas|relocatable-schemas)[^|]*\|[[:space:]]*grep[^|]*-q' "$ROOT/install.sh"; then
+    fail "schema discovery still uses early-exit grep -q"
+fi
+
+# A system schema can be visible through the caller's inherited schema dir,
+# making schema_dir return an empty directory. key_state must then keep using
+# that inherited directory instead of assigning an empty GSETTINGS_SCHEMA_DIR.
+INHERITED_SCHEMAS=$T/inherited-schemas
+mkdir -p "$INHERITED_SCHEMAS"
+cat > "$INHERITED_SCHEMAS/org.example.Inherited.gschema.xml" <<'XML'
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) Hamza Gouda -->
+<schemalist>
+  <schema id="org.example.Inherited" path="/org/example/inherited/">
+    <key name="enabled" type="b"><default>false</default></key>
+  </schema>
+</schemalist>
+XML
+glib-compile-schemas --strict "$INHERITED_SCHEMAS"
+GSETTINGS_SCHEMA_DIR=$INHERITED_SCHEMAS
+export GSETTINGS_SCHEMA_DIR GSETTINGS_BACKEND=keyfile
+eval "$(sed -n '/^schema_dir() {$/,/^}/p' "$ROOT/install.sh")
+$(sed -n '/^key_state_python() {$/,/^}/p' "$ROOT/install.sh")
+$(sed -n '/^key_state() {$/,/^}/p' "$ROOT/install.sh")"
+[ "$(key_state org.example.Inherited enabled)" = D ] || \
+    fail "key_state discarded the caller's inherited schema directory"
+unset GSETTINGS_SCHEMA_DIR
+
 python3 "$ROOT/tests/test_shell_css.py" || fail "generated shell css regression"
 
 # An older copy in ~/.themes would shadow the new theme (User Themes looks there first).

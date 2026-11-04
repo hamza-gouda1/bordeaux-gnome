@@ -96,8 +96,8 @@ has_key() { gsettings writable "$1" "$2" >/dev/null 2>&1; }
 # schema dir. Find the dir that defines a schema (user dir first).
 schema_dir() {
     local base=${1%%:*} d
-    gsettings list-schemas 2>/dev/null | grep -qxF "$base" && return 0
-    gsettings list-relocatable-schemas 2>/dev/null | grep -qxF "$base" && return 0
+    gsettings list-schemas 2>/dev/null | grep -xF "$base" >/dev/null && return 0
+    gsettings list-relocatable-schemas 2>/dev/null | grep -xF "$base" >/dev/null && return 0
     for d in "$DATA"/gnome-shell/extensions/*/schemas /usr/share/gnome-shell/extensions/*/schemas; do
         if grep -qsF "id=\"$base\"" "$d"/*.gschema.xml 2>/dev/null; then
             printf '%s\n' "$d"; return 0
@@ -204,14 +204,25 @@ snapshot_asset() {
 PBACK=$STATE/backup/preset.txt
 
 # Prints U when the key has a user value, D when it is at its default.
-key_state() {
-    GSETTINGS_SCHEMA_DIR=$(schema_dir "$1") python3 - "$1" "$2" 2>/dev/null <<'PY' || echo U
+key_state_python() {
+    python3 - "$1" "$2" 2>/dev/null <<'PY'
 import sys
 from gi.repository import Gio
 schema, _, path = sys.argv[1].partition(":")
 s = Gio.Settings.new_with_path(schema, path) if path else Gio.Settings.new(schema)
 print("D" if s.get_user_value(sys.argv[2]) is None else "U")
 PY
+}
+
+key_state() {
+    local d
+    d=$(schema_dir "$1")
+    if [ -n "$d" ]; then
+        GSETTINGS_SCHEMA_DIR="$d${GSETTINGS_SCHEMA_DIR:+:$GSETTINGS_SCHEMA_DIR}" \
+            key_state_python "$1" "$2" || echo U
+    else
+        key_state_python "$1" "$2" || echo U
+    fi
 }
 
 preset_backup() {
