@@ -7,3 +7,4 @@ schemas/gschemas.compiled
 .aws/
 .agents/
 .codex/
+.zcode/

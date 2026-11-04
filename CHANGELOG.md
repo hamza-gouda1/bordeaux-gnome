@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-04
+
+- Preserve the overview wallpaper fallback and custom lockscreen pipelines; report missing
+  backdrop actors and measure rendered dim separately from pipeline brightness.
+- Match preset panel geometry to tokens, inherit application font choices, and keep
+  accessible accent colours and unique contrast pairs traceable to the design system.
+- Report unavailable Show desktop shortcuts in preferences, reject malformed variants
+  individually, and name the Aura intensity control for assistive technologies.
+- Harden schema discovery and inherited-key backup, document current design sources and
+  release limits, and provide reproducible source archives with checksums.
+
+## [0.1.0] - 2026-11-02
+
 - Added an optional animated Show desktop shortcut in Focus Keys, unbound by default;
   native GNOME gestures and their easing remain unchanged.
 - Bounded theme-following and invalid-binding diagnostic caches; capped Shell QA at 1500 MiB.

@@ -2,8 +2,10 @@
   "uuid": "focus-keys@hamza-gouda",
   "name": "Focus Keys",
   "description": "Global shortcuts that bring an app to the front if it is already open, on any workspace, and start it if it is not. Fixes the \"is ready\" notification that custom shortcuts give on Wayland. Part of Bordeaux GNOME.",
-  "shell-version": ["46"],
+  "shell-version": [
+    "46"
+  ],
   "settings-schema": "org.gnome.shell.extensions.focus-keys",
   "url": "https://github.com/hamza-gouda1/bordeaux-gnome",
-  "version": 1
+  "version": 2
 }
