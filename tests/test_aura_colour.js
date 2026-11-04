@@ -3,6 +3,7 @@
 // Unit tests for the dock aura colour maths. Run: gjs -m tests/test_aura_colour.js
 
 import System from 'system';
+import GLib from 'gi://GLib';
 import * as C from '../extensions/bordeaux-aura@hamza-gouda/colour.js';
 import {hasOverviewWallpaper} from '../extensions/bordeaux-aura@hamza-gouda/overview.js';
 
@@ -43,6 +44,13 @@ ok(hasOverviewWallpaper(actor('overview', [actor('wrapper', [actor('bms-overview
 ok(!hasOverviewWallpaper(actor('overview', [actor('unrelated-background')])),
     'overview rejects unrelated backgrounds');
 ok(!hasOverviewWallpaper(null), 'overview handles a missing actor tree');
+
+// Preferences give the bare scale its own name; an ActionRow suffix has no automatic label.
+const sourceRoot = GLib.path_get_dirname(GLib.path_get_dirname(GLib.filename_from_uri(import.meta.url)[0]));
+const prefsSource = new TextDecoder().decode(GLib.file_get_contents(
+    `${sourceRoot}/extensions/bordeaux-aura@hamza-gouda/prefs.js`)[1]);
+ok(prefsSource.includes("scale.update_property([Gtk.AccessibleProperty.LABEL], ['Aura intensity'])"),
+    'intensity scale has an explicit accessible name');
 
 // --- parsing / conversions
 ok(C.parseHex('#8E2A44').r === 142 && C.parseHex('#8e2a44').b === 68, 'parseHex 6');

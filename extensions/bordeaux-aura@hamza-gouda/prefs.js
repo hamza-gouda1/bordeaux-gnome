@@ -52,6 +52,7 @@ export default class BordeauxAuraPreferences extends ExtensionPreferences {
             valign: Gtk.Align.CENTER,
             width_request: 220,
         });
+        scale.update_property([Gtk.AccessibleProperty.LABEL], ['Aura intensity']);
         scale.add_mark(38, Gtk.PositionType.BOTTOM, null);
         settings.bind('intensity', scale.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
         intensityRow.add_suffix(scale);
