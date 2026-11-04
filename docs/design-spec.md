@@ -1,4 +1,25 @@
-# Bordeaux v2 design spec: "Hallmark"
+# Historical Bordeaux v2 design proposal: "Hallmark"
+
+This document preserves the original design proposal and early implementation
+notes. Its token table, contrast counts, wallpaper concept and runtime details
+are historical; they do not describe the current release.
+
+For the shipped design, use these maintained sources:
+
+- [`tokens/tokens.toml`](../tokens/tokens.toml) defines the current palettes,
+  geometry and declared contrast pairs. [`tools/build.py`](../tools/build.py)
+  generates the theme files from those tokens and templates.
+- [`tools/check_contrast.py`](../tools/check_contrast.py) checks each declared
+  pair against its own threshold: 4.5:1 for text and 3:1 for UI components.
+  Its output gives the current pair count and results. Synthetic background
+  checks do not guarantee contrast over every custom wallpaper.
+- [`tools/make_wallpapers.py`](../tools/make_wallpapers.py) generates the shipped
+  **Drape** motif: broad diagonal satin folds, with diffuse light, sheen and
+  grain, exported as JPEG wallpapers and PNG boot images.
+- The [README](../README.md) describes supported features and limitations;
+  [release checks](RELEASE_CHECKS.md) record validation evidence.
+
+The proposal below remains for design history only.
 
 Dark is **Quiet Wine** and light is **Ivory Merlot**, both with quiet neutral hairlines and gold used sparingly. The target is GNOME 46 on Ubuntu 24.04 (Wayland, Ubuntu Dock on the left).
 

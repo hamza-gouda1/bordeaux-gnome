@@ -17,6 +17,11 @@ hotkey mapping, real touchpad feel, GPU compositor performance or boot appearanc
 The lock screen keeps the session's stock theme because User Themes is disabled
 while locked. No real hardware or boot settings were written during this review.
 
+Boot validation covers dry runs and isolated backup/restore logic. Privileged
+installation and the resulting GRUB/Plymouth appearance have not been tested on
+a real boot. Physical touchpad feel and high-refresh-display performance also
+remain live-session checks; headless tests cannot establish them.
+
 To reproduce the visual checks:
 
 ```sh
