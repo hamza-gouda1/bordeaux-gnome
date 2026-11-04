@@ -2,3 +2,8 @@
 .mimosa/
 __pycache__/
 schemas/gschemas.compiled
+
+# Local tool configuration and credentials
+.aws/
+.agents/
+.codex/
