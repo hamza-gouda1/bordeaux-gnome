@@ -26,25 +26,62 @@ function readText(path) {
     }
 }
 
-/** Every variants/<Variant>.json in `dir`, as objects. */
-export function loadDocs(dir) {
+function validateDoc(doc) {
+    const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+    const text = value => typeof value === 'string' && value.trim().length > 0;
+    const texts = value => Array.isArray(value) && value.every(text);
+    if (!object(doc))
+        throw new Error('expected a variant object');
+    for (const key of ['variant', 'shellTheme', 'gtkTheme']) {
+        if (!text(doc[key]))
+            throw new Error(`${key}: expected a nonempty string`);
+    }
+    if (!['dark', 'light'].includes(doc.scheme))
+        throw new Error('scheme: expected dark or light');
+    if (!Array.isArray(doc.keys))
+        throw new Error('keys: expected a list');
+    for (const [index, key] of doc.keys.entries()) {
+        if (!object(key) || !['schema', 'key', 'value'].every(name => text(key[name])))
+            throw new Error(`keys[${index}]: expected schema, key and value strings`);
+        if (key.ifOneOf !== undefined && !texts(key.ifOneOf))
+            throw new Error(`keys[${index}].ifOneOf: expected a string list`);
+        if (key.merge !== undefined && typeof key.merge !== 'boolean')
+            throw new Error(`keys[${index}].merge: expected a boolean`);
+    }
+    for (const key of ['terminalProfile', 'wallpaper']) {
+        if (doc[key] !== undefined && doc[key] !== null && !text(doc[key]))
+            throw new Error(`${key}: expected a nonempty string`);
+    }
+    if (doc.terminalProfiles !== undefined && !texts(doc.terminalProfiles))
+        throw new Error('terminalProfiles: expected a string list');
+}
+
+/** Every valid variants/<Variant>.json in `dir`; a broken file drops only itself. */
+export function loadDocs(dir, log = msg => console.warn(`[bordeaux-aura] ${msg}`)) {
     const docs = [];
     let en;
     try {
         en = Gio.File.new_for_path(dir).enumerate_children('standard::name', Gio.FileQueryInfoFlags.NONE, null);
-    } catch {
+    } catch (e) {
+        log(`${dir}: could not read variants: ${e.message}`);
         return docs;
     }
-    for (let info; (info = en.next_file(null));) {
-        if (!info.get_name().endsWith('.json'))
-            continue;
-        try {
-            docs.push(JSON.parse(readText(`${dir}/${info.get_name()}`)));
-        } catch {
-            // a broken file only drops that variant
+    try {
+        for (let info; (info = en.next_file(null));) {
+            const name = info.get_name();
+            if (!name.endsWith('.json'))
+                continue;
+            try {
+                const doc = JSON.parse(readText(`${dir}/${name}`));
+                validateDoc(doc);
+                docs.push(doc);
+            } catch (e) {
+                log(`skipping ${name}: ${e.message}`);
+            }
         }
+    } finally {
+        en.close(null);
     }
-    en.close(null);
     return docs.sort((a, b) => a.variant.localeCompare(b.variant));
 }
 

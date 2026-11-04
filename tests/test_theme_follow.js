@@ -40,6 +40,32 @@ for (const d of docs) {
     ok(d.keys.find(k => k.key === 'icon-theme')?.ifOneOf?.length === 2, `${d.variant}: icon theme only when ours`);
 }
 
+// A malformed JSON field drops only that file and names it in the warning.
+const malformedDir = GLib.dir_make_tmp('bxfollow-invalid-XXXXXX');
+const malformed = [null, {}, {...docs[0], variant: 7}, {...docs[0], variant: ''},
+    {...docs[0], shellTheme: []}, {...docs[0], keys: {}}, {...docs[0], keys: [null]},
+    {...docs[0], keys: [{schema: 'a', key: 'b', value: '1', ifOneOf: 'wrong'}]},
+    {...docs[0], terminalProfiles: 'wrong'}];
+const malformedNames = malformed.map((_doc, index) => `broken-${index}.json`);
+for (const [index, doc] of malformed.entries())
+    GLib.file_set_contents(`${malformedDir}/${malformedNames[index]}`, JSON.stringify(doc));
+GLib.file_set_contents(`${malformedDir}/syntax.json`, '{not json');
+for (const doc of docs)
+    GLib.file_set_contents(`${malformedDir}/${doc.variant}.json`, JSON.stringify(doc));
+const docWarnings = [];
+const surviving = A.loadDocs(malformedDir, message => docWarnings.push(message));
+eq(surviving.map(doc => doc.variant), docs.map(doc => doc.variant), 'valid variants survive malformed neighbors');
+for (const name of [...malformedNames, 'syntax.json'])
+    ok(docWarnings.some(message => message.includes(name)), `malformed warning names ${name}`);
+for (const doc of surviving) {
+    const applied = A.applyVariant(doc.variant, {docs: surviving,
+        writer: {apply: () => 'skip'}, dataDir: `${malformedDir}/none`, configDir: `${malformedDir}/none`});
+    ok(applied.ops.length > 0, `${doc.variant} still applies with malformed neighbors`);
+}
+for (const name of [...malformedNames, 'syntax.json', ...docs.map(doc => `${doc.variant}.json`)])
+    GLib.unlink(`${malformedDir}/${name}`);
+GLib.rmdir(malformedDir);
+
 // --- mapping
 eq([F.pickVariant('prefer-dark'), F.pickVariant('default'), F.pickVariant('prefer-light')],
     ['Bordeaux', 'Merlot-Day', 'Merlot-Day'], 'only prefer-dark is dark');
