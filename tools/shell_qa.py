@@ -528,26 +528,51 @@ def check_keys_and_osd(variant, m):
 
 def backdrop_sample(pixels, bg0, box):
     """Summarise RGB samples without requiring an image library."""
+    import tokenlib as tl
+
     pixels = list(pixels)
+    if not pixels:
+        raise ValueError("backdrop sample is empty")
     mean = [sum(pixel[c] for pixel in pixels) / len(pixels) for c in range(3)]
     distance = sum((channel - reference) ** 2 for channel, reference in zip(mean, bg0)) ** 0.5
-    return {"sampleBox": list(box), "meanRgb": mean, "bg0Distance": distance}
+    luminance = sum(tl.luminance(pixel) for pixel in pixels) / len(pixels)
+    return {"sampleBox": list(box), "meanRgb": mean, "meanLuminance": luminance,
+            "bg0Distance": distance}
 
 
-def measure_backdrop(image, bg0):
+def compare_backdrops(rendered, wallpaper):
+    """Keep encoded-sRGB intensity and linear WCAG luminance ratios distinct."""
+    intensity = sum(wallpaper["meanRgb"])
+    luminance = wallpaper["meanLuminance"]
+    return {"wallpaperMeanRgb": wallpaper["meanRgb"],
+            "wallpaperMeanLuminance": luminance,
+            "srgbIntensityRatio": sum(rendered["meanRgb"]) / intensity if intensity else None,
+            "luminanceRatio": rendered["meanLuminance"] / luminance if luminance else None}
+
+
+def measure_backdrop(image, bg0, wallpaper=None):
     """Sample the empty right margin, outside the dock, search and app tiles.
 
-    The same normalized patch is used in the desktop/overview/app-grid screenshots,
-    so changing the virtual monitor size does not change the region's meaning.
+    Match the wallpaper to GNOME's centred zoom before sampling the same patch.
+    This excludes UI pixels and prevents differing image sizes from changing the
+    meaning of the intensity and luminance ratios.
     """
     w, h = image.size
     box = (int(w * 0.94), int(h * 0.45), int(w * 0.98), int(h * 0.75))
-    return backdrop_sample(image.convert("RGB").crop(box).getdata(), bg0, box)
+    measured = backdrop_sample(image.convert("RGB").crop(box).getdata(), bg0, box)
+    if wallpaper is not None:
+        from PIL import Image, ImageOps
+
+        reference = ImageOps.fit(wallpaper.convert("RGB"), image.size, method=Image.Resampling.LANCZOS)
+        reference = backdrop_sample(reference.crop(box).getdata(), bg0, box)
+        measured.update(compare_backdrops(measured, reference))
+    return measured
 
 
 def check_overview_backdrops(variant, out, metrics):
-    """Keep the rendered wallpaper from regressing to the opaque theme fallback."""
+    """Measure rendered dim and keep wallpaper from becoming an opaque fallback."""
     from PIL import Image
+    from build import OVERVIEW_EFFECTIVE_SRGB_DIM_REFERENCE
     import tokenlib as tl
 
     bad, notes = [], []
@@ -559,11 +584,15 @@ def check_overview_backdrops(variant, out, metrics):
         if not path.is_file():
             bad.append(f"{variant}: {scene['name']}: no screenshot for backdrop measurement")
             continue
-        with Image.open(path) as image:
-            value = measure_backdrop(image, bg0)
+        with Image.open(path) as image, Image.open(ROOT / "wallpapers" / f"{variant}.jpg") as wallpaper:
+            value = measure_backdrop(image, bg0, wallpaper)
+        value["historicalSrgbDimReference"] = OVERVIEW_EFFECTIVE_SRGB_DIM_REFERENCE
         scene["backdrop"] = value
         notes.append(f"{variant}: {scene['name']} backdrop mean RGB {value['meanRgb']}, "
-                     f"distance from bg-0 {value['bg0Distance']:.1f}")
+                     f"distance from bg-0 {value['bg0Distance']:.1f}; "
+                     f"sRGB intensity / wallpaper {value['srgbIntensityRatio']}, "
+                     f"linear luminance / wallpaper {value['luminanceRatio']} "
+                     f"(historical Merlot-Day sRGB reference {OVERVIEW_EFFECTIVE_SRGB_DIM_REFERENCE})")
         # Allow rounding and screenshot encoding noise, but never a flat bg-0 fill.
         if value["bg0Distance"] <= 5:
             bad.append(f"{variant}: {scene['name']}: backdrop is the flat bg-0 fallback")

@@ -79,6 +79,28 @@ if [ -n "$SRC" ] && command -v glib-compile-schemas >/dev/null; then
     HAVE_BLUR=1
 fi
 blurget() { GSETTINGS_SCHEMA_DIR=$EXT gsettings get "$@"; }
+# Minimal deterministic Just Perfection schema: custom and default geometry must
+# both survive installation, variant switching and uninstall in the private keyfile.
+JP=org.gnome.shell.extensions.just-perfection
+JPDIR=$XDG_DATA_HOME/gnome-shell/extensions/just-perfection@test/schemas
+mkdir -p "$JPDIR"
+cat > "$JPDIR/$JP.gschema.xml" <<'XML'
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) Hamza Gouda -->
+<schemalist>
+  <schema id="org.gnome.shell.extensions.just-perfection" path="/org/gnome/shell/extensions/just-perfection/">
+    <key name="panel-size" type="i"><default>0</default></key>
+    <key name="panel-icon-size" type="i"><default>0</default></key>
+    <key name="panel-button-padding-size" type="i"><default>0</default></key>
+    <key name="animation" type="i"><default>0</default></key>
+    <key name="workspace-peek" type="b"><default>true</default></key>
+  </schema>
+</schemalist>
+XML
+glib-compile-schemas --strict "$JPDIR"
+jpget() { GSETTINGS_SCHEMA_DIR=$JPDIR gsettings get "$JP" "$1"; }
+GSETTINGS_SCHEMA_DIR=$JPDIR gsettings set $JP panel-icon-size 18
+GSETTINGS_SCHEMA_DIR=$JPDIR gsettings reset $JP panel-button-padding-size
 KF=$XDG_CONFIG_HOME/glib-2.0/settings/keyfile
 before=$(cat "$KF")
 
@@ -92,6 +114,10 @@ PB=$XDG_STATE_HOME/bordeaux-gnome/backup/preset.txt
 "$ROOT/install.sh" --icons --cursor >/dev/null 2>&1
 [ "$(gsettings get org.gnome.desktop.interface font-name)" = "'Geist 11'" ] || fail "font not set"
 [ "$(gsettings get $DOCK dock-position)" = "'LEFT'" ] || fail "dock position not set"
+[ "$(jpget panel-icon-size)" = 22 ] || fail "panel icon size not set from token"
+[ "$(jpget panel-button-padding-size)" = 8 ] || fail "panel button padding not set from token"
+grep -q "$JP panel-icon-size U 18" "$PB" || fail "old panel icon size not backed up"
+grep -q "$JP panel-button-padding-size D" "$PB" || fail "panel padding default not backed up"
 [ "$(gsettings get $DOCK extend-height)" = "false" ] || fail "dock extend-height not set"
 [ "$(gsettings get $DOCK dock-fixed)" = "false" ] || fail "dock-fixed not cleared (intellihide)"
 [ "$(gsettings get $DOCK require-pressure-to-show)" = "true" ] || fail "pressure barrier not enabled"
@@ -140,14 +166,17 @@ cmp -s "$KF" "$T/kf.1" || fail "re-install changed settings"
 "$ROOT/uninstall.sh" >/dev/null 2>&1
 [ "$(gsettings get org.gnome.desktop.interface font-name)" = "'My Font 10'" ] || fail "font not restored"
 [ "$(gsettings get $DOCK dock-position)" = "'BOTTOM'" ] || fail "dock position not restored"
+[ "$(jpget panel-icon-size)" = 18 ] || fail "custom panel icon size not restored"
+[ "$(jpget panel-button-padding-size)" = 0 ] || fail "panel padding not reset"
 [ "$(gsettings get org.gnome.Terminal.ProfilesList list)" = "$OLD_LIST" ] || fail "profile list not restored"
 [ "$(gsettings get org.gnome.Terminal.ProfilesList default)" = "'aaaaaaaa-0000-4000-8000-000000000000'" ] || fail "terminal default not restored"
-python3 - <<'PY' || fail "default-valued keys were left set"
+GSETTINGS_SCHEMA_DIR=$JPDIR python3 - <<'PY' || fail "default-valued keys were left set"
 from gi.repository import Gio
 d = Gio.Settings.new("org.gnome.shell.extensions.dash-to-dock")
 assert d.get_user_value("extend-height") is None
 assert d.get_user_value("intellihide") is None
 assert d.get_user_value("transparency-mode") is None
+assert Gio.Settings.new("org.gnome.shell.extensions.just-perfection").get_user_value("panel-button-padding-size") is None
 p = Gio.Settings.new_with_path("org.gnome.Terminal.Legacy.Profile", "/org/gnome/terminal/legacy/profiles:/:9b0d3a10-0b0e-4d11-9a01-000000000001/")
 assert p.get_user_value("visible-name") is None
 assert Gio.Settings.new("org.gnome.desktop.interface").get_user_value("icon-theme") is None

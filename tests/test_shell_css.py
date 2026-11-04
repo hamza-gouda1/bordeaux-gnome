@@ -89,6 +89,10 @@ def top_bar_and_folder_checks(name, css):
             bad.append(f"{sel} in {name}: border-radius {d.get('border-radius')!r} must be one value of 24px or more")
         if alpha(d.get("background-color")) >= max_alpha:
             bad.append(f"{name}: {sel} fill {d.get('background-color')} is not translucent glass (alpha < {max_alpha})")
+    if name == "Merlot-Day":
+        shadow = decls_for(css, ".overview-icon StLabel").get("text-shadow", "none")
+        if shadow != "0 1px 4px rgba(0, 0, 0, 0.8)":
+            bad.append(f"{name}: overview labels need the stronger wallpaper text shadow")
     return bad
 
 
@@ -136,7 +140,9 @@ def preset_checks():
         if f"just-perfection panel-size {size}\n" not in pre or size < 56:
             bad.append(f"{variant}: preset panel-size is not the {size}px panel (needs >= 56 for 40px capsules)")
         for need in ("appindicator icon-size 22", "blur-my-shell.appfolder style-dialogs 0",
-                     "blur-my-shell.overview style-components 0"):
+                     "blur-my-shell.overview style-components 0",
+                     f"just-perfection panel-icon-size {toks['icon-panel'].removesuffix('px')}",
+                     f"just-perfection panel-button-padding-size {toks['sp-2'].removesuffix('px')}"):
             if need not in pre:
                 bad.append(f"{variant}: preset lacks: {need}")
     return bad
@@ -144,7 +150,8 @@ def preset_checks():
 
 def backdrop_checks():
     sys.path.insert(0, str(ROOT / "tools"))
-    from shell_qa import backdrop_sample
+    from shell_qa import backdrop_sample, compare_backdrops
+    from check_contrast import pair_scope
 
     bg0 = (14, 11, 12)
     box = (94, 45, 98, 75)
@@ -153,6 +160,17 @@ def backdrop_checks():
     measured = backdrop_sample([(60, 40, 30), (80, 60, 50)] * 60, bg0, box)
     assert measured["meanRgb"] == [70, 50, 40], "mean uses every RGB sample"
     assert measured["bg0Distance"] > 5, "wallpaper must differ from bg-0"
+    wallpaper = backdrop_sample([(200, 200, 200)] * 120, bg0, box)
+    dimmed = backdrop_sample([(120, 120, 120)] * 120, bg0, box)
+    ratios = compare_backdrops(dimmed, wallpaper)
+    assert abs(ratios["srgbIntensityRatio"] - 0.6) < 1e-9, "sRGB dim uses wallpaper intensity"
+    assert 0.32 < ratios["luminanceRatio"] < 0.33, "linear luminance is distinct from sRGB dim"
+    black = backdrop_sample([(0, 0, 0)], bg0, box)
+    assert compare_backdrops(dimmed, black)["luminanceRatio"] is None, "black reference has no finite ratio"
+    assert compare_backdrops(dimmed, black)["srgbIntensityRatio"] is None
+    assert pair_scope({"bg": "overview-dim"}), "direct wallpaper pairs disclose scope"
+    assert pair_scope({"bg": "folder-fill", "over": "overview-dim"}), "composited pairs disclose scope"
+    assert not pair_scope({"bg": "bg-0"}), "controlled surfaces have no wallpaper qualification"
 
 
 def main():
@@ -179,6 +197,10 @@ def main():
         if not overview:
             bad.append(f"{name}: no #overviewGroup rule")
         bad += layout_checks(name, sheet.read_text())
+    for sheet in sorted((ROOT / "themes").glob("*/gtk-*.0/gtk.css")):
+        for selectors, body in rules(sheet.read_text()):
+            if "*" in selectors and re.search(r"(?:^|;)\s*font-family\s*:", body):
+                bad.append(f"{sheet.relative_to(ROOT)}: universal font-family overrides application fonts")
     bad += preset_checks()
     pre = (ROOT / "presets" / "Bordeaux.preset").read_text()
     for need in ("blur-my-shell.overview blur true", "blur-my-shell.overview pipeline 'pipeline_bordeaux_overview'",

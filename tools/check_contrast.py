@@ -38,6 +38,11 @@ def pair_ratio(palette, pair):
     return tl.ratio(fg, bg)
 
 
+def pair_scope(pair):
+    """Overview references are calibrated to shipped wallpapers, not arbitrary images."""
+    return " [shipped wallpaper reference]" if "overview-dim" in (pair["bg"], pair.get("over")) else ""
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--pair", nargs=2, metavar=("FG", "BG"), help="check one hex pair")
@@ -63,8 +68,9 @@ def main():
             checked += 1
             failed += not ok
             flag = "" if ok else f"  FAIL (needs {pair['min']})"
-            print(f"  {pair['fg']:<12} on {pair['bg']:<13} {r:6.2f}:1  {grade(r)}{flag}")
+            print(f"  {pair['fg']:<12} on {pair['bg']:<13} {r:6.2f}:1  {grade(r)}{pair_scope(pair)}{flag}")
     print(f"\n{checked - failed}/{checked} pairs pass.")
+    print("Overview pairs use shipped-wallpaper references; custom wallpapers require rendered review.")
     sys.exit(1 if failed else 0)
 
 

@@ -5,9 +5,7 @@
 @define-color theme_selected_bg_color #7A1C34;
 @define-color theme_selected_fg_color #FFF7F2;
 
-* {
-    font-family: "Geist", sans-serif;
-}
+/* The interface font comes from the preset; application font choices remain usable. */
 
 headerbar {
     min-height: 46px;

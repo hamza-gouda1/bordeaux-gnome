@@ -657,7 +657,7 @@ stage {
     font-size: 13px;
     font-weight: 600;
     color: #FFFFFF;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
     text-align: center;
     min-width: 110px;
     max-width: 175px;

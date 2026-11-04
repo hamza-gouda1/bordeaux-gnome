@@ -1,7 +1,8 @@
 # Copyright (C) Hamza Gouda
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Single source of truth for the Bordeaux design tokens ("Hallmark" direction,
-# see docs/design-spec.md). tools/build.py renders templates/*.tmpl with these
+# Single source of truth for the current Bordeaux design tokens.
+# docs/design-spec.md preserves the historical Hallmark proposal only.
+# tools/build.py renders templates/*.tmpl with these
 # values into themes/<Variant>/. Do not hand-edit the generated CSS.
 #
 # Template syntax:  ${token}        the value as written
@@ -121,9 +122,9 @@ press = "rgba(238, 231, 228, 0.09)"
 glass = "rgba(22, 17, 18, 0.74)"          # islands
 glass-strong = "rgba(22, 17, 18, 0.96)"   # slabs: near-opaque, popups have no blur
 sheen = "rgba(238, 231, 228, 0.035)"
-# overview: app names and grid results sit on the wallpaper, which the overview
-# dims to about 0.6 (measured with tools/shell_qa.py); overview-dim is the
-# lightest backdrop seen there
+# Overview labels sit on the wallpaper. overview-dim is a contrast-check reference
+# for the shipped wallpaper, not an enforced runtime colour. Historical intensity
+# calibration: tools/build.py OVERVIEW_EFFECTIVE_SRGB_DIM_REFERENCE; QA measures it.
 overview-fg = "#EEE7E4"
 overview-dim = "#4F1826"
 overview-text-shadow = "none"
@@ -200,9 +201,9 @@ press = "rgba(236, 230, 228, 0.09)"
 glass = "rgba(14, 12, 12, 0.74)"
 glass-strong = "rgba(14, 12, 12, 0.96)"
 sheen = "rgba(236, 230, 228, 0.03)"
-# overview: app names and grid results sit on the wallpaper, which the overview
-# dims to about 0.6 (measured with tools/shell_qa.py); overview-dim is the
-# lightest backdrop seen there
+# Overview labels sit on the wallpaper. overview-dim is a contrast-check reference
+# for the shipped wallpaper, not an enforced runtime colour. Historical intensity
+# calibration: tools/build.py OVERVIEW_EFFECTIVE_SRGB_DIM_REFERENCE; QA measures it.
 overview-fg = "#ECE6E4"
 overview-dim = "#3D141A"
 overview-text-shadow = "none"
@@ -278,12 +279,12 @@ press = "rgba(43, 26, 30, 0.08)"
 glass = "rgba(250, 247, 242, 0.72)"
 glass-strong = "rgba(250, 247, 242, 0.96)"
 sheen = "rgba(255, 255, 255, 0.55)"
-# overview: app names and grid results sit on the wallpaper, which the overview
-# dims to about 0.6 (measured with tools/shell_qa.py); overview-dim is the
-# lightest backdrop seen there
+# Overview labels sit on the wallpaper. overview-dim is a contrast-check reference
+# for the shipped wallpaper, not an enforced runtime colour. Historical intensity
+# calibration: tools/build.py OVERVIEW_EFFECTIVE_SRGB_DIM_REFERENCE; QA measures it.
 overview-fg = "#FFFFFF"
 overview-dim = "#8C8880"
-overview-text-shadow = "0 1px 3px rgba(0, 0, 0, 0.45)"
+overview-text-shadow = "0 1px 4px rgba(0, 0, 0, 0.8)"
 # app-grid folders and the search pill: translucent glass, the wallpaper shows through
 folder-fill = "rgba(252, 249, 244, 0.48)"
 folder-fill-hover = "rgba(252, 249, 244, 0.60)"
