@@ -21,6 +21,7 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import {FocusKeys} from './focus.js';
 import {ShowDesktop} from './desktop.js';
+import {DesktopBinding} from './desktopBinding.js';
 
 const SWITCHABLE = new Set([Meta.WindowType.NORMAL, Meta.WindowType.DIALOG, Meta.WindowType.MODAL_DIALOG]);
 
@@ -84,12 +85,20 @@ export default class FocusKeysExtension extends Extension {
             cancel: w => w.get_compositor_private().remove_transition('opacity'),
             activate: w => Main.activateWindow(w, global.get_current_time()),
         });
-        Main.wm.addKeybinding('show-desktop-shortcut', this._settings,
-            Meta.KeyBindingFlags.NONE, Shell.ActionMode.NORMAL, () => this._desktop.toggle());
+        this._desktopBinding = new DesktopBinding({
+            settings: this._settings,
+            add: () => Main.wm.addKeybinding('show-desktop-shortcut', this._settings,
+                Meta.KeyBindingFlags.NONE, Shell.ActionMode.NORMAL, () => this._desktop.toggle()),
+            remove: () => Main.wm.removeKeybinding('show-desktop-shortcut'),
+            none: Meta.KeyBindingAction.NONE,
+            log: msg => console.warn(`[focus-keys] ${msg}`),
+        });
+        this._desktopBinding.enable();
     }
 
     disable() {
-        Main.wm.removeKeybinding('show-desktop-shortcut');
+        this._desktopBinding?.destroy();
+        this._desktopBinding = null;
         this._desktop?.destroy();
         this._desktop = null;
         this._core?.destroy();

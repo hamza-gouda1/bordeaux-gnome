@@ -6,6 +6,7 @@
 import System from 'system';
 import * as B from '../extensions/focus-keys@hamza-gouda/bindings.js';
 import {FocusKeys} from '../extensions/focus-keys@hamza-gouda/focus.js';
+import {DesktopBinding, desktopBindingSubtitle} from '../extensions/focus-keys@hamza-gouda/desktopBinding.js';
 
 let failed = 0, passed = 0;
 function ok(cond, msg) {
@@ -92,11 +93,16 @@ class Signals {
 class FakeSettings extends Signals {
     constructor(bindings) {
         super();
-        this.v = {bindings, 'cycle-windows': true};
+        this.v = {bindings, 'cycle-windows': true, 'show-desktop-shortcut': [],
+            'show-desktop-grab-status': []};
     }
 
     get_strv(k) {
         return [...this.v[k]];
+    }
+
+    set_strv(k, v) {
+        this.set(k, v);
     }
 
     get_boolean(k) {
@@ -235,6 +241,52 @@ core.enable();
 eq(core.grabbed.map(e => e.accel), ['F11'], 're-enable grabs again');
 core.destroy();
 eq([display.grabs.size, display.size, settings.size], [0, 0, 0], 'destroy cleans up');
+
+// --- Show desktop grab failure and cross-process preferences status
+const desktopSettings = new FakeSettings([]);
+const desktopLogs = [];
+let desktopGrabs = 0, desktopRemoves = 0, desktopResult = 0;
+const desktopBinding = new DesktopBinding({
+    settings: desktopSettings,
+    add: () => { desktopGrabs++; return desktopResult; },
+    remove: () => desktopRemoves++, none: 0,
+    log: message => desktopLogs.push(message),
+});
+const desktopSubtitle = () => desktopBindingSubtitle(
+    desktopSettings.get_strv('show-desktop-shortcut'),
+    desktopSettings.get_strv('show-desktop-grab-status'));
+desktopBinding.enable();
+eq(desktopGrabs, 0, 'unset desktop shortcut makes no grab');
+ok(desktopSubtitle().includes('Off until'), 'unset desktop shortcut is described as off');
+desktopSettings.set('show-desktop-shortcut', ['<Super>x']);
+eq(desktopSettings.get_strv('show-desktop-grab-status'), ['failed', '<Super>x'],
+    'NONE grab is reported with the exact tested accelerator');
+ok(desktopLogs[0].includes('already taken'), 'NONE grab emits an actionable warning');
+ok(desktopSubtitle().includes('Shortcut unavailable'), 'preferences displays a failed grab');
+desktopSettings.set('show-desktop-shortcut', ['<Super>x']);
+eq(desktopLogs.length, 1, 'same desktop grab failure warns once');
+desktopResult = 123;
+desktopSettings.set('show-desktop-shortcut', ['<Super>y']);
+ok(desktopSubtitle().includes('Shortcut is active'), 'successful rebind clears failure warning');
+eq(desktopRemoves, 2, 'failed named bindings are cleaned up before retry');
+desktopSettings.set('show-desktop-shortcut', ['<Super>z']);
+eq(desktopRemoves, 3, 'successful grab is released before rebind');
+ok(!desktopBindingSubtitle(['<Super>new'], ['failed', '<Super>old']).includes('unavailable'),
+    'preferences ignores stale status for a different shortcut');
+desktopBinding.destroy();
+eq([desktopSettings.size, desktopRemoves], [0, 4], 'desktop disable releases grab and listener');
+ok(desktopSubtitle().includes('disabled'), 'preferences shows the disabled extension state');
+const previousGrabs = desktopGrabs;
+desktopSettings.set('show-desktop-shortcut', ['<Super>new']);
+eq(desktopGrabs, previousGrabs, 'desktop binding no longer reacts after disable');
+
+const warningCache = new DesktopBinding({settings: desktopSettings,
+    add: () => 0, remove: () => {}, none: 0, log: () => {}});
+warningCache.enable();
+for (let i = 0; i < 1000; i++)
+    desktopSettings.set('show-desktop-shortcut', [`<Super>F${i}`]);
+ok(warningCache._warned.size <= 64, 'desktop grab diagnostics stay bounded after repeated edits');
+warningCache.destroy();
 
 print(`${passed} passed, ${failed} failed`);
 System.exit(failed ? 1 : 0);

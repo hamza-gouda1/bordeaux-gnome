@@ -11,6 +11,7 @@ import Gtk from 'gi://Gtk';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 import {normAccel, parseEntry, removeEntry, setEntry} from './bindings.js';
+import {desktopBindingSubtitle} from './desktopBinding.js';
 
 /** Parses typed text such as "<Control>F9" or "XF86Launch1"; null when GTK cannot. */
 function validAccel(text) {
@@ -162,6 +163,9 @@ export default class FocusKeysPreferences extends ExtensionPreferences {
         const desktopUpdate = () => {
             desktopLabel.accelerator = settings.get_strv('show-desktop-shortcut')[0] ?? '';
             desktopClear.sensitive = !!desktopLabel.accelerator;
+            desktop.subtitle = GLib.markup_escape_text(desktopBindingSubtitle(
+                settings.get_strv('show-desktop-shortcut'),
+                settings.get_strv('show-desktop-grab-status')), -1);
         };
         desktopUpdate();
         desktop.add_suffix(desktopButton);
@@ -220,7 +224,8 @@ export default class FocusKeysPreferences extends ExtensionPreferences {
         };
         rebuild();
         const ids = [settings.connect('changed::bindings', rebuild),
-            settings.connect('changed::show-desktop-shortcut', desktopUpdate)];
+            settings.connect('changed::show-desktop-shortcut', desktopUpdate),
+            settings.connect('changed::show-desktop-grab-status', desktopUpdate)];
         add.connect('clicked', () => chooseApp(window, appId => edit(null, appId)));
 
         window.connect('close-request', () => {

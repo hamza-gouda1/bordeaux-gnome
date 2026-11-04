@@ -15,6 +15,11 @@
       <summary>Show desktop and restore windows</summary>
       <description>Off by default. Fades and minimizes visible windows on this workspace; press again to restore them. Native three-finger gestures stay with GNOME.</description>
     </key>
+    <key name="show-desktop-grab-status" type="as">
+      <default>[]</default>
+      <summary>Last Show desktop grab result reported by GNOME Shell</summary>
+      <description>Internal status written by Focus Keys, followed by the shortcuts checked. Preferences only display this result; it is not a user preference.</description>
+    </key>
     <key name="cycle-windows" type="b">
       <default>true</default>
       <summary>Cycle through the app's windows</summary>
