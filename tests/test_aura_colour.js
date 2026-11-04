@@ -4,6 +4,7 @@
 
 import System from 'system';
 import * as C from '../extensions/bordeaux-aura@hamza-gouda/colour.js';
+import {hasOverviewWallpaper} from '../extensions/bordeaux-aura@hamza-gouda/overview.js';
 
 let failed = 0, passed = 0;
 function ok(cond, msg) {
@@ -34,6 +35,14 @@ const disc = (inside, outside = [0, 0, 0, 0]) => (x, y) =>
     Math.hypot(x - 31.5, y - 31.5) < 24 ? inside : outside;
 const lch = rgb => C.oklabToOklch(C.rgbToOklab(rgb));
 const ACCENT = C.parseHex('#8E2A44');
+
+// The wallpaper actor may be nested, and absent when Blur my Shell is disabled.
+const actor = (name, children = []) => ({get_name: () => name, get_children: () => children});
+ok(hasOverviewWallpaper(actor('overview', [actor('wrapper', [actor('bms-overview-backgroundgroup')])])),
+    'overview discovers a nested Blur my Shell wallpaper actor');
+ok(!hasOverviewWallpaper(actor('overview', [actor('unrelated-background')])),
+    'overview rejects unrelated backgrounds');
+ok(!hasOverviewWallpaper(null), 'overview handles a missing actor tree');
 
 // --- parsing / conversions
 ok(C.parseHex('#8E2A44').r === 142 && C.parseHex('#8e2a44').b === 68, 'parseHex 6');

@@ -27,7 +27,7 @@ Isolation, by design:
     afterwards so nothing is left running.
 
 Needs: gnome-shell 46, ubuntu-dock, user-theme, blur-my-shell and just-perfection
-installed (system or user), gjs, dbus-daemon; Pillow for --publish.
+installed (system or user), gjs, dbus-daemon and Pillow for backdrop measurements.
 Optional: pipewire + pipewire-pulse + pactl (volume slider; --no-audio skips).
 """
 
@@ -526,6 +526,50 @@ def check_keys_and_osd(variant, m):
     return bad
 
 
+def backdrop_sample(pixels, bg0, box):
+    """Summarise RGB samples without requiring an image library."""
+    pixels = list(pixels)
+    mean = [sum(pixel[c] for pixel in pixels) / len(pixels) for c in range(3)]
+    distance = sum((channel - reference) ** 2 for channel, reference in zip(mean, bg0)) ** 0.5
+    return {"sampleBox": list(box), "meanRgb": mean, "bg0Distance": distance}
+
+
+def measure_backdrop(image, bg0):
+    """Sample the empty right margin, outside the dock, search and app tiles.
+
+    The same normalized patch is used in the desktop/overview/app-grid screenshots,
+    so changing the virtual monitor size does not change the region's meaning.
+    """
+    w, h = image.size
+    box = (int(w * 0.94), int(h * 0.45), int(w * 0.98), int(h * 0.75))
+    return backdrop_sample(image.convert("RGB").crop(box).getdata(), bg0, box)
+
+
+def check_overview_backdrops(variant, out, metrics):
+    """Keep the rendered wallpaper from regressing to the opaque theme fallback."""
+    from PIL import Image
+    import tokenlib as tl
+
+    bad, notes = [], []
+    bg0 = tl.parse_color(tl.variant_tokens(tl.load(), variant)["bg-0"])[:3]
+    for scene in metrics.get("scenes", []):
+        if scene["name"] not in ("overview", "app-grid"):
+            continue
+        path = out / f"{scene['name']}.png"
+        if not path.is_file():
+            bad.append(f"{variant}: {scene['name']}: no screenshot for backdrop measurement")
+            continue
+        with Image.open(path) as image:
+            value = measure_backdrop(image, bg0)
+        scene["backdrop"] = value
+        notes.append(f"{variant}: {scene['name']} backdrop mean RGB {value['meanRgb']}, "
+                     f"distance from bg-0 {value['bg0Distance']:.1f}")
+        # Allow rounding and screenshot encoding noise, but never a flat bg-0 fill.
+        if value["bg0Distance"] <= 5:
+            bad.append(f"{variant}: {scene['name']}: backdrop is the flat bg-0 fallback")
+    return bad, notes
+
+
 def check(variant, out):
     """Returns a list of failures from metrics.json and shell.log."""
     bad, notes = [], []
@@ -560,6 +604,10 @@ def check(variant, out):
                 continue
             bad.append(f"{variant}: {s['name']}: label cut off: {c['text']!r} ({c['cls']})")
     bad += check_keys_and_osd(variant, m)
+    backdrop_bad, backdrop_notes = check_overview_backdrops(variant, out, m)
+    bad += backdrop_bad
+    notes += backdrop_notes
+    mfile.write_text(json.dumps(m, indent=1) + "\n")
     a = m.get("auraCpu")
     if a:
         notes.append(f"{variant}: CPU ticks (1/100 s) over 4 s: idle aura on {a['idleOn']}, "

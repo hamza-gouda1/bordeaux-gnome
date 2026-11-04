@@ -41,7 +41,11 @@
    "schema": "org.gnome.shell.extensions.blur-my-shell.lockscreen",
    "key": "pipeline",
    "value": "'pipeline_default'",
-   "merge": false
+   "merge": false,
+   "ifOneOf": [
+    "'pipeline_bordeaux_slab'",
+    "'pipeline_default'"
+   ]
   },
   {
    "schema": "org.gnome.shell.extensions.bordeaux-aura",

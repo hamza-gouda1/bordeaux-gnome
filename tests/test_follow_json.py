@@ -42,6 +42,11 @@ for v in presets:
         want = presets[v][(e["schema"], e["key"])]
         if e["value"] != want.removeprefix("merge:") or e["merge"] != want.startswith("merge:"):
             bad.append(f"{v}: {e['schema']} {e['key']} does not match the preset")
+    lockscreen = next((e for e in doc["keys"]
+                       if e["schema"] == "org.gnome.shell.extensions.blur-my-shell.lockscreen"
+                       and e["key"] == "pipeline"), None)
+    if lockscreen is None or lockscreen.get("ifOneOf") != ["'pipeline_bordeaux_slab'", "'pipeline_default'"]:
+        bad.append(f"{v}: lockscreen pipeline must preserve a custom user choice")
     if doc["scheme"] == "dark" and doc["gtkTheme"] != "Yaru-dark" or doc["scheme"] == "light" and doc["gtkTheme"] != "Yaru":
         bad.append(f"{v}: GTK theme {doc['gtkTheme']} for a {doc['scheme']} variant")
     if doc["terminalProfile"] != build.TERMINAL_UUIDS[v]:

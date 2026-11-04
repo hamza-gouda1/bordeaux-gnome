@@ -18,6 +18,7 @@ import {ExtensionState} from 'resource:///org/gnome/shell/misc/extensionUtils.js
 
 import * as Colour from './colour.js';
 import {ThemeFollower} from './follow.js';
+import {hasOverviewWallpaper} from './overview.js';
 import {SettingsWriter, applyVariant, loadDocs} from './followApply.js';
 
 // Both export `dockManager` from extension.js. Ubuntu Dock steps aside when
@@ -178,6 +179,8 @@ export default class BordeauxAuraExtension extends Extension {
             (_m, ext) => {
                 if (DOCK_UUIDS.includes(ext?.uuid))
                     this._sync();
+                if (ext?.uuid === 'blur-my-shell@aunetx')
+                    this._scheduleBackdropCheck();
             });
         this._sync();
 
@@ -206,9 +209,40 @@ export default class BordeauxAuraExtension extends Extension {
             log: m => console.warn(`[bordeaux-aura] ${m}`),
         });
         this._follower.enable();
+        this._backdropWarned = false;
+        if (Main.layoutManager._startingUp) {
+            this._startupId = Main.layoutManager.connect('startup-complete', () => {
+                safeDisconnect(Main.layoutManager, this._startupId);
+                this._startupId = 0;
+                this._scheduleBackdropCheck();
+            });
+        } else {
+            this._scheduleBackdropCheck();
+        }
+    }
+
+    _scheduleBackdropCheck() {
+        if (this._backdropCheckId)
+            GLib.source_remove(this._backdropCheckId);
+        // Extension enable order is not guaranteed; let Blur my Shell finish first.
+        this._backdropCheckId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
+            this._backdropCheckId = 0;
+            if (!this._backdropWarned && !hasOverviewWallpaper(Main.layoutManager.overviewGroup)) {
+                this._backdropWarned = true;
+                Main.notify('Bordeaux GNOME',
+                    'The overview wallpaper is unavailable. Check that Blur my Shell is enabled and its Overview background is on.');
+            }
+            return GLib.SOURCE_REMOVE;
+        });
+        GLib.Source.set_name_by_id(this._backdropCheckId, '[bordeaux-aura] overview backdrop');
     }
 
     disable() {
+        if (this._backdropCheckId)
+            GLib.source_remove(this._backdropCheckId);
+        this._backdropCheckId = 0;
+        safeDisconnect(Main.layoutManager, this._startupId);
+        this._startupId = 0;
         this._follower?.disable();
         this._follower = null;
         this._writer?.destroy();

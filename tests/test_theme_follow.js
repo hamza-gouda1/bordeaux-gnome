@@ -59,6 +59,35 @@ eq(op('org.gnome.desktop.background', 'picture-uri-dark').ifOneOf,
 ok(!F.buildOps(byName('Merlot-Day'), docs, {bgDir: '/bg'}).some(o => o.key.startsWith('picture-uri')),
     'light variant never touches wallpapers');
 
+// The generated lockscreen op must preserve a custom pipeline across every variant.
+const pipelineChoices = ["'pipeline_bordeaux_slab'", "'pipeline_default'"];
+for (const d of docs) {
+    const lockscreen = F.buildOps(d, docs).find(o =>
+        o.schema === 'org.gnome.shell.extensions.blur-my-shell.lockscreen' && o.key === 'pipeline');
+    eq(lockscreen.ifOneOf, pipelineChoices, `${d.variant}: lockscreen only replaces our pipelines`);
+    let pipeline = GLib.Variant.new_string('my_custom_pipeline');
+    let writes = 0;
+    const settings = {
+        settings_schema: {
+            has_key: key => key === 'pipeline',
+            get_key: () => ({get_value_type: () => GLib.VariantType.new('s')}),
+        },
+        get_value: () => pipeline,
+        set_value: (_key, value) => {
+            pipeline = value;
+            writes++;
+        },
+    };
+    const writer = new A.SettingsWriter({extDirs: []});
+    writer.settings = () => settings;
+    eq(writer.apply(lockscreen), 'skip', `${d.variant}: custom lockscreen pipeline skipped`);
+    eq([pipeline.unpack(), writes], ['my_custom_pipeline', 0], `${d.variant}: custom pipeline untouched`);
+    pipeline = GLib.Variant.new_string(d.scheme === 'dark' ? 'pipeline_default' : 'pipeline_bordeaux_slab');
+    eq(writer.apply(lockscreen), 'set', `${d.variant}: our other pipeline follows the variant`);
+    eq(pipeline.print(false), lockscreen.value, `${d.variant}: expected lockscreen pipeline written`);
+    writer.destroy();
+}
+
 // --- GTK user stylesheets
 const files = {
     '/t/Bordeaux/gtk-4.0/gtk.css': 'B4', '/t/Merlot-Day/gtk-4.0/gtk.css': 'M4', '/t/Oxblood-Noir/gtk-4.0/gtk.css': 'O4',

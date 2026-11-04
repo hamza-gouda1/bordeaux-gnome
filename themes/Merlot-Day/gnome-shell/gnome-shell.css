@@ -1938,7 +1938,7 @@ StEntry:focus {
 
 /* The overview backdrop: stock is a flat #222222 (Yaru) that shows wherever the
    wallpaper is not. The preset has blur-my-shell draw the dimmed wallpaper over it;
-   this is the fallback colour when that component is off. */
+   the translucent fallback keeps the desktop visible when that component is off. */
 #overviewGroup {
-    background-color: #E8DFD3;
+    background-color: rgba(232, 223, 211, 0.55);
 }

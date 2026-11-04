@@ -226,8 +226,8 @@ def render_follow_json(presets, schemes):
 
     Only the preset keys whose value differs between the variants go in (the
     rest is the same everywhere and stays as install.sh set it). Opt-in keys
-    (icons, cursor) carry `ifOneOf`: switched only while the current value is
-    one of ours, so a theme the user picked is left alone.
+    (icons, cursor) and the lockscreen pipeline carry `ifOneOf`: switched only
+    while the current value is one of ours, so a choice the user made is left alone.
     """
     import json
 
@@ -251,7 +251,7 @@ def render_follow_json(presets, schemes):
             group, value = rows[k]
             e = {"schema": k[0], "key": k[1], "value": value.removeprefix("merge:"),
                  "merge": value.startswith("merge:")}
-            if group != "core":
+            if group != "core" or k == ("org.gnome.shell.extensions.blur-my-shell.lockscreen", "pipeline"):
                 e["ifOneOf"] = sorted(values)
             entries.append(e)
         doc = {

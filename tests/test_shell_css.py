@@ -142,7 +142,21 @@ def preset_checks():
     return bad
 
 
+def backdrop_checks():
+    sys.path.insert(0, str(ROOT / "tools"))
+    from shell_qa import backdrop_sample
+
+    bg0 = (14, 11, 12)
+    box = (94, 45, 98, 75)
+    measured = backdrop_sample([bg0] * 120, bg0, box)
+    assert measured["bg0Distance"] == 0, "opaque fallback must be detected"
+    measured = backdrop_sample([(60, 40, 30), (80, 60, 50)] * 60, bg0, box)
+    assert measured["meanRgb"] == [70, 50, 40], "mean uses every RGB sample"
+    assert measured["bg0Distance"] > 5, "wallpaper must differ from bg-0"
+
+
 def main():
+    backdrop_checks()
     bad = []
     for sheet in sorted((ROOT / "themes").glob("*/gnome-shell/gnome-shell.css")):
         name = sheet.parent.parent.name
@@ -160,8 +174,8 @@ def main():
                         bad.append(f"{name}: wrapper {s} paints a fill or shadow")
                 if s == "#overviewGroup":
                     overview = True
-                    if decls.get("background-color", "").lower() == "#222222":
-                        bad.append(f"{name}: #overviewGroup is the flat stock #222222")
+                    if not 0 < alpha(decls.get("background-color")) <= 0.55:
+                        bad.append(f"{name}: #overviewGroup needs a translucent fallback (alpha <= 0.55)")
         if not overview:
             bad.append(f"{name}: no #overviewGroup rule")
         bad += layout_checks(name, sheet.read_text())
