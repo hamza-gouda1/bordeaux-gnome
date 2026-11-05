@@ -18,6 +18,7 @@ import Shell from 'gi://Shell';
 import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import {WindowPreview} from 'resource:///org/gnome/shell/ui/windowPreview.js';
 import * as AltTab from 'resource:///org/gnome/shell/ui/altTab.js';
 import * as WorkspaceSwitcherPopup from 'resource:///org/gnome/shell/ui/workspaceSwitcherPopup.js';
 
@@ -551,6 +552,7 @@ export default class QaHarness {
             }
             this.metrics.tufDesktopToggle = gesture;
         });
+        await this.scene('gesture-drag', () => this.gestureDrag());
         await this.scene('color-scheme', () => this.colorScheme());
 
         await this.scene('lock', async () => {
@@ -647,6 +649,155 @@ export default class QaHarness {
             'org.freedesktop.DBus.Properties', 'Set',
             new GLib.Variant('(ssv)', ['xyz.ljones.Platform', 'PlatformProfile', new GLib.Variant('u', id)]),
             null, Gio.DBusCallFlags.NONE, 3000, null, () => resolve()));
+    }
+
+    async gestureDrag() {
+        const ext = Main.extensionManager.lookup(TUF_UUID)?.stateObj;
+        const watcher = ext?._gestures;
+        const input = ext?._gestureInput;
+        if (!input || !watcher)
+            throw new Error('interactive TUF gestures unavailable');
+
+        const settings = watcher._settings;
+        const values = {
+            'gesture-enabled': new GLib.Variant('b', true),
+            'gesture-swipe3-down': new GLib.Variant('s', 'show-desktop'),
+            'gesture-swipe3-left': new GLib.Variant('s', 'next-window'),
+            'gesture-swipe3-right': new GLib.Variant('s', 'prev-window'),
+            'gesture-swipe4-up': new GLib.Variant('s', 'volume-up'),
+            'gesture-swipe4-down': new GLib.Variant('s', 'volume-down'),
+            'gesture-hold4': new GLib.Variant('s', 'play-pause'),
+        };
+        const previous = Object.fromEntries(Object.keys(values).map(key => [key, settings.get_value(key)]));
+        const native = [Main.overview._swipeTracker._touchpadGesture,
+            Main.wm._workspaceAnimation._swipeTracker._touchpadGesture];
+        const originalEnabled = native.map(gesture => gesture.enabled);
+        const Phase = Clutter.TouchpadGesturePhase;
+        const emit = (phase, dx = 0, dy = 0, fingers = 3,
+            type = Clutter.EventType.TOUCHPAD_SWIPE,
+            time = Math.floor(GLib.get_monotonic_time() / 1000) >>> 0) => {
+            const event = {
+                type: () => type,
+                get_gesture_phase: () => phase,
+                get_touchpad_gesture_finger_count: () => fingers,
+                get_gesture_motion_delta: () => [dx, dy],
+                get_gesture_motion_delta_unaccelerated: () => [dx, dy],
+                get_coords: () => [960, 600],
+                get_time: () => time,
+            };
+            // Clutter filters run before the native captured-event handlers.
+            if (watcher._event(event) === Clutter.EVENT_STOP)
+                return Clutter.EVENT_STOP;
+            for (const gesture of native) {
+                if (gesture._handleEvent(global.stage, event) === Clutter.EVENT_STOP)
+                    return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        };
+        const windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL,
+            global.workspace_manager.get_active_workspace()).filter(w =>
+            !w.minimized && !w.skip_taskbar && w.can_minimize() && !w.is_on_all_workspaces());
+        const metrics = {windows: windows.length};
+        if (windows.length < 2)
+            throw new Error('need two visible test apps');
+
+        const actors = windows.map(window => window.get_compositor_private());
+        const baseline = actors.map(actor => [actor.translation_x, actor.translation_y, actor.opacity]);
+        const clean = () => actors.every((actor, i) => actor.translation_x === baseline[i][0] &&
+            actor.translation_y === baseline[i][1] && actor.opacity === baseline[i][2]);
+        try {
+            for (const [key, value] of Object.entries(values))
+                settings.set_value(key, value);
+            Main.activateWindow(windows[0], global.get_current_time());
+            await sleep(150);
+            metrics.beginPropagates = emit(Phase.BEGIN) === Clutter.EVENT_PROPAGATE;
+            metrics.downOwned = emit(Phase.UPDATE, 0, 80) === Clutter.EVENT_STOP;
+            metrics.desktopTracks = actors.every((actor, i) => actor.translation_y > baseline[i][1]
+                && actor.opacity < baseline[i][2]) && windows.every(w => !w.minimized);
+            const forward = actors[0].translation_y;
+            emit(Phase.UPDATE, 0, -40);
+            metrics.reverses = actors[0].translation_y < forward;
+            await this.shot('tuf-desktop-tracking');
+            emit(Phase.CANCEL);
+            await sleep(250);
+            metrics.cancelRestores = clean() && windows.every(w => !w.minimized);
+            metrics.nativeReleased = native.every((gesture, i) => gesture.enabled === originalEnabled[i]);
+
+            emit(Phase.BEGIN);
+            emit(Phase.UPDATE, 0, 105);
+            emit(Phase.END);
+            await sleep(250);
+            metrics.hidden = clean() && windows.every(w => w.minimized);
+            emit(Phase.BEGIN);
+            emit(Phase.UPDATE, 0, 80);
+            metrics.returnTracks = actors.some((actor, i) => actor.translation_y < baseline[i][1]);
+            emit(Phase.END);
+            await sleep(250);
+            metrics.returned = clean() && windows.every(w => !w.minimized);
+
+            const focused = global.display.focus_window;
+            emit(Phase.BEGIN);
+            emit(Phase.UPDATE, -120, 0);
+            metrics.appTracks = !clean() && global.display.focus_window === focused;
+            emit(Phase.END);
+            await sleep(250);
+            metrics.appSwitched = clean() && global.display.focus_window !== focused;
+            emit(Phase.BEGIN);
+            emit(Phase.UPDATE, 120, 0);
+            Main.overview.show();
+            await sleep(550);
+            metrics.overviewSettled = clean() && !Main.overview.animationInProgress && Main.overview.visible;
+            const previews = [];
+            const visit = actor => {
+                if (!actor.is_mapped())
+                    return;
+                if (actor instanceof WindowPreview && windows.includes(actor.metaWindow))
+                    previews.push(rect(actor));
+                for (const child of actor.get_children())
+                    visit(child);
+            };
+            visit(Main.layoutManager.overviewGroup);
+            metrics.previews = previews;
+            metrics.overlap = previews.some((a, i) => previews.slice(i + 1).some(b =>
+                Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) > 3 &&
+                Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) > 3));
+            await this.shot('overview-after-gesture');
+            Main.overview.hide();
+            await sleep(450);
+            emit(Phase.BEGIN);
+            emit(Phase.UPDATE, 0, -120);
+            emit(Phase.UPDATE, 0, -160);
+            emit(Phase.END);
+            await sleep(500);
+            metrics.nativeUpSettled = Main.overview.visible && !Main.overview.animationInProgress;
+            // Exercise media dispatch with fake sinks in this private session.
+            const media = [];
+            const actions = watcher._actions;
+            const keys = ['volume-up', 'volume-down', 'play-pause'];
+            const original = keys.map(key => actions[key]);
+            try {
+                for (const key of keys)
+                    actions[key] = () => media.push(key);
+                emit(Phase.BEGIN, 0, 0, 4, Clutter.EventType.TOUCHPAD_HOLD, 100);
+                emit(Phase.BEGIN, 0, 0, 4);
+                emit(Phase.UPDATE, 0, -58, 4);
+                emit(Phase.UPDATE, 0, 28, 4);
+                emit(Phase.END, 0, 0, 4);
+                emit(Phase.END, 0, 0, 4, Clutter.EventType.TOUCHPAD_HOLD, 340);
+                emit(Phase.BEGIN, 0, 0, 4, Clutter.EventType.TOUCHPAD_HOLD, 500);
+                emit(Phase.END, 0, 0, 4, Clutter.EventType.TOUCHPAD_HOLD, 750);
+            } finally {
+                keys.forEach((key, index) => { actions[key] = original[index]; });
+            }
+            metrics.media = media;
+            this.metrics.tufGestureDrag = metrics;
+        } finally {
+            watcher.cancel();
+            input.prepareOverview();
+            Main.overview.hide();
+            for (const [key, value] of Object.entries(previous))
+                settings.set_value(key, value);
+        }
     }
 
     async profileOsd() {

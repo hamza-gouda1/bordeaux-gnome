@@ -53,7 +53,7 @@ VARIANTS = {
     "Merlot-Day": ("prefer-light", "Yaru", "Yaru"),
 }
 SCENES = ["desktop", "dock", "aura-cpu", "quick-settings", "notifications", "osd", "overview",
-          "alt-tab", "workspace-switcher", "run-dialog", "end-session", "profile-osd", "focus-keys", "show-desktop", "color-scheme", "lock"]
+          "alt-tab", "workspace-switcher", "run-dialog", "end-session", "profile-osd", "focus-keys", "show-desktop", "gesture-drag", "color-scheme", "lock"]
 FAVOURITES = ["org.gnome.Nautilus.desktop", "org.gnome.Terminal.desktop", "org.gnome.TextEditor.desktop",
               "com.microsoft.VSCode.desktop", "org.gnome.Loupe.desktop",
               "org.gnome.Calendar.desktop", "org.gnome.Settings.desktop", "org.gnome.Software.desktop"]
@@ -482,6 +482,17 @@ def check_keys_and_osd(variant, m):
             bad.append(f"{variant}: TUF fade did not start compositor transitions: {gesture}")
         if gesture["actorsDuring"] != gesture["actorsBefore"]:
             bad.append(f"{variant}: TUF desktop gesture added actors: {gesture}")
+    drag = m.get("tufGestureDrag")
+    if drag:
+        expected = ("beginPropagates", "downOwned", "desktopTracks", "reverses", "cancelRestores", "nativeReleased",
+                    "hidden", "returnTracks", "returned", "appTracks", "appSwitched",
+                    "overviewSettled", "nativeUpSettled")
+        if not all(drag.get(key) for key in expected):
+            bad.append(f"{variant}: interactive gesture behavior failed: {drag}")
+        if drag.get("media") != ["volume-up", "volume-up", "volume-down", "play-pause"]:
+            bad.append(f"{variant}: unexpected media gesture dispatch: {drag.get('media')}")
+        if len(drag["previews"]) < 2 or drag["overlap"]:
+            bad.append(f"{variant}: settled overview previews overlap or are missing: {drag['previews']}")
     o = m.get("profileOsd")
     if o:
         if o["shownAtStart"] != 0:
