@@ -506,7 +506,10 @@ export default class QaHarness {
                 settings.set_strv('show-desktop-shortcut', previous);
             }
             this.metrics.desktopToggle = r;
-            const actions = Main.extensionManager.lookup(TUF_UUID)?.stateObj?._gestures?._actions;
+            const tuf = Main.extensionManager.lookup(TUF_UUID);
+            if (!tuf)
+                return; // Focus Keys is tested without the optional TUF extension.
+            const actions = tuf.stateObj?._gestures?._actions;
             if (!actions)
                 throw new Error('TUF desktop gesture actions unavailable');
             const clean = () => windows.every(w => !w.minimized && w.get_compositor_private()?.opacity === 255);
@@ -749,6 +752,26 @@ export default class QaHarness {
             await sleep(250);
             metrics.returned = clean() && windows.every(w => !w.minimized);
             metrics.sameActors = global.window_group.get_n_children() === actorCount;
+
+            const manager = global.workspace_manager;
+            const workspace = manager.get_active_workspace();
+            const time = global.get_current_time();
+            const other = manager.get_workspace_by_index(workspace.index() + 1) ??
+                manager.append_new_workspace(false, time);
+            emit(Phase.BEGIN);
+            emit(Phase.UPDATE, 0, 120);
+            emit(Phase.END);
+            await sleep(250);
+            const hiddenBeforeSwitch = windows.every(w => w.minimized);
+            other.activate(global.get_current_time());
+            await sleep(450);
+            metrics.workspaceIsolated = hiddenBeforeSwitch && clean() &&
+                manager.get_active_workspace() === other && windows.every(w => !w.minimized);
+            workspace.activate(global.get_current_time());
+            await sleep(450);
+            // Keep later checks independent when this one fails against an older build.
+            input.prepareOverview();
+            Main.activateWindow(windows[0], global.get_current_time());
 
             const focused = global.display.focus_window;
             emit(Phase.BEGIN);

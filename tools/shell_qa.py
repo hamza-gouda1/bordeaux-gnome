@@ -54,6 +54,7 @@ VARIANTS = {
 }
 SCENES = ["desktop", "dock", "aura-cpu", "quick-settings", "notifications", "osd", "overview",
           "alt-tab", "workspace-switcher", "run-dialog", "end-session", "profile-osd", "focus-keys", "show-desktop", "gesture-drag", "color-scheme", "lock"]
+TUF_SCENES = {"profile-osd", "gesture-drag"}
 FAVOURITES = ["org.gnome.Nautilus.desktop", "org.gnome.Terminal.desktop", "org.gnome.TextEditor.desktop",
               "com.microsoft.VSCode.desktop", "org.gnome.Loupe.desktop",
               "org.gnome.Calendar.desktop", "org.gnome.Settings.desktop", "org.gnome.Software.desktop"]
@@ -252,6 +253,8 @@ def build_tree(variant, base, args):
             schema_dirs.append(sd)
     for uuid, src in ((AURA, ROOT / "extensions" / AURA), (FOCUS, ROOT / "extensions" / FOCUS),
                       (TUF, args.tuf_ext), (HARNESS, QA / "harness")):
+        if uuid == TUF and src is None:
+            continue
         if not src or not (src / "metadata.json").is_file():
             print(f"  warning: {uuid} not found at {src}; skipped")
             continue
@@ -463,7 +466,7 @@ def run_variant(variant, args):
         shutil.rmtree(rt, ignore_errors=True)
         if not args.keep:
             shutil.rmtree(base, ignore_errors=True)
-    return out
+    return out, rc
 
 
 def check_keys_and_osd(variant, m):
@@ -486,7 +489,7 @@ def check_keys_and_osd(variant, m):
     if drag:
         expected = ("beginPropagates", "downOwned", "desktopTracks", "reverses", "cancelRestores", "nativeReleased",
                     "hidden", "sameReturnPath", "returnReverses", "cancelReturn", "returned",
-                    "sameActors", "appTracks", "appSwitched",
+                    "sameActors", "workspaceIsolated", "appTracks", "appSwitched",
                     "overviewSettled", "nativeUpSettled")
         if not all(drag.get(key) for key in expected):
             bad.append(f"{variant}: interactive gesture behavior failed: {drag}")
@@ -625,8 +628,8 @@ def check(variant, out):
     """Returns a list of failures from metrics.json and shell.log."""
     bad, notes = [], []
     mfile = out / "metrics.json"
-    if not mfile.is_file():
-        return [f"{variant}: no metrics.json (harness did not finish)"], notes
+    if not mfile.is_file() or not (out / "DONE").is_file():
+        return [f"{variant}: harness did not finish (metrics.json or DONE missing)"], notes
     m = json.loads(mfile.read_text())
     for e in m.get("errors", []):
         bad.append(f"{variant}: harness error: {e.splitlines()[0]}")
@@ -748,7 +751,8 @@ def main():
     ap.add_argument("--text-scale", type=float, default=1.0)
     ap.add_argument("--mem", default="1500M", help="MemoryMax of the scope (at most 1500M)")
     ap.add_argument("--timeout", type=int, default=420, help="seconds per variant")
-    ap.add_argument("--tuf-ext", type=pathlib.Path, default=DEFAULT_TUF)
+    ap.add_argument("--tuf-ext", type=pathlib.Path,
+                    help="TUF extension source for cross-project scenes (auto-detected if omitted)")
     ap.add_argument("--no-audio", action="store_true", help="skip the private pipewire (no volume slider)")
     ap.add_argument("--keep", action="store_true", help="keep the private HOME for inspection")
     args = ap.parse_args()
@@ -760,10 +764,20 @@ def main():
         return
     if not args.out:
         ap.error("--out is required")
-    args.scene = SCENES if args.scene == "all" else args.scene.split(",")
+    all_scenes = args.scene == "all"
+    args.scene = SCENES.copy() if all_scenes else args.scene.split(",")
     unknown = set(args.scene) - set(SCENES)
     if unknown:
         ap.error(f"unknown scene(s): {', '.join(sorted(unknown))}")
+    if args.tuf_ext is not None and not (args.tuf_ext / "metadata.json").is_file():
+        ap.error(f"--tuf-ext does not contain metadata.json: {args.tuf_ext}")
+    if args.tuf_ext is None and (DEFAULT_TUF / "metadata.json").is_file():
+        args.tuf_ext = DEFAULT_TUF
+    if args.tuf_ext is None and TUF_SCENES.intersection(args.scene):
+        if not all_scenes:
+            ap.error("profile-osd and gesture-drag require --tuf-ext")
+        args.scene = [scene for scene in args.scene if scene not in TUF_SCENES]
+        print("TUF Control source unavailable; skipping profile-osd and gesture-drag")
     variants = list(VARIANTS) if args.variant == "all" else args.variant.split(",")
     for v in variants:
         if v not in VARIANTS:
@@ -773,19 +787,24 @@ def main():
     if args.work:
         args.work.mkdir(parents=True, exist_ok=True)
     failures = []
+    results = []
     for v in variants:  # one at a time: one shell in memory at once
-        out = run_variant(v, args)
+        out, rc = run_variant(v, args)
+        results.append((v, out))
         bad, notes = check(v, out)
+        if rc:
+            bad.append(f"{v}: private Shell scope exited with status {rc}")
         failures += bad
         for n in notes:
             print("  " + n)
-        if args.publish:
-            args.publish.mkdir(parents=True, exist_ok=True)
-            for f in publish(v, out, args.publish):
-                print(f"  published {f} ({f.stat().st_size // 1024} KB)")
     if failures:
         print("\n".join(["", "QA failures:"] + ["  " + f for f in failures]))
         sys.exit(1)
+    if args.publish:
+        args.publish.mkdir(parents=True, exist_ok=True)
+        for v, out in results:
+            for f in publish(v, out, args.publish):
+                print(f"  published {f} ({f.stat().st_size // 1024} KB)")
     print("QA checks passed")
 
 

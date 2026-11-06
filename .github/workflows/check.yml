@@ -35,6 +35,7 @@ jobs:
       - name: Theme and follow-data regression tests
         run: |
           python3 tests/test_shell_css.py
+          python3 tests/test_shell_qa.py
           python3 tests/test_follow_json.py
           python3 tests/test_release_archive.py
       - name: Extension syntax and logic

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Run visual QA from a standalone Bordeaux checkout, and fail the run if the
+  private Shell session does not complete successfully.
+
 ## [0.1.1] - 2026-11-04
 
 - Preserve the overview wallpaper fallback and custom lockscreen pipelines; report missing

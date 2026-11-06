@@ -242,7 +242,12 @@ dialogs and the lock screen. It saves a PNG per scene and checks the top-bar
 font size (15px or more), equal dock slab margins, centred dock icons and
 labels the shell had to cut with an ellipsis.
 
-Three scenes check behaviour rather than looks. `color-scheme` flips Dark
+The TUF Control integration runs when a local extension source is available.
+Pass `--tuf-ext /path/to/tuf-control/extension/tuf-control-quick@hamza-gouda` to
+choose the checkout. The default run skips the TUF-only profile and gesture
+scenes when the companion is absent. The Focus Keys Show desktop check still runs.
+
+`color-scheme` flips Dark
 Style and expects the shell stylesheet, User Themes name, GTK theme, aura
 accent and both GTK stylesheets to switch Bordeaux → Merlot Day → Oxblood Noir
 (dark variant changed) and back, with three quick toggles giving one switch. `focus-keys` presses real key
