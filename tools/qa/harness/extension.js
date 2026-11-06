@@ -702,9 +702,11 @@ export default class QaHarness {
             throw new Error('need two visible test apps');
 
         const actors = windows.map(window => window.get_compositor_private());
-        const baseline = actors.map(actor => [actor.translation_x, actor.translation_y, actor.opacity]);
-        const clean = () => actors.every((actor, i) => actor.translation_x === baseline[i][0] &&
-            actor.translation_y === baseline[i][1] && actor.opacity === baseline[i][2]);
+        const pose = actor => [actor.translation_x, actor.translation_y, actor.opacity, actor.scale_x, actor.scale_y];
+        const baseline = actors.map(pose);
+        const samePose = (a, b) => a.every((value, i) => Math.abs(value - b[i]) < 0.001);
+        const clean = () => actors.every((actor, i) => samePose(pose(actor), baseline[i]));
+        const actorCount = global.window_group.get_n_children();
         try {
             for (const [key, value] of Object.entries(values))
                 settings.set_value(key, value);
@@ -713,7 +715,10 @@ export default class QaHarness {
             metrics.beginPropagates = emit(Phase.BEGIN) === Clutter.EVENT_PROPAGATE;
             metrics.downOwned = emit(Phase.UPDATE, 0, 80) === Clutter.EVENT_STOP;
             metrics.desktopTracks = actors.every((actor, i) => actor.translation_y > baseline[i][1]
-                && actor.opacity < baseline[i][2]) && windows.every(w => !w.minimized);
+                && actor.opacity < baseline[i][2] && actor.scale_x < baseline[i][3]
+                && actor.scale_y < baseline[i][4]) && windows.every(w => !w.minimized);
+            const hidingPose = actors.map(pose);
+            await this.shot('tuf-desktop-tucking');
             const forward = actors[0].translation_y;
             emit(Phase.UPDATE, 0, -40);
             metrics.reverses = actors[0].translation_y < forward;
@@ -729,11 +734,21 @@ export default class QaHarness {
             await sleep(250);
             metrics.hidden = clean() && windows.every(w => w.minimized);
             emit(Phase.BEGIN);
-            emit(Phase.UPDATE, 0, 80);
-            metrics.returnTracks = actors.some((actor, i) => actor.translation_y < baseline[i][1]);
+            emit(Phase.UPDATE, 0, 120);
+            metrics.sameReturnPath = actors.every((actor, i) => samePose(pose(actor), hidingPose[i]));
+            await this.shot('tuf-desktop-reopening');
+            const partial = actors[0].scale_x;
+            emit(Phase.UPDATE, 0, -50);
+            metrics.returnReverses = actors[0].scale_x < partial;
+            emit(Phase.CANCEL);
+            await sleep(250);
+            metrics.cancelReturn = clean() && windows.every(w => w.minimized);
+            emit(Phase.BEGIN);
+            emit(Phase.UPDATE, 0, 120);
             emit(Phase.END);
             await sleep(250);
             metrics.returned = clean() && windows.every(w => !w.minimized);
+            metrics.sameActors = global.window_group.get_n_children() === actorCount;
 
             const focused = global.display.focus_window;
             emit(Phase.BEGIN);
