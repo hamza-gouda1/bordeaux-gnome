@@ -488,7 +488,8 @@ def check_keys_and_osd(variant, m):
     drag = m.get("tufGestureDrag")
     if drag:
         expected = ("beginPropagates", "downOwned", "desktopTracks", "reverses", "cancelRestores", "nativeReleased",
-                    "hidden", "sameReturnPath", "returnReverses", "cancelReturn", "returned",
+                    "hidden", "downStaysHidden", "upOwned", "sameReturnPath", "returnReverses", "cancelReturn",
+                    "returned", "focusRestored",
                     "sameActors", "workspaceIsolated", "appTracks", "appSwitched",
                     "overviewSettled", "nativeUpSettled")
         if not all(drag.get(key) for key in expected):

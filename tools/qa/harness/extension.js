@@ -715,6 +715,7 @@ export default class QaHarness {
                 settings.set_value(key, value);
             Main.activateWindow(windows[0], global.get_current_time());
             await sleep(150);
+            const previousFocus = global.display.focus_window;
             metrics.beginPropagates = emit(Phase.BEGIN) === Clutter.EVENT_PROPAGATE;
             metrics.downOwned = emit(Phase.UPDATE, 0, 80) === Clutter.EVENT_STOP;
             metrics.desktopTracks = actors.every((actor, i) => actor.translation_y > baseline[i][1]
@@ -738,19 +739,25 @@ export default class QaHarness {
             metrics.hidden = clean() && windows.every(w => w.minimized);
             emit(Phase.BEGIN);
             emit(Phase.UPDATE, 0, 120);
+            emit(Phase.END);
+            await sleep(250);
+            metrics.downStaysHidden = clean() && windows.every(w => w.minimized);
+            emit(Phase.BEGIN);
+            metrics.upOwned = emit(Phase.UPDATE, 0, -120) === Clutter.EVENT_STOP;
             metrics.sameReturnPath = actors.every((actor, i) => samePose(pose(actor), hidingPose[i]));
             await this.shot('tuf-desktop-reopening');
             const partial = actors[0].scale_x;
-            emit(Phase.UPDATE, 0, -50);
+            emit(Phase.UPDATE, 0, 50);
             metrics.returnReverses = actors[0].scale_x < partial;
             emit(Phase.CANCEL);
             await sleep(250);
             metrics.cancelReturn = clean() && windows.every(w => w.minimized);
             emit(Phase.BEGIN);
-            emit(Phase.UPDATE, 0, 120);
+            emit(Phase.UPDATE, 0, -120);
             emit(Phase.END);
             await sleep(250);
             metrics.returned = clean() && windows.every(w => !w.minimized);
+            metrics.focusRestored = global.display.focus_window === previousFocus;
             metrics.sameActors = global.window_group.get_n_children() === actorCount;
 
             const manager = global.workspace_manager;
