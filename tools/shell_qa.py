@@ -596,15 +596,17 @@ def measure_backdrop(image, bg0, wallpaper=None):
 
 def check_overview_backdrops(variant, out, metrics):
     """Measure rendered dim and keep wallpaper from becoming an opaque fallback."""
+    scenes = [scene for scene in metrics.get("scenes", []) if scene["name"] in ("overview", "app-grid")]
+    if not scenes:
+        return [], []
+
     from PIL import Image
     from build import OVERVIEW_EFFECTIVE_SRGB_DIM_REFERENCE
     import tokenlib as tl
 
     bad, notes = [], []
     bg0 = tl.parse_color(tl.variant_tokens(tl.load(), variant)["bg-0"])[:3]
-    for scene in metrics.get("scenes", []):
-        if scene["name"] not in ("overview", "app-grid"):
-            continue
+    for scene in scenes:
         path = out / f"{scene['name']}.png"
         if not path.is_file():
             bad.append(f"{variant}: {scene['name']}: no screenshot for backdrop measurement")
